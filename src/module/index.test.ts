@@ -20,8 +20,9 @@
  */
 import sampleModuleFn from "./index";
 
-describe("sampleModuleFn", () => {
-  it("returns the expected value", () => {
-    expect(sampleModuleFn()).toEqual("Hello, world- from a module.");
+describe("moduleTest", () => {
+  it("returns the expected value", async () => {
+    expect(await sampleModuleFn(false)).toBe(true);
+    expect(await sampleModuleFn(true)).toBe(false);
   });
 });

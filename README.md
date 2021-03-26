@@ -6,12 +6,12 @@ to end-to-end acceptance testing with Testcafe and Code Sandbox.
 
 ## Usage
 
-Short version: search everywhere for "template-ts" and replace all instances with the proper name
+Short version: search everywhere for "solid-client-vc-js" and replace all instances with the proper name
 of your GitHub repo or NPM module.
 
 In more detail, you will need to:
 
-- Update references in `.github` from "template-ts" to the name of your GitHub repo.
+- Update references in `.github` from "solid-client-vc-js" to the name of your GitHub repo.
 - Update packaging tests in `.github/workflows/cd-packaging-tests/bundler-\*` to point to the
   correct location and relevant exported modules.
 - Replace `src/module/index.ts` and `src/index.ts with your source code (obviously).
@@ -67,7 +67,7 @@ End-to-end tests:
 
 ## Changelog
 
-See [the release notes](https://github.com/inrupt/template-ts/blob/main/CHANGELOG.md).
+See [the release notes](https://github.com/inrupt/solid-client-vc-js/blob/main/CHANGELOG.md).
 
 ## License
 

@@ -1,7 +1,7 @@
 {
-  "name": "template-ts-sandbox",
+  "name": "solid-client-vc-js-sandbox",
   "version": "1.0.0",
-  "description": "Example project calling out to template-ts",
+  "description": "Example project calling out to solid-client-vc-js",
   "main": "index.html",
   "scripts": {
     "start": "webpack serve --open-page index.html",
@@ -11,7 +11,7 @@
   "dependencies": {
     "@inrupt/solid-client": "^1.4.0",
     "@inrupt/solid-client-authn-browser": "0.2.2 - 1.x",
-    "@inrupt/template-ts": "file:../.."
+    "@inrupt/solid-client-vc-js": "file:../.."
   },
   "devDependencies": {
     "buffer": "^6.0.3",

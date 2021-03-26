@@ -22,8 +22,8 @@ import sampleModuleFn from "./module";
 import * as TestFns from "./index";
 
 describe("exports", () => {
-  it("includes all of the expected functions", () => {
+  it("includes all of the expected functions", async () => {
     expect(Object.keys(TestFns)).toEqual(["sampleModuleFn"]);
-    expect(TestFns.sampleModuleFn()).toEqual(sampleModuleFn());
+    expect(await TestFns.sampleModuleFn(true)).toBe(await sampleModuleFn(true));
   });
 });

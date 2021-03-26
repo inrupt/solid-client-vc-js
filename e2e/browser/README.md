@@ -1,4 +1,4 @@
-# End-to-end tests for template-ts in the browser
+# End-to-end tests for solid-client-vc-js in the browser
 
 This directory contains our browser-based end-to-end tests. The interaction
 between the test script, which runs on the command line in Node, and the system
@@ -23,7 +23,7 @@ reachable from there. Thus, whereas the demo project is at
 `localhost:1234/`, the system under test is at
 `localhost:1234/end-to-end-test.html`.
 
-One thing to note is that its dependency on template-ts is on the code _inside
+One thing to note is that its dependency on solid-client-vc-js is on the code _inside
 this repository_, rather than fetched from npm. This means that you will first
 need to run `npm run build` at the root of this repository, followed by
 `npm install` in .codesandbox/sandbox, if you want to run it locally.
@@ -31,7 +31,7 @@ need to run `npm run build` at the root of this repository, followed by
 The actual code is split in two files: `end-to-end-test.ts` and
 `end-to-end-test-helpers.ts`. The former sets up form listeners, login
 processing, etc. on import, whereas the latter only exports the functions that
-actually call out to template-ts, i.e. that are run in the actual test. The
+actually call out to solid-client-vc-js, i.e. that are run in the actual test. The
 reason for this separation is that our test code can then import the function
 signatures from `-helpers` without executing the code that sets up the
 listeners. These helpers are then stored on the global variable `E2eHelpers` in

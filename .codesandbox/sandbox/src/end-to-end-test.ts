@@ -1,7 +1,7 @@
 import * as SolidClient from "@inrupt/solid-client";
 import { Session } from "@inrupt/solid-client-authn-browser";
 import { getHelpers } from "./end-to-end-test-helpers";
-import { sampleModuleFn } from "@inrupt/template-ts";
+import { sampleModuleFn } from "@inrupt/solid-client-vc-js";
 
 const session = new Session();
 

@@ -1,5 +1,5 @@
 {
-  "name": "@inrupt/template-ts",
+  "name": "@inrupt/solid-client-vc-js",
   "description": "A template repo for Inrupt TypeScript projects",
   "version": "0.0.3",
   "license": "MIT",
@@ -22,8 +22,8 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://docs.inrupt.com/client-libraries/template-ts/",
-  "bugs": "https://github.com/inrupt/template-ts/issues",
+  "homepage": "https://docs.inrupt.com/client-libraries/solid-client-vc-js/",
+  "bugs": "https://github.com/inrupt/solid-client-vc-js/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -42,11 +42,11 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/inrupt/template-ts.git"
+    "url": "https://github.com/inrupt/solid-client-vc-js.git"
   },
   "devDependencies": {
-    "@inrupt/eslint-config-base": "^0.2.0-alpha.1",
-    "@inrupt/eslint-config-lib": "^0.2.0-alpha.1",
+    "@inrupt/eslint-config-base": "^0.1.2",
+    "@inrupt/eslint-config-lib": "^0.1.2",
     "@skypack/package-check": "^0.2.2",
     "@testing-library/testcafe": "^4.2.3",
     "@types/dotenv-flow": "^3.1.0",
@@ -76,7 +76,10 @@
     "typedoc-plugin-markdown": "^3.3.0",
     "typescript": "^4.2.2"
   },
-  "dependencies": {},
+  "dependencies": {
+    "jsonld-signatures": "^7.0.0",
+    "vc-js": "^0.6.4"
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
     "*.{ts,tsx,js,jsx,css,md,mdx}": "prettier --write"
