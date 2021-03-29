@@ -63,7 +63,7 @@
     "eslint-plugin-license-header": "^0.2.0",
     "eslint-plugin-prettier": "^3.3.1",
     "fast-check": "^2.14.0",
-    "husky": "^5.0.9",
+    "husky": "^6.0.0",
     "jest": "^26.5.2",
     "license-checker": "^25.0.1",
     "lint-staged": "^10.2.9",
