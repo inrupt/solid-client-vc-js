@@ -18,9 +18,6 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-// export default function sampleModuleFn(): string {
-//   return "Hello, world- from a module.";
-// }
 
 // jsonld-signatures has a secure context loader
 // by requiring this first you ensure security
@@ -36,11 +33,22 @@
 
 // eslint-disable-next-line
 // @ts-ignore
-import vc from "vc-js";
+// const vc = require("vc-js");
+import * as vc from "vc-js";
 
 // eslint-disable-next-line
 // @ts-ignore
-import { Ed25519KeyPair, suites } from "jsonld-signatures";
+// const { Ed25519VerificationKey2020 } = require("@digitalbazaar/ed25519-verification-key-2020");
+import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
+
+// eslint-disable-next-line
+// @ts-ignore
+// const { Ed25519Signature2020 } = require("@digitalbazaar/ed25519-signature-2020");
+import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
+// eslint-disable-next-line
+// @ts-ignore
+// import * as JsonLdSignatures from "jsonld-signatures";
+// import { Ed25519KeyPair, suites } from "jsonld-signatures";
 
 // Use the VC.js document loader as our default (as it is pre-loaded with the VC vocabs).
 const { defaultDocumentLoader } = vc;
@@ -72,8 +80,14 @@ const documentLoader = async (url) => {
 };
 
 async function generateSuite() {
+  const seed =
+    "8c2114a150a16209c653817acc7f3e7e9c6c6290ae93d6689cbd61bb038cd31b";
+  // Encoding returns a 64 byte uint8array, seed needs to be 32 bytes
+  const seedBytes = new TextEncoder().encode(seed).slice(0, 32);
+
   // Set up the key that will be signing and verifying.
-  const keyPair = await Ed25519KeyPair.generate({
+  const keyPair = await Ed25519VerificationKey2020.generate({
+    //   seed: seedBytes,
     id: "https://example.edu/issuers/keys/1",
     controller: testIssuerId,
   });
@@ -97,7 +111,8 @@ async function generateSuite() {
   // contexts["https://example.edu/issuers/keys/1"] = keyPair.publicNode();
 
   // Set up the signature suite, using the generated key.
-  const suite = new suites.Ed25519Signature2018({
+  const suite = new Ed25519Signature2020({
+    // const suite = new suites.Ed25519Signature2018({
     verificationMethod: "https://example.edu/issuers/keys/1",
     key: keyPair,
   });
