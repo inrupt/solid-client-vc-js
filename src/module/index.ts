@@ -143,9 +143,7 @@ async function generateSuite() {
   //   controller: controllerId,
   // });
 
-  const signingKey = await Ed25519VerificationKey2020.from({
-    ...exampleKeyPair,
-  });
+  const signingKey = new Ed25519VerificationKey2020({ ...exampleKeyPair });
 
   // Add the key to the Controller doc (authorizes its use for assertion).
   // eslint-disable-next-line
