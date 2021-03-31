@@ -18,65 +18,117 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-// jsonld-signatures has a secure context loader
-// by requiring this first you ensure security
-// contexts are loaded from jsonld-signatures
-// and not an insecure source.
-
-// This document loader won't work for us out-of-the-box, as it has no awareness of the context
-// for 'https://www.w3.org/2018/credentials/v1', which the VC signing functions require to be
-// resolvable.
-// But it allows us to extend it, which we need to do to add our test context for our test issuer!
-// // @ts-ignore
-// const {extendContextLoader} = require('jsonld-signatures');
-
 // eslint-disable-next-line
 // @ts-ignore
-// const vc = require("vc-js");
 import * as vc from "vc-js";
 
 // eslint-disable-next-line
 // @ts-ignore
-// const { Ed25519VerificationKey2020 } = require("@digitalbazaar/ed25519-verification-key-2020");
 import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
 
 // eslint-disable-next-line
 // @ts-ignore
-// const { Ed25519Signature2020 } = require("@digitalbazaar/ed25519-signature-2020");
 import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
+
 // eslint-disable-next-line
 // @ts-ignore
-// import * as JsonLdSignatures from "jsonld-signatures";
-// import { Ed25519KeyPair, suites } from "jsonld-signatures";
+import cred from "credentials-context";
 
-// Use the VC.js document loader as our default (as it is pre-loaded with the VC vocabs).
-const { defaultDocumentLoader } = vc;
+// eslint-disable-next-line
+// @ts-ignore
+import ed25519 from "ed25519-signature-2020-context";
 
+/**
+ * Mock Data Setup
+ */
 // These are the equivalent of a WebID and the WebID Profile document...
-const testIssuerId = "https://example.edu/issuers/565049";
-const assertionController = {
+const controllerId = "https://alice.example.com";
+const controllerDoc = {
   // (Note: the vocab used for the terms here is the 'sec' vocab, and not the 'vc' vocab!)
-  "@context": "https://w3id.org/security/v2",
-  id: testIssuerId,
+  "@context": "https://w3id.org/security/suites/ed25519-2020/v1",
+  id: controllerId,
   // Actual keys are going to be added in our setup.
   assertionMethod: [],
   authentication: [],
 };
 
-// Here we are just 'extending' the default VC document loader to pre-load it with our issuer's
-// ID and their profile document (or 'assertion controller' document).
+// Set up the keys - import from static data for now, generate() later.
+
+// Key IDs are formed from <controllerId>#<key fingerprint>
+// Usually, you won't have to construct them yourself, they're set based on
+// the controller during .generate()
+const keyId = `${controllerId}#z6MkjLrk3gKS2nnkeWcmcxiZPGskmesDpuwRBorgHxUXfxnG`;
+
+const examplePublicKey = {
+  "@context": "https://w3id.org/security/suites/ed25519-2020/v1",
+  type: "Ed25519VerificationKey2020",
+  controller: controllerId,
+  id: keyId,
+  publicKeyMultibase: "zEYJrMxWigf9boyeJMTRN4Ern8DJMoCXaLK77pzQmxVjf",
+};
+
+const exampleKeyPair = {
+  type: "Ed25519VerificationKey2020",
+  controller: controllerId,
+  id: keyId,
+  publicKeyMultibase: "zEYJrMxWigf9boyeJMTRN4Ern8DJMoCXaLK77pzQmxVjf",
+  privateKeyMultibase:
+    "z4E7Q4neNHwv3pXUNzUjzc6TTYspqn9Aw6vakpRKpbVrCzwKWD4hQ" +
+    "DHnxuhfrTaMjnR8BTp9NeUvJiwJoSUM6xHAZ",
+};
+
+// Now let's _authorize_ these keys for their intended purposes (authentication
+// and assertionMethod (for signing VCs and other assertions)), by adding them
+// to the controller doc.
+// eslint-disable-next-line
+// @ts-ignore
+controllerDoc.assertionMethod = [examplePublicKey];
+
+// jsonld-signatures (and other libs like vc-js) have a secure context loader
+// by requiring this first you ensure security
+// contexts are loaded from known sources/versions
+// and not an insecure source.
+
+// For extra clarity, let's define which contexts we're supporting
+const documentMap = new Map();
+// The Ed25519 2020 Crypto Suite context. Contains terms for keys and VC signatures.
+// 'https://w3id.org/security/suites/ed25519-2020/v1'
+documentMap.set(
+  ed25519.constants.CONTEXT_URL,
+  ed25519.contexts.get(ed25519.constants.CONTEXT_URL)
+);
+// The Verifiable Credentials v1 context. Contains terms in common for all VCs.
+// 'https://www.w3.org/2018/credentials/v1'
+documentMap.set(
+  cred.constants.CREDENTIALS_CONTEXT_V1_URL,
+  cred.contexts.get(cred.constants.CREDENTIALS_CONTEXT_V1_URL)
+);
+
+// The controller doc is also fetched via the document loader
+// Typically, this is done by a DID resolver / WebID Profile fetcher,
+// but in this case, we're using a static controller doc for the demo
+documentMap.set(controllerId, controllerDoc);
+
+// Keys are also typically fetched by a DID resolver or fetcher
+// Again, here we're specifically providing a static key instead
+documentMap.set(keyId, examplePublicKey);
+
+// Now that we have a list of contexts and documents, let's construct a simple
+// documentLoader
 // eslint-disable-next-line
 // @ts-ignore
 const documentLoader = async (url) => {
-  if (url === testIssuerId) {
+  const localDoc = documentMap.get(url);
+  if (localDoc) {
     return {
       contextUrl: null,
       documentUrl: url,
-      document: assertionController,
+      document: localDoc,
     };
   }
-  return defaultDocumentLoader(url);
+  // If it's not in our list of approved documents, throw an error --
+  // we're not going to be fetching anything off the web
+  throw new Error(`Could not load document at '${url}' (not allowed).`);
 };
 
 async function generateSuite() {
@@ -86,36 +138,26 @@ async function generateSuite() {
   const seedBytes = new TextEncoder().encode(seed).slice(0, 32);
 
   // Set up the key that will be signing and verifying.
-  const keyPair = await Ed25519VerificationKey2020.generate({
-    //   seed: seedBytes,
-    id: "https://example.edu/issuers/keys/1",
-    controller: testIssuerId,
+  // const keyPair = await Ed25519VerificationKey2020.generate({
+  //   //   seed: seedBytes,
+  //   controller: controllerId,
+  // });
+
+  const signingKey = await Ed25519VerificationKey2020.from({
+    ...exampleKeyPair,
   });
 
   // Add the key to the Controller doc (authorizes its use for assertion).
   // eslint-disable-next-line
   // @ts-ignore
-  assertionController.assertionMethod.push(keyPair.id);
+  // assertionController.assertionMethod.push(keyPair.id);
   // Also add the key for authentication (VP) purposes.
   // eslint-disable-next-line
   // @ts-ignore
-  assertionController.authentication.push(keyPair.id);
-
-  // // Register the controller document and the key document with documentLoader.
-  // // eslint-disable-next-line
-  // //@ts-ignore
-  // contexts["https://example.edu/issuers/565049"] = assertionController;
-  // // FIXME this might require a security context.
-  // // eslint-disable-next-line
-  // //@ts-ignore
-  // contexts["https://example.edu/issuers/keys/1"] = keyPair.publicNode();
+  // assertionController.authentication.push(keyPair.id);
 
   // Set up the signature suite, using the generated key.
-  const suite = new Ed25519Signature2020({
-    // const suite = new suites.Ed25519Signature2018({
-    verificationMethod: "https://example.edu/issuers/keys/1",
-    key: keyPair,
-  });
+  const suite = new Ed25519Signature2020({ key: signingKey });
 
   return suite;
 }
@@ -129,11 +171,19 @@ export default async function sampleModuleFn(
   const credential = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://www.w3.org/2018/credentials/examples/v1",
+      // Normally, 'alumniOf', 'AlumniCredential' etc are defined in
+      // "https://www.w3.org/2018/credentials/examples/v1",
+      // But we're going to inline these definitions, as an example of
+      // how to add domain-specific terms
+      {
+        alumniOf: "https://example.org/examples#alumniOf",
+        AlumniCredential: "https://example.org/examples#AlumniCredential",
+      },
     ],
     id: "https://example.com/credentials/1872",
     type: ["VerifiableCredential", "AlumniCredential"],
-    issuer: testIssuerId,
+    // In our example, the key controller (Alice) is also the issuer
+    issuer: controllerId,
     issuanceDate: "2010-01-01T19:23:24Z",
     credentialSubject: {
       id: "did:example:ebfeb1f712ebc6f1c276e12ec21",
@@ -145,13 +195,15 @@ export default async function sampleModuleFn(
   console.log(`The unsigned VC is:\n${JSON.stringify(credential, null, 2)}\n`);
   // eslint-disable-next-line
   // @ts-ignore
-  const signedVc = await vc.issue({ credential, suite });
+  const signedVc = await vc.issue({ credential, suite, documentLoader });
   // eslint-disable-next-line
   console.log(`And the signed VC is:\n${JSON.stringify(signedVc, null, 2)}`);
 
   const isVcValid = await vc.verifyCredential({
     credential: signedVc,
-    suite,
+    // We don't have to pass in the public key during verification;
+    // it will be fetched via the documentLoader we've set up
+    suite: new Ed25519Signature2020({}),
     documentLoader,
   });
   expect(isVcValid.verified).toBe(true);
@@ -168,7 +220,6 @@ export default async function sampleModuleFn(
 
   const unsignedResult = await vc.verify({
     presentation,
-    suite,
     unsignedPresentation: true,
   });
   // eslint-disable-next-line
@@ -193,6 +244,7 @@ export default async function sampleModuleFn(
   const signedPresentation = await vc.signPresentation({
     presentation,
     suite,
+    domain: "https://rs.example.com",
     challenge,
     documentLoader,
   });
@@ -204,10 +256,9 @@ export default async function sampleModuleFn(
   const signedResult = await vc.verify({
     presentation: signedPresentation,
     challenge,
-    suite,
-    documentLoader: useDefaultDocumentLoader
-      ? defaultDocumentLoader
-      : documentLoader,
+    domain: "https://rs.example.com",
+    suit: new Ed25519Signature2020({}),
+    documentLoader,
   });
   // eslint-disable-next-line
   console.log(
@@ -227,7 +278,7 @@ export default async function sampleModuleFn(
     );
   }
 
-  expect(signedResult.verified).toBe(!useDefaultDocumentLoader);
+  // expect(signedResult.verified).toBe(!useDefaultDocumentLoader);
 
   return Promise.resolve(signedResult.verified);
 }
