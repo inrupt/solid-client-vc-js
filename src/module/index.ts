@@ -86,11 +86,12 @@ async function generateSuite() {
   const seedBytes = new TextEncoder().encode(seed).slice(0, 32);
 
   // Set up the key that will be signing and verifying.
-  const keyPair = await Ed25519VerificationKey2020.generate({
-    //   seed: seedBytes,
-    id: "https://example.edu/issuers/keys/1",
-    controller: testIssuerId,
-  });
+  const keyPair = await Ed25519VerificationKey2020.generate();
+  // {
+  //   //   seed: seedBytes,
+  //   id: "https://example.edu/issuers/keys/1",
+  //   controller: testIssuerId,
+  // });
 
   // Add the key to the Controller doc (authorizes its use for assertion).
   // eslint-disable-next-line
