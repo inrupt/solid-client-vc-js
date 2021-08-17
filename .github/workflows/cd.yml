@@ -145,18 +145,20 @@ jobs:
       run: |
         cd .github/workflows/cd-packaging-tests/node
         npm install @inrupt/template-ts@$VERSION_NR
+      if: false
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
     - name: Verify that the package can be imported in Node from a CommonJS module
       run: |
         cd .github/workflows/cd-packaging-tests/node
         node --unhandled-rejections=strict commonjs.cjs
+      if: false
     - name: Verify that the package can be imported in Node from an ES module
       run: |
         cd .github/workflows/cd-packaging-tests/node
         node --unhandled-rejections=strict esmodule.mjs
       # Node 10 does not support ES modules:
-      if: matrix.node-version != '10.x'
+      if: matrix.node-version != '10.x' && false
 
   verify-imports-parcel:
     runs-on: ubuntu-20.04
@@ -175,6 +177,8 @@ jobs:
         npx parcel@1.12.3 build index.ts
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
+      if: false
+
     - name: Archive Parcel build artifacts
       uses: actions/upload-artifact@v2.2.2
       continue-on-error: true
@@ -199,6 +203,8 @@ jobs:
         npx webpack --devtool source-map
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
+      if: false
+
     - name: Archive Webpack build artifacts
       uses: actions/upload-artifact@v2.2.2
       continue-on-error: true
@@ -228,14 +234,17 @@ jobs:
         npm install --force @inrupt/template-ts@$VERSION_NR
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
+      if: false
     - name: Make sure that the end-to-end tests run against the just-published package
       run: |
         cd e2e/node
         # For all files (`-type f`) in this directory,
         # replace `../index` (i.e. in the import statement) with `@inrupt/template-ts`:
         find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/template-ts/g' {} \;
+      if: false
     - name: Run the Node-based end-to-end tests
       run: npm run e2e-test-node
+      if: false
       env:
         E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
         E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
