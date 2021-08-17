@@ -93,6 +93,8 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
+      # Do not publish to NPM until the package is public
+      if: false
     - name: Mark GitHub Deployment as successful
       uses: octokit/request-action@v2.x
       with:
