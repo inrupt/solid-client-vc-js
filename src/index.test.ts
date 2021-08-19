@@ -18,12 +18,12 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import sampleModuleFn from "./module";
 import * as TestFns from "./index";
+import authFetch from "./fetcher";
 
 describe("exports", () => {
   it("includes all of the expected functions", () => {
-    expect(Object.keys(TestFns)).toEqual(["sampleModuleFn"]);
-    expect(TestFns.sampleModuleFn()).toEqual(sampleModuleFn());
+    expect(Object.keys(TestFns)).toEqual(["fetch"]);
+    expect(TestFns.fetch).toEqual(authFetch);
   });
 });

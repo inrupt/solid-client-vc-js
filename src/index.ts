@@ -21,4 +21,4 @@
 
 // Ignore the "prefer default" rule; index files won't export a default.
 /* eslint import/prefer-default-export: 0 */
-export { default as sampleModuleFn } from "./module";
+export { default as fetch } from "./fetcher";
