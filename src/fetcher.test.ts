@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Inrupt Inc.
+ * Copyright 2021 Inrupt Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal in
@@ -19,43 +19,19 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import pkg from "./package.json";
-import typescript from "rollup-plugin-typescript2";
+import { jest, it, expect } from "@jest/globals";
 
-export default {
-  input: "./src/index.ts",
-  output: [
-    {
-      file: pkg.main,
-      format: "cjs",
-    },
-    {
-      file: pkg.module,
-      entryFileNames: "[name].es.js",
-      format: "esm",
-    },
-    {
-      dir: "dist",
-      entryFileNames: "[name].mjs",
-      format: "esm",
-      preserveModules: true,
-    },
-    {
-      dir: "umd",
-      format: "umd",
-      name: "SolidClient",
-    },
-  ],
-  plugins: [
-    typescript({
-      // Use our own version of TypeScript, rather than the one bundled with the plugin:
-      typescript: require("typescript"),
-      tsconfigOverride: {
-        compilerOptions: {
-          module: "esnext",
-        },
-      },
-    }),
-  ],
-  external: ["cross-fetch"],
-};
+import authFetch from "./fetcher";
+
+jest.mock("cross-fetch");
+
+it("should fallback to cross-fetch if no Solid-specific fetcher is available", async () => {
+  const crossFetch = jest.requireMock("cross-fetch") as jest.Mock<
+    ReturnType<typeof window.fetch>,
+    [RequestInfo, RequestInit]
+  >;
+
+  await authFetch("https://some.url");
+
+  expect(crossFetch.mock.calls).toEqual([["https://some.url", undefined]]);
+});
