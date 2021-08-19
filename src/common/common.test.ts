@@ -20,65 +20,12 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { Iri, isVerifiableCredential, VerifiableCredential } from "./common";
-
-type CredentialClaims = {
-  id: Iri;
-  type: Iri[];
-  issuer: Iri;
-  issuanceDate: string;
-  subjectId: Iri;
-  subjectClaims: Record<string, string>;
-  proofType: string;
-  proofCreated: string;
-  proofVerificationMethod: string;
-  proofPurpose: string;
-  proofValue: string;
-};
-
-const defaultCredentialClaims: CredentialClaims = {
-  id: "https://example.org/ns/someCredentialInstance",
-  type: ["https://example.org/ns/spaceDogCertificate"],
-  issuer: "https://some.vc.issuer/in-ussr",
-  issuanceDate: "1960-08-19T16:08:31Z",
-  subjectId: "https://some.webid.provider/strelka",
-  subjectClaims: {
-    "https://example.org/ns/status": "https://example.org/ns/GoodDog",
-    "https://example.org/ns/passengerOf":
-      "https://example.org/ns/Korabl-Sputnik2",
-  },
-  proofType: "Ed25519Signature2018",
-  proofCreated: "2021-08-19T16:08:31Z",
-  proofVerificationMethod:
-    "did:example:123#z6MksHh7qHWvybLg5QTPPdG2DgEjjduBDArV9EF9mRiRzMBN",
-  proofPurpose: "assertionMethod",
-  proofValue:
-    "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..YtqjEYnFENT7fNW-COD0HAACxeuQxPKAmp4nIl8jYAu__6IH2FpSxv81w-l5PvE1og50tS9tH8WyXMlXyo45CA",
-};
-
-const mockCredential = (claims?: Partial<CredentialClaims>) => {
-  return {
-    id: claims?.id,
-    type: claims?.type,
-    issuer: claims?.issuer,
-    issuanceDate: claims?.issuanceDate,
-    credentialSubject: {
-      id: claims?.subjectId,
-      ...claims?.subjectClaims,
-    },
-    proof: {
-      type: claims?.proofType,
-      created: claims?.proofCreated,
-      verificationMethod: claims?.proofVerificationMethod,
-      proofPurpose: claims?.proofPurpose,
-      proofValue: claims?.proofValue,
-    },
-  };
-};
-
-const mockDefaultCredential = (): VerifiableCredential => {
-  return mockCredential(defaultCredentialClaims) as VerifiableCredential;
-};
+import { isVerifiableCredential } from "./common";
+import {
+  defaultCredentialClaims,
+  mockCredential,
+  mockDefaultCredential,
+} from "./common.mock";
 
 describe("isVerifiableCredential", () => {
   it("returns true if all the expected fields are present in the credential", () => {
