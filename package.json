@@ -32,7 +32,8 @@
       "require": "./dist/index.js",
       "import": "./dist/index.mjs"
     },
-    "./module": "./dist/module/index.mjs"
+    "./common": "./dist/common/common.mjs",
+    "./issue": "./dist/issue/issue.mjs"
   },
   "files": [
     "dist",
