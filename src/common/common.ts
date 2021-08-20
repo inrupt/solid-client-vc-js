@@ -25,7 +25,7 @@ export type Iri = string;
  * fields may contain any value.
  */
 export type JsonLd = {
-  "@context": Iri[];
+  "@context": unknown;
   [property: string]: unknown;
 };
 
