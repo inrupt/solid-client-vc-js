@@ -33,12 +33,10 @@ config({
 
 const validCredentialClaims = {
     "@context": {
-      // "cred": "https://www.w3.org/2018/credentials#",
       "gc": "https://w3id.org/GConsent#",
       "consent": "http://www.w3.org/ns/solid/consent#",
       "ldp": "http://www.w3.org/ns/ldp#",
       "acl": "http://www.w3.org/ns/auth/acl#",
-      "credentialSubject": "cred:credentialSubject",
       "inbox": {
         "@id": "ldp:inbox",
         "@type": "@id"
@@ -79,10 +77,8 @@ const validCredentialClaims = {
  */
 const invalidCredentialClaims = {
   "@context": {
-    // "cred": "https://www.w3.org/2018/credentials#",
     "ldp": "http://www.w3.org/ns/ldp#",
     "acl": "http://www.w3.org/ns/auth/acl#",
-    "credentialSubject": "cred:credentialSubject",
     "inbox": {
       "@id": "ldp:inbox",
       "@type": "@id"

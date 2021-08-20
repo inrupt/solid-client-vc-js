@@ -23,7 +23,7 @@ import { describe, it, expect } from "@jest/globals";
 import { isVerifiableCredential } from "./common";
 import {
   defaultCredentialClaims,
-  mockCredential,
+  mockPartialCredential,
   mockDefaultCredential,
 } from "./common.mock";
 
@@ -47,7 +47,7 @@ describe("isVerifiableCredential", () => {
     ])("is missing field %s", (entry) => {
       expect(
         isVerifiableCredential(
-          mockCredential({
+          mockPartialCredential({
             ...defaultCredentialClaims,
             [`${entry}`]: undefined,
           })
@@ -74,7 +74,7 @@ describe("isVerifiableCredential", () => {
     it("has an unexpected date format for the issuance", () => {
       expect(
         isVerifiableCredential(
-          mockCredential({
+          mockPartialCredential({
             ...defaultCredentialClaims,
             issuanceDate: "Not a date",
           })
@@ -85,7 +85,7 @@ describe("isVerifiableCredential", () => {
     it("has an unexpected date format for the proof creation", () => {
       expect(
         isVerifiableCredential(
-          mockCredential({
+          mockPartialCredential({
             ...defaultCredentialClaims,
             proofCreated: "Not a date",
           })

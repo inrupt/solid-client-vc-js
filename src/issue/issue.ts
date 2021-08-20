@@ -28,8 +28,23 @@ import {
   VerifiableCredential,
 } from "../common/common";
 
+function concatenateContexts(contextA: unknown[], contextB: unknown): unknown {
+  const result = [...contextA];
+  // Case when the context is an array of IRIs and/or inline contexts
+  if (Array.isArray(contextB)) {
+    return result.concat(contextB);
+  }
+  // Case when the context is a single remote URI or a single inline context
+  result.push(contextB);
+  return result;
+}
+
+/**
+ * This context contains the required elements to build a valid VC issuance request.
+ */
+export const defaultContext = ["https://www.w3.org/2018/credentials/v1"];
+
 export default async function issueVerifiableCredential(
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   issuerEndpoint: Iri,
   subject: Iri,
   claims: JsonLd,
@@ -41,20 +56,24 @@ export default async function issueVerifiableCredential(
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;
   }
+  // credentialClaims should contain all the claims, but not the context.
+  const { "@context": claimsContext, ...credentialClaims } = claims;
+  const credentialIssueBody = {
+    // See https://w3c-ccg.github.io/vc-http-api/issuer.html
+    credential: {
+      "@context": concatenateContexts(defaultContext, claimsContext),
+      credentialSubject: {
+        id: subject,
+        ...credentialClaims,
+      },
+    },
+  };
   const response = await internalOptions.fetch(issuerEndpoint, {
     headers: {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: JSON.stringify({
-      // See https://w3c-ccg.github.io/vc-http-api/issuer.html
-      credential: {
-        credentialSubject: {
-          id: subject,
-          ...claims,
-        },
-      },
-    }),
+    body: JSON.stringify(credentialIssueBody),
   });
   if (!response.ok) {
     // TODO: use the error library when available.

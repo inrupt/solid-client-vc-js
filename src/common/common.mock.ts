@@ -22,6 +22,7 @@
 import { Iri, VerifiableCredential } from "./common";
 
 export type CredentialClaims = {
+  "@context": unknown;
   id: Iri;
   type: Iri[];
   issuer: Iri;
@@ -36,15 +37,15 @@ export type CredentialClaims = {
 };
 
 export const defaultCredentialClaims: CredentialClaims = {
-  id: "https://example.org/ns/someCredentialInstance",
-  type: ["https://example.org/ns/spaceDogCertificate"],
+  "@context": { ex: "https://example.org/ns/" },
+  id: "ex:someCredentialInstance",
+  type: ["ex:spaceDogCertificate"],
   issuer: "https://some.vc.issuer/in-ussr",
   issuanceDate: "1960-08-19T16:08:31Z",
   subjectId: "https://some.webid.provider/strelka",
   subjectClaims: {
-    "https://example.org/ns/status": "https://example.org/ns/GoodDog",
-    "https://example.org/ns/passengerOf":
-      "https://example.org/ns/Korabl-Sputnik2",
+    "ex:status": "https://example.org/ns/GoodDog",
+    "ex:passengerOf": "https://example.org/ns/Korabl-Sputnik2",
   },
   proofType: "Ed25519Signature2018",
   proofCreated: "2021-08-19T16:08:31Z",
@@ -55,7 +56,7 @@ export const defaultCredentialClaims: CredentialClaims = {
     "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..YtqjEYnFENT7fNW-COD0HAACxeuQxPKAmp4nIl8jYAu__6IH2FpSxv81w-l5PvE1og50tS9tH8WyXMlXyo45CA",
 };
 
-export const mockCredential = (
+export const mockPartialCredential = (
   claims?: Partial<CredentialClaims>
 ): Record<string, unknown> => {
   return {
@@ -77,6 +78,12 @@ export const mockCredential = (
   };
 };
 
+export const mockCredential = (
+  claims: CredentialClaims
+): VerifiableCredential => {
+  return mockPartialCredential(claims) as VerifiableCredential;
+};
+
 export const mockDefaultCredential = (): VerifiableCredential => {
-  return mockCredential(defaultCredentialClaims) as VerifiableCredential;
+  return mockPartialCredential(defaultCredentialClaims) as VerifiableCredential;
 };

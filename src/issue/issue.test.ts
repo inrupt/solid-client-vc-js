@@ -20,8 +20,11 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { mockCredential, mockDefaultCredential } from "../common/common.mock";
-import issueVerifiableCredential from "./issue";
+import {
+  mockPartialCredential,
+  mockDefaultCredential,
+} from "../common/common.mock";
+import issueVerifiableCredential, { defaultContext } from "./issue";
 
 jest.mock("../fetcher");
 
@@ -172,9 +175,44 @@ describe("issueVerifiableCredential", () => {
       expect.objectContaining({
         body: JSON.stringify({
           credential: {
+            "@context": [...defaultContext, "https://some.context"],
             credentialSubject: {
               id: "htps://some.subject",
-              "@context": ["https://some.context"],
+              aClaim: "a value",
+            },
+          },
+        }),
+      })
+    );
+  });
+
+  it("handles inline contexts for the claims", async () => {
+    const mockedFetch = jest.requireMock("../fetcher") as {
+      default: typeof fetch;
+    };
+    mockedFetch.default = jest.fn();
+    try {
+      await issueVerifiableCredential(
+        "https://some.endpoint",
+        "htps://some.subject",
+        {
+          "@context": { con: "https://some.context", aClaim: "con:aClaim" },
+          aClaim: "a value",
+        }
+      );
+      // eslint-disable-next-line no-empty
+    } catch (_e) {}
+    expect(mockedFetch.default).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: JSON.stringify({
+          credential: {
+            "@context": [
+              ...defaultContext,
+              { con: "https://some.context", aClaim: "con:aClaim" },
+            ],
+            credentialSubject: {
+              id: "htps://some.subject",
               aClaim: "a value",
             },
           },
