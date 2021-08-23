@@ -20,8 +20,9 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { defaultContext } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
-import issueVerifiableCredential, { defaultContext } from "./issue";
+import issueVerifiableCredential from "./issue";
 
 jest.mock("../fetcher");
 
