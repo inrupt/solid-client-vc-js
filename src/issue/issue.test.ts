@@ -58,7 +58,7 @@ describe("issueVerifiableCredential", () => {
     expect(mockedFetch.default).toHaveBeenCalled();
   });
 
-  it("throws if there is a network error", async () => {
+  it("throws if the issuer returns an error", async () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
@@ -69,10 +69,12 @@ describe("issueVerifiableCredential", () => {
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
+        "https://some.subject",
         { "@context": ["https://some.context"] }
       )
-    ).rejects.toThrow("400");
+    ).rejects.toThrow(
+      /https:\/\/some\.endpoint.*could not successfully issue a VC.*https:\/\/some.subject.*400.*Bad request/
+    );
   });
 
   it("throws if thee returned value does not conform to the shape we expect", async () => {
