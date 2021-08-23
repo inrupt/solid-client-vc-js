@@ -51,6 +51,7 @@
     "@testing-library/testcafe": "^4.4.0",
     "@types/dotenv-flow": "^3.1.1",
     "@types/jest": "^26.0.24",
+    "@types/node": "^16.6.2",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
     "@typescript-eslint/parser": "^3.10.1",
     "dotenv-flow": "^3.2.0",
@@ -76,7 +77,9 @@
     "typedoc-plugin-markdown": "^3.10.4",
     "typescript": "^4.3.5"
   },
-  "dependencies": {},
+  "dependencies": {
+    "cross-fetch": "^3.1.4"
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
     "*.{ts,tsx,js,jsx,css,md,mdx}": "prettier --write"

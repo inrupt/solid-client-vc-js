@@ -39,4 +39,5 @@ module.exports = {
     "/src/e2e-node/",
     "/src/e2e-browser/",
   ],
+  injectGlobals: false,
 };
