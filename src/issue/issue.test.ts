@@ -77,7 +77,7 @@ describe("issueVerifiableCredential", () => {
     );
   });
 
-  it("throws if thee returned value does not conform to the shape we expect", async () => {
+  it("throws if the returned value does not conform to the shape we expect", async () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
