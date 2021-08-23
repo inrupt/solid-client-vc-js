@@ -18,12 +18,19 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import sampleModuleFn from "./module";
-import * as TestFns from "./index";
+import * as packageExports from "./index";
+import issueVerifiableCredential from "./issue/issue";
+import { isVerifiableCredential } from "./common/common";
 
 describe("exports", () => {
   it("includes all of the expected functions", () => {
-    expect(Object.keys(TestFns)).toEqual(["sampleModuleFn"]);
-    expect(TestFns.sampleModuleFn()).toEqual(sampleModuleFn());
+    expect(Object.keys(packageExports)).toEqual([
+      "issueVerifiableCredential",
+      "isVerifiableCredential",
+    ]);
+    expect(packageExports.issueVerifiableCredential).toBe(
+      issueVerifiableCredential
+    );
+    expect(packageExports.isVerifiableCredential).toBe(isVerifiableCredential);
   });
 });

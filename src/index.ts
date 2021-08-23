@@ -19,6 +19,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Ignore the "prefer default" rule; index files won't export a default.
-/* eslint import/prefer-default-export: 0 */
-export { default as sampleModuleFn } from "./module";
+export { default as issueVerifiableCredential } from "./issue/issue";
+export {
+  Iri,
+  JsonLd,
+  VerifiableCredential,
+  isVerifiableCredential,
+} from "./common/common";

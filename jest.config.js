@@ -32,7 +32,11 @@ module.exports = {
       statements: 100,
     },
   },
-  coveragePathIgnorePatterns: ["/node_modules/", "<rootDir>/dist"],
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "<rootDir>/dist",
+    "./*.mock.ts",
+  ],
   testPathIgnorePatterns: [
     "/node_modules/",
     // By default we only run unit tests:
