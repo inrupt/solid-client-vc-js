@@ -78,7 +78,7 @@ export default async function issueVerifiableCredential(
   if (!response.ok) {
     // TODO: use the error library when available.
     throw new Error(
-      `The VC issuing endpoint [${issuerEndpoint}] could not successfully issue a VC: ${response.status} ${response.statusText}`
+      `The VC issuing endpoint [${issuerEndpoint}] could not successfully issue a VC for provided subject [${subject}]: ${response.status} ${response.statusText}`
     );
   }
   const jsonData = await response.json();
