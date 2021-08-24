@@ -22,6 +22,7 @@ import * as packageExports from "./index";
 import issueVerifiableCredential from "./issue/issue";
 import { isVerifiableCredential } from "./common/common";
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
+import revokeVerifiableCredential from "./revoke/revoke";
 
 describe("exports", () => {
   it("includes all of the expected functions", () => {
@@ -29,6 +30,7 @@ describe("exports", () => {
       "issueVerifiableCredential",
       "isVerifiableCredential",
       "getVerifiableCredentialAllFromShape",
+      "revokeVerifiableCredential",
     ]);
     expect(packageExports.issueVerifiableCredential).toBe(
       issueVerifiableCredential
@@ -36,6 +38,9 @@ describe("exports", () => {
     expect(packageExports.isVerifiableCredential).toBe(isVerifiableCredential);
     expect(packageExports.getVerifiableCredentialAllFromShape).toBe(
       getVerifiableCredentialAllFromShape
+    );
+    expect(packageExports.revokeVerifiableCredential).toBe(
+      revokeVerifiableCredential
     );
   });
 });
