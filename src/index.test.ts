@@ -21,16 +21,21 @@
 import * as packageExports from "./index";
 import issueVerifiableCredential from "./issue/issue";
 import { isVerifiableCredential } from "./common/common";
+import getVerifiableCredentialAllFromShape from "./lookup/derive";
 
 describe("exports", () => {
   it("includes all of the expected functions", () => {
     expect(Object.keys(packageExports)).toEqual([
       "issueVerifiableCredential",
       "isVerifiableCredential",
+      "getVerifiableCredentialAllFromShape",
     ]);
     expect(packageExports.issueVerifiableCredential).toBe(
       issueVerifiableCredential
     );
     expect(packageExports.isVerifiableCredential).toBe(isVerifiableCredential);
+    expect(packageExports.getVerifiableCredentialAllFromShape).toBe(
+      getVerifiableCredentialAllFromShape
+    );
   });
 });
