@@ -101,7 +101,7 @@ export default async function getVerifiableCredentialAllFromShape(
   // credentialClaims should contain all the claims, but not the context.
   const { "@context": claimsContext, ...credentialClaims } = vcShape;
   const credentialRequestBody = {
-    // See https://w3c-ccg.github.io/vc-http-api/issuer.html
+    // See https://w3c-ccg.github.io/vc-http-api/holder.html
     credential: {
       "@context": concatenateContexts(defaultContext, claimsContext),
       ...credentialClaims,
