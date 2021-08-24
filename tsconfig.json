@@ -71,6 +71,7 @@
       "src/index.ts",
       "src/issue/issue.ts",
       "src/common/common.ts",
+      "src/lookup/derive.ts",
     ],
     "exclude": [
       "node_modules/**",
