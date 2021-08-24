@@ -33,7 +33,8 @@
       "import": "./dist/index.mjs"
     },
     "./common": "./dist/common/common.mjs",
-    "./issue": "./dist/issue/issue.mjs"
+    "./issue": "./dist/issue/issue.mjs",
+    "./derive": "./dist/lookup/derive.mjs"
   },
   "files": [
     "dist",

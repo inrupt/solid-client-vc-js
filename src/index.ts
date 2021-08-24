@@ -26,3 +26,4 @@ export {
   VerifiableCredential,
   isVerifiableCredential,
 } from "./common/common";
+export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
