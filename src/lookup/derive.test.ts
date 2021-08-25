@@ -27,7 +27,7 @@ import getVerifiableCredentialAllFromShape from "./derive";
 jest.mock("../fetcher");
 
 describe("getVerifiableCredentialAllFromShape", () => {
-  it("uses the provided mock if any", async () => {
+  it("uses the provided fetch if any", async () => {
     const mockedFetch = jest.fn() as typeof fetch;
     try {
       await getVerifiableCredentialAllFromShape(
