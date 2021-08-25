@@ -26,7 +26,7 @@ import revokeVerifiableCredential from "./revoke";
 jest.mock("../fetcher");
 
 describe("revokeVerifiableCredential", () => {
-  it("uses the provided mock if any", async () => {
+  it("uses the provided fetch if any", async () => {
     const mockedFetch = jest.fn() as typeof fetch;
     try {
       await revokeVerifiableCredential(
