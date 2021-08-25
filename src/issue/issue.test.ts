@@ -20,13 +20,14 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { defaultContext } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
-import issueVerifiableCredential, { defaultContext } from "./issue";
+import issueVerifiableCredential from "./issue";
 
 jest.mock("../fetcher");
 
 describe("issueVerifiableCredential", () => {
-  it("uses the provided mock if any", async () => {
+  it("uses the provided fetch if any", async () => {
     const mockedFetch = jest.fn() as typeof fetch;
     try {
       await issueVerifiableCredential(

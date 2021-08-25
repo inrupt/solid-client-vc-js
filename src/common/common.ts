@@ -108,3 +108,22 @@ export function isVerifiableCredential(
     typeof (data as VerifiableCredential).proof.verificationMethod === "string";
   return dataIsVc;
 }
+
+export function concatenateContexts(
+  contextA: unknown[],
+  contextB: unknown
+): unknown {
+  const result = [...contextA];
+  // Case when the context is an array of IRIs and/or inline contexts
+  if (Array.isArray(contextB)) {
+    return result.concat(contextB);
+  }
+  // Case when the context is a single remote URI or a single inline context
+  result.push(contextB);
+  return result;
+}
+
+/**
+ * This context contains the required elements to build a valid VC issuance request.
+ */
+export const defaultContext = ["https://www.w3.org/2018/credentials/v1"];
