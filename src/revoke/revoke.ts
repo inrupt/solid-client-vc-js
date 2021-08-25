@@ -19,12 +19,38 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export { default as issueVerifiableCredential } from "./issue/issue";
-export {
-  Iri,
-  JsonLd,
-  VerifiableCredential,
-  isVerifiableCredential,
-} from "./common/common";
-export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
-export { default as revokeVerifiableCredential } from "./revoke/revoke";
+import { Iri } from "../common/common";
+import fallbackFetch from "../fetcher";
+
+export default async function revokeVerifiableCredential(
+  issuerEndpoint: Iri,
+  credentialId: Iri,
+  options?: {
+    fetch: typeof fetch;
+  }
+): Promise<void> {
+  const internalOptions = { ...options };
+  if (internalOptions.fetch === undefined) {
+    internalOptions.fetch = fallbackFetch;
+  }
+  const response = await internalOptions.fetch(issuerEndpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      credentialId,
+      credentialStatus: [
+        {
+          type: "RevocationList2020Status",
+          status: "0",
+        },
+      ],
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `The issuer [${issuerEndpoint}] returned an error: ${response.status} ${response.statusText}`
+    );
+  }
+}

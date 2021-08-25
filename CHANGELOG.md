@@ -7,7 +7,8 @@ The following changes have been implemented but not released yet:
 ## [Unreleased]
 
 ### New features
-
+- Revoke a credential: the `revokeVerifiableCredential` function allows to ask
+  an issuer to revoke a given credential.
 - Lookup credentials at a Holder endpoint: the `getVerifiableCredentialAllFromShape`
   function collects presentations for all the VCs matching a given shape from a 
   given holder.
