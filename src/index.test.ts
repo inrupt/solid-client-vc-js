@@ -18,6 +18,7 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+import { describe, it, expect } from "@jest/globals";
 import * as packageExports from "./index";
 import issueVerifiableCredential from "./issue/issue";
 import { isVerifiableCredential } from "./common/common";

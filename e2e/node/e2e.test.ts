@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { describe, it, expect } from "@jest/globals";
 import { issueVerifiableCredential } from "../../src/index";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { config } from "dotenv-flow";
