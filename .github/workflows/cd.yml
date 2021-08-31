@@ -14,6 +14,10 @@ env:
 jobs:
   prepare-deployment:
     runs-on: ubuntu-20.04
+    # Dependabot cannot access secrets, so it doesn't have a token to publish to NPM.
+    # Since all the other jobs of this workflow depend on this one, skipping it should
+    # skip the entire workflow.
+    if: ${{ github.actor != 'dependabot[bot]' }}
     outputs:
       tag-slug: ${{ steps.determine-npm-tag.outputs.tag-slug }}
       deployment-id: ${{ fromJson(steps.create-deployment.outputs.data).id }}
