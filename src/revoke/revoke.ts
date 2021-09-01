@@ -22,6 +22,18 @@
 import { Iri } from "../common/common";
 import fallbackFetch from "../fetcher";
 
+/**
+ * Revoke a given VC from a given issuer. This changes the status of the VC so that
+ * subsequent verifications will fail. The issuer is expected to implement the
+ * [W3C VC Issuer HTTP API](https://w3c-ccg.github.io/vc-http-api/issuer.html).
+ *
+ * @param issuerEndpoint The `/status` endpoint of the holder.
+ * @param credentialId The identifier of the VC to be revoked.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * This can be typically used for authentication. Note that if it is omitted, and
+ * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
+ * is picked up.
+ */
 export default async function revokeVerifiableCredential(
   issuerEndpoint: Iri,
   credentialId: Iri,

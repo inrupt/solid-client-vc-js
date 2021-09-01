@@ -30,6 +30,19 @@ import {
   defaultContext,
 } from "../common/common";
 
+/**
+ * Request that a given Verifiable Credential (VC) Issuer issues a VC containing
+ * the provided claims. The VC Issuer is expected to implement the [W3C VC Issuer HTTP API](https://w3c-ccg.github.io/vc-http-api/issuer.html).
+ *
+ * @param issuerEndpoint The `/issue` endpoint of the VC Issuer.
+ * @param subject The subject of the VC claims.
+ * @param claims The claims about the subject that will be attested by the VC.
+ * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * This can be typically used for authentication. Note that if it is omitted, and
+ * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
+ * is picked up.
+ * @returns the VC returned by the Issuer if the request is successful. Otherwise, an error is thrown.
+ */
 export default async function issueVerifiableCredential(
   issuerEndpoint: Iri,
   subject: Iri,
