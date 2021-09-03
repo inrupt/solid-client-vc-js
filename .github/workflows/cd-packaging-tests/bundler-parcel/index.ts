@@ -1,3 +1,3 @@
-import { sampleModuleFn } from "@inrupt/template-ts";
+import { issueVerifiableCredential } from "@inrupt/solid-client-vc";
 
-console.log(sampleModuleFn());
+console.log(typeof issueVerifiableCredential === "function");
