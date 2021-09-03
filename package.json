@@ -1,7 +1,7 @@
 {
-  "name": "@inrupt/template-ts",
-  "description": "A template repo for Inrupt TypeScript projects",
-  "version": "0.0.3",
+  "name": "@inrupt/solid-client-vc",
+  "description": "A library to act as a client to a server implementing the W3C VC HTTP APIs.",
+  "version": "0.0.1",
   "license": "MIT",
   "scripts": {
     "build": "rollup --config rollup.config.js",
@@ -22,8 +22,8 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://docs.inrupt.com/client-libraries/template-ts/",
-  "bugs": "https://github.com/inrupt/template-ts/issues",
+  "homepage": "https://docs.inrupt.com/developer-tools/javascript/client-libraries/",
+  "bugs": "https://github.com/inrupt/solid-client-vc-js/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -45,7 +45,7 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/inrupt/template-ts.git"
+    "url": "https://github.com/inrupt/solid-client-vc-js.git"
   },
   "devDependencies": {
     "@inrupt/eslint-config-base": "^0.2.0-alpha.1",
