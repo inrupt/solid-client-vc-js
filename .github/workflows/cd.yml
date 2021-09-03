@@ -93,7 +93,7 @@ jobs:
         if [ -n $NODE_AUTH_TOKEN ]; then npm publish --access public --tag "$TAG_SLUG"; fi
         if [ -n $NODE_AUTH_TOKEN ]; then echo "Package published. To install, run:"; fi
         if [ -n $NODE_AUTH_TOKEN ]; then echo ""; fi
-        if [ -n $NODE_AUTH_TOKEN ]; then echo "    npm install @inrupt/template-ts@$TAG_SLUG"; fi
+        if [ -n $NODE_AUTH_TOKEN ]; then echo "    npm install @inrupt/solid-client-vc@$TAG_SLUG"; fi
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         TAG_SLUG: ${{ needs.prepare-deployment.outputs.tag-slug }}
@@ -104,8 +104,8 @@ jobs:
         repository: ${{ github.repository }}
         deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
         environment: review
-        environment_url: 'https://www.npmjs.com/package/@inrupt/template-ts/v/${{ needs.prepare-deployment.outputs.tag-slug }}'
-        description: "Published to npm. To install, run: npm install @inrupt/template-ts@${{ needs.prepare-deployment.outputs.tag-slug }}"
+        environment_url: 'https://www.npmjs.com/package/@inrupt/solid-client-vc/v/${{ needs.prepare-deployment.outputs.tag-slug }}'
+        description: "Published to npm. To install, run: npm install @inrupt/solid-client-vc@${{ needs.prepare-deployment.outputs.tag-slug }}"
         log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         mediaType: '{"previews": ["flash", "ant-man"]}'
         state: success
@@ -143,10 +143,10 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
-    - name: Install the preview release of template-ts in the packaging test project
+    - name: Install the preview release of solid-client-vc in the packaging test project
       run: |
         cd .github/workflows/cd-packaging-tests/node
-        npm install @inrupt/template-ts@$VERSION_NR
+        npm install @inrupt/solid-client-vc@$VERSION_NR
       if: false
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
@@ -174,7 +174,7 @@ jobs:
     - name: Verify that the package can be imported in a Parcel project
       run: |
         cd .github/workflows/cd-packaging-tests/bundler-parcel
-        npm install @inrupt/template-ts@$VERSION_NR
+        npm install @inrupt/solid-client-vc@$VERSION_NR
         # pin the version: https://github.com/parcel-bundler/parcel/issues/5943
         npx parcel@1.12.3 build index.ts
       env:
@@ -200,7 +200,7 @@ jobs:
     - name: Verify that the package can be imported in a Webpack project
       run: |
         cd .github/workflows/cd-packaging-tests/bundler-webpack
-        npm install @inrupt/template-ts@$VERSION_NR
+        npm install @inrupt/solid-client-vc@$VERSION_NR
         npm install webpack@5 webpack-cli buffer
         npx webpack --devtool source-map
       env:
@@ -229,11 +229,11 @@ jobs:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
     - run: npm ci
-    - name: Install the preview release of template-ts
+    - name: Install the preview release of solid-client-vc
       # The `--force` allows us to install it even though our own package has the same name.
       # See https://docs.npmjs.com/cli/v6/commands/npm-install#limitations-of-npms-install-algorithm
       run: |
-        npm install --force @inrupt/template-ts@$VERSION_NR
+        npm install --force @inrupt/solid-client-vc@$VERSION_NR
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
       if: false
@@ -241,8 +241,8 @@ jobs:
       run: |
         cd e2e/node
         # For all files (`-type f`) in this directory,
-        # replace `../index` (i.e. in the import statement) with `@inrupt/template-ts`:
-        find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/template-ts/g' {} \;
+        # replace `../index` (i.e. in the import statement) with `@inrupt/solid-client-vc`:
+        find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client-vc/g' {} \;
       if: false
     - name: Run the Node-based end-to-end tests
       run: npm run e2e-test-node
