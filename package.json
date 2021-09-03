@@ -89,5 +89,8 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
     "*.{ts,tsx,js,jsx,css,md,mdx}": "prettier --write"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
