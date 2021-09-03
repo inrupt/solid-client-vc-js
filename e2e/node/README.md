@@ -1,4 +1,4 @@
-# End-to-end tests for template-ts in Node
+# End-to-end tests for solid-client-vc in Node
 
 ## Running the tests
 
