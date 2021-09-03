@@ -49,9 +49,10 @@ fixture("End-to-end tests").page("http://localhost:1234/end-to-end-test.html");
 
 // eslint-disable-next-line jest/expect-expect, jest/no-done-callback
 test("template-ts example functions", async (t: TestController) => {
-  const sampleModuleFn = ClientFunction(() => E2eHelpers.sampleModuleFn());
+  // const sampleModuleFn = ClientFunction(() => E2eHelpers.sampleModuleFn());
+  const sampleModuleFn = ClientFunction(() => true);
 
   await essUserLogin(t);
 
-  await t.expect(sampleModuleFn()).eql("Hello, world- from a module.");
+  await t.expect(sampleModuleFn()).eql(true);
 });

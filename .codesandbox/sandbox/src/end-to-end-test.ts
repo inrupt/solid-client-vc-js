@@ -1,7 +1,6 @@
 import * as SolidClient from "@inrupt/solid-client";
 import { Session } from "@inrupt/solid-client-authn-browser";
 import { getHelpers } from "./end-to-end-test-helpers";
-import { sampleModuleFn } from "@inrupt/template-ts";
 
 const session = new Session();
 
@@ -35,5 +34,3 @@ session.handleIncomingRedirect(window.location.href).then(async () => {
   e2eNotification.setAttribute("role", "alert");
   document.body.insertAdjacentElement("beforeend", e2eNotification);
 });
-
-console.log(sampleModuleFn());

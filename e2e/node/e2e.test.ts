@@ -19,6 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { describe, it, expect } from "@jest/globals";
 import { issueVerifiableCredential } from "../../src/index";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { config } from "dotenv-flow";
@@ -32,44 +33,44 @@ config({
 });
 
 const validCredentialClaims = {
-    "@context": {
-      "gc": "https://w3id.org/GConsent#",
-      "consent": "http://www.w3.org/ns/solid/consent#",
-      "ldp": "http://www.w3.org/ns/ldp#",
-      "acl": "http://www.w3.org/ns/auth/acl#",
-      "inbox": {
-        "@id": "ldp:inbox",
-        "@type": "@id"
-      },
-      "Read": "acl:Read",
-      "mode": {
-        "@id": "acl:mode",
-        "@type": "@id"
-      },
-      "forPersonalData": {
-        "@id": "gc:forPersonalData",
-        "@type": "@id"
-      },
-      "forPurpose": {
-        "@id": "gc:forPurpose",
-        "@type": "@id"
-      },
-      "hasConsent": {
-        "@id": "gc:hasConsent",
-        "@type": "@id"
-      },
-      "hasStatus": {
-        "@id": "gc:hasStatus",
-        "@type": "@id"
-      }
+  "@context": {
+    gc: "https://w3id.org/GConsent#",
+    consent: "http://www.w3.org/ns/solid/consent#",
+    ldp: "http://www.w3.org/ns/ldp#",
+    acl: "http://www.w3.org/ns/auth/acl#",
+    inbox: {
+      "@id": "ldp:inbox",
+      "@type": "@id",
     },
-      "hasConsent": {
-        "forPurpose": "https://example.org/ns/somePurpose",
-        "forPersonalData": "https://example.org/ns/someData",
-        "hasStatus": "gc:ConsentStatusRequested",
-        "mode": "acl:Read"
-      },
-      "inbox": "https://pod.inrupt.com/solid-client-e2e-tester-ess/inbox/"
+    Read: "acl:Read",
+    mode: {
+      "@id": "acl:mode",
+      "@type": "@id",
+    },
+    forPersonalData: {
+      "@id": "gc:forPersonalData",
+      "@type": "@id",
+    },
+    forPurpose: {
+      "@id": "gc:forPurpose",
+      "@type": "@id",
+    },
+    hasConsent: {
+      "@id": "gc:hasConsent",
+      "@type": "@id",
+    },
+    hasStatus: {
+      "@id": "gc:hasStatus",
+      "@type": "@id",
+    },
+  },
+  hasConsent: {
+    forPurpose: "https://example.org/ns/somePurpose",
+    forPersonalData: "https://example.org/ns/someData",
+    hasStatus: "gc:ConsentStatusRequested",
+    mode: "acl:Read",
+  },
+  inbox: "https://pod.inrupt.com/solid-client-e2e-tester-ess/inbox/",
 };
 
 /**
@@ -77,24 +78,22 @@ const validCredentialClaims = {
  */
 const invalidCredentialClaims = {
   "@context": {
-    "ldp": "http://www.w3.org/ns/ldp#",
-    "acl": "http://www.w3.org/ns/auth/acl#",
-    "inbox": {
+    ldp: "http://www.w3.org/ns/ldp#",
+    acl: "http://www.w3.org/ns/auth/acl#",
+    inbox: {
       "@id": "ldp:inbox",
-      "@type": "@id"
+      "@type": "@id",
     },
-    "Read": "acl:Read",
-    "mode": {
+    Read: "acl:Read",
+    mode: {
       "@id": "acl:mode",
-      "@type": "@id"
+      "@type": "@id",
     },
   },
-    "inbox": "https://pod.inrupt.com/solid-client-e2e-tester-ess/inbox/"
+  inbox: "https://pod.inrupt.com/solid-client-e2e-tester-ess/inbox/",
 };
 
-
 describe("issueVerifiableCredential", () => {
-
   it("has the appropriate environment variables", () => {
     expect(process.env.E2E_TEST_ESS_IDP_URL).not.toBeUndefined();
     expect(process.env.E2E_TEST_ESS_CLIENT_ID).not.toBeUndefined();
@@ -108,16 +107,20 @@ describe("issueVerifiableCredential", () => {
     await session.login({
       oidcIssuer: process.env.E2E_TEST_ESS_IDP_URL,
       clientId: process.env.E2E_TEST_ESS_CLIENT_ID,
-      clientSecret: process.env.E2E_TEST_ESS_CLIENT_SECRET
+      clientSecret: process.env.E2E_TEST_ESS_CLIENT_SECRET,
     });
     const credential = await issueVerifiableCredential(
       process.env.E2E_TEST_ESS_VC_ISSUER!,
       process.env.E2E_TEST_ESS_VC_SUBJECT!,
-      validCredentialClaims, {
-        fetch: session.fetch
+      validCredentialClaims,
+      {
+        fetch: session.fetch,
       }
     );
-    expect(credential.credentialSubject.id).toBe(process.env.E2E_TEST_ESS_VC_SUBJECT);
+    expect(credential.credentialSubject.id).toBe(
+      process.env.E2E_TEST_ESS_VC_SUBJECT
+    );
+    await session.logout();
   });
 
   it("throws if the issuer returns an error", async () => {
@@ -125,14 +128,18 @@ describe("issueVerifiableCredential", () => {
     await session.login({
       oidcIssuer: process.env.E2E_TEST_ESS_IDP_URL,
       clientId: process.env.E2E_TEST_ESS_CLIENT_ID,
-      clientSecret: process.env.E2E_TEST_ESS_CLIENT_SECRET
+      clientSecret: process.env.E2E_TEST_ESS_CLIENT_SECRET,
     });
-    await expect(issueVerifiableCredential(
-      process.env.E2E_TEST_ESS_VC_ISSUER!,
-      process.env.E2E_TEST_ESS_VC_SUBJECT!,
-      invalidCredentialClaims, {
-        fetch: session.fetch
-      }
-    )).rejects.toThrow("400");
-  })
+    await expect(
+      issueVerifiableCredential(
+        process.env.E2E_TEST_ESS_VC_ISSUER!,
+        process.env.E2E_TEST_ESS_VC_SUBJECT!,
+        invalidCredentialClaims,
+        {
+          fetch: session.fetch,
+        }
+      )
+    ).rejects.toThrow("400");
+    await session.logout();
+  });
 });
