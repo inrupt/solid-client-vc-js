@@ -28,6 +28,7 @@ import {
   VerifiableCredential,
   concatenateContexts,
   defaultContext,
+  defaultCredentialTypes,
 } from "../common/common";
 
 /**
@@ -36,7 +37,8 @@ import {
  *
  * @param issuerEndpoint The `/issue` endpoint of the VC Issuer.
  * @param subjectId The identifier of the VC claims' subject.
- * @param claims The claims about the subject that will be attested by the VC.
+ * @param subjectClaims Claims about the subject that will be attested by the VC.
+ * @param credentialClaims Claims about the credential itself, rather than its subject, e.g. credential type or expiration.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * This can be typically used for authentication. Note that if it is omitted, and
  * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
@@ -46,7 +48,8 @@ import {
 export default async function issueVerifiableCredential(
   issuerEndpoint: Iri,
   subjectId: Iri,
-  claims: JsonLd,
+  subjectClaims: JsonLd,
+  credentialClaims?: JsonLd,
   options?: {
     fetch?: typeof fallbackFetch;
   }
@@ -56,14 +59,38 @@ export default async function issueVerifiableCredential(
     internalOptions.fetch = fallbackFetch;
   }
   // credentialClaims should contain all the claims, but not the context.
-  const { "@context": claimsContext, ...credentialClaims } = claims;
+  const {
+    "@context": subjectClaimsContext,
+    ...contextlessSubjectClaims
+  } = subjectClaims;
+  const {
+    "@context": credentialClaimsContext,
+    ...contextlessCredentialClaims
+  } = credentialClaims !== undefined ? credentialClaims : { "@context": [] };
+  // When we add proper JSONLD parsing support, the following should be replaced.
+  const {
+    type: credentialTypeClaims,
+    ...nonTypeCredentialClaims
+  } = contextlessCredentialClaims;
+  let credentialTypes = [];
+  if (credentialTypeClaims !== undefined) {
+    credentialTypes = Array.isArray(credentialTypeClaims)
+      ? credentialTypeClaims
+      : [credentialTypeClaims];
+  }
   const credentialIssueBody = {
     // See https://w3c-ccg.github.io/vc-http-api/issuer.html
     credential: {
-      "@context": concatenateContexts(defaultContext, claimsContext),
+      "@context": concatenateContexts(
+        defaultContext,
+        subjectClaimsContext,
+        credentialClaimsContext
+      ),
+      type: [...defaultCredentialTypes, ...credentialTypes],
+      ...nonTypeCredentialClaims,
       credentialSubject: {
         id: subjectId,
-        ...credentialClaims,
+        ...contextlessSubjectClaims,
       },
     },
   };
