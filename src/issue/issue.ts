@@ -49,7 +49,7 @@ export default async function issueVerifiableCredential(
   issuerEndpoint: Iri,
   subjectId: Iri,
   subjectClaims: JsonLd,
-  credentialClaims: JsonLd,
+  credentialClaims?: JsonLd,
   options?: {
     fetch?: typeof fallbackFetch;
   }
@@ -66,7 +66,7 @@ export default async function issueVerifiableCredential(
   const {
     "@context": credentialClaimsContext,
     ...contextlessCredentialClaims
-  } = credentialClaims;
+  } = credentialClaims !== undefined ? credentialClaims : { "@context": [] };
   // When we add proper JSONLD parsing support, the following should be replaced.
   const {
     type: credentialTypeClaims,

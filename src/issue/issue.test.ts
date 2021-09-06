@@ -174,7 +174,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         "htps://some.subject",
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
-        { "@context": ["https://some-credential.context"] }
+        undefined
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -183,11 +183,7 @@ describe("issueVerifiableCredential", () => {
       expect.objectContaining({
         body: JSON.stringify({
           credential: {
-            "@context": [
-              ...defaultContext,
-              "https://some-subject.context",
-              "https://some-credential.context",
-            ],
+            "@context": [...defaultContext, "https://some-subject.context"],
             type: defaultCredentialTypes,
             credentialSubject: {
               id: "htps://some.subject",
