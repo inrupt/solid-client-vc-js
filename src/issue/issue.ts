@@ -38,7 +38,7 @@ import {
  * @param issuerEndpoint The `/issue` endpoint of the VC Issuer.
  * @param subjectId The identifier of the VC claims' subject.
  * @param subjectClaims Claims about the subject that will be attested by the VC.
- * @param credentialClaims Claims about the credential itself, rathe than its subject, e.g. credential type or expiration.
+ * @param credentialClaims Claims about the credential itself, rather than its subject, e.g. credential type or expiration.
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * This can be typically used for authentication. Note that if it is omitted, and
  * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
