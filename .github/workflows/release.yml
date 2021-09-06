@@ -27,7 +27,7 @@ jobs:
         # The deployment runs in parallel with CI, so status checks will never have succeeded yet:
         required_contexts: '[]'
       env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
 
   publish-npm:
     runs-on: ubuntu-20.04
@@ -47,7 +47,7 @@ jobs:
         state: in_progress
         mediaType: '{"previews": ["flash", "ant-man"]}'
       env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
     - name: Prepare for publication to npm
       uses: actions/setup-node@v2.1.5
       with:
@@ -56,10 +56,10 @@ jobs:
     - run: npm ci
     - name: Publish to npm
       run: |
-        npm publish --access public
+        npm publish
         echo "Package published. To install, run:"
         echo ""
-        echo "    npm install @inrupt/template-ts"
+        echo "    npm install @inrupt/solid-client-vc"
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Mark GitHub Deployment as successful
@@ -69,13 +69,13 @@ jobs:
         repository: ${{ github.repository }}
         deployment: ${{ needs.prepare-deployment.outputs.deployment-id }}
         environment: review
-        environment_url: 'https://www.npmjs.com/package/@inrupt/template-ts/v/${GITHUB_REF#refs/tags/v}'
-        description: "Published to npm. To install, run: npm install @inrupt/template-ts@${GITHUB_REF#refs/tags/v}"
+        environment_url: 'https://www.npmjs.com/package/@inrupt/solid-client-vc/v/${GITHUB_REF#refs/tags/v}'
+        description: "Published to npm. To install, run: npm install @inrupt/solid-client-vc@${GITHUB_REF#refs/tags/v}"
         log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         mediaType: '{"previews": ["flash", "ant-man"]}'
         state: success
       env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
     - name: Mark GitHub Deployment as failed
       uses: octokit/request-action@v2.x
       if: failure()
@@ -89,7 +89,7 @@ jobs:
         mediaType: '{"previews": ["flash", "ant-man"]}'
         state: failure
       env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
     - name: Waiting for npm CDNs to update...
       run: |
         echo "Giving npm some time to make the newly-published package available…"
@@ -108,10 +108,10 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
-    - name: Install the preview release of template-ts in the packaging test project
+    - name: Install the preview release of solid-client-vc in the packaging test project
       run: |
         cd .github/workflows/cd-packaging-tests/node
-        npm install @inrupt/template-ts
+        npm install @inrupt/solid-client-vc
     - name: Verify that the package can be imported in Node from a CommonJS module
       run: |
         cd .github/workflows/cd-packaging-tests/node
@@ -135,7 +135,7 @@ jobs:
     - name: Verify that the package can be imported in a Parcel project
       run: |
         cd .github/workflows/cd-packaging-tests/bundler-parcel
-        npm install @inrupt/template-ts
+        npm install @inrupt/solid-client-vc
         npx parcel build index.ts
     - name: Archive Parcel build artifacts
       uses: actions/upload-artifact@v2.2.2
@@ -155,7 +155,7 @@ jobs:
     - name: Verify that the package can be imported in a Webpack project
       run: |
         cd .github/workflows/cd-packaging-tests/bundler-webpack
-        npm install @inrupt/template-ts
+        npm install @inrupt/solid-client-vc
         npm install webpack@5 webpack-cli buffer
         npx webpack --devtool source-map
     - name: Archive Webpack build artifacts
@@ -179,17 +179,17 @@ jobs:
         node-version: ${{ matrix.node-version }}
         registry-url: 'https://registry.npmjs.org'
     - run: npm ci
-    - name: Install the preview release of template-ts
+    - name: Install the preview release of solid-client-vc
       # The `--force` allows us to install it even though our own package has the same name.
       # See https://docs.npmjs.com/cli/v6/commands/npm-install#limitations-of-npms-install-algorithm
       run: |
-        npm install --force @inrupt/template-ts
+        npm install --force @inrupt/solid-client-vc
     - name: Make sure that the end-to-end tests run against the just-published package
       run: |
         cd e2e/node
         # For all files (`-type f`) in this directory,
-        # replace `../index` (i.e. in the import statement) with `@inrupt/template-ts`:
-        find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/template-ts/g' {} \;
+        # replace `../index` (i.e. in the import statement) with `@inrupt/solid-client-vc`:
+        find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client-vc/g' {} \;
     - name: Run the Node-based end-to-end tests
       run: npm run e2e-test-node
       env:

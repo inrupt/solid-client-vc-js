@@ -1,7 +1,7 @@
 // Verify that imports from the main export work:
-import { sampleModuleFn as mainModuleFn } from "@inrupt/template-ts";
+import { issueVerifiableCredential as mainIssueVerifiableCredential } from "@inrupt/solid-client-vc";
 // Verify that submodule imports work:
-import sampleModuleFn from "@inrupt/template-ts/module";
+import issueVerifiableCredential from "@inrupt/solid-client-vc/issue";
 
-console.log(mainModuleFn());
-console.log(sampleModuleFn());
+console.log(typeof mainIssueVerifiableCredential === "function");
+console.log(typeof issueVerifiableCredential === "function");

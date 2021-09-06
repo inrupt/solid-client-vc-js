@@ -1,5 +1,5 @@
 const {
-  sampleModuleFn,
-} = require("@inrupt/template-ts");
+  issueVerifiableCredential,
+} = require("@inrupt/solid-client-vc");
 
-console.log(sampleModuleFn());
+console.log(typeof issueVerifiableCredential === "function");
