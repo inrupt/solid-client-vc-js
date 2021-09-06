@@ -20,7 +20,7 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { defaultContext } from "../common/common";
+import { defaultContext, defaultCredentialTypes } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
 import issueVerifiableCredential from "./issue";
 
@@ -33,6 +33,7 @@ describe("issueVerifiableCredential", () => {
       await issueVerifiableCredential(
         "https://some.endpoint",
         "htps://some.subject",
+        { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
         {
           fetch: mockedFetch,
@@ -52,6 +53,7 @@ describe("issueVerifiableCredential", () => {
       await issueVerifiableCredential(
         "https://some.endpoint",
         "htps://some.subject",
+        { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       );
       // eslint-disable-next-line no-empty
@@ -71,6 +73,7 @@ describe("issueVerifiableCredential", () => {
       issueVerifiableCredential(
         "https://some.endpoint",
         "https://some.subject",
+        { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       )
     ).rejects.toThrow(
@@ -91,6 +94,7 @@ describe("issueVerifiableCredential", () => {
       issueVerifiableCredential(
         "https://some.endpoint",
         "htps://some.subject",
+        { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       )
     ).rejects.toThrow("unexpected object: ");
@@ -109,6 +113,7 @@ describe("issueVerifiableCredential", () => {
       issueVerifiableCredential(
         "https://some.endpoint",
         "htps://some.subject",
+        { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       )
     ).resolves.toEqual(mockDefaultCredential());
@@ -123,6 +128,7 @@ describe("issueVerifiableCredential", () => {
       await issueVerifiableCredential(
         "https://some.endpoint",
         "htps://some.subject",
+        { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       );
       // eslint-disable-next-line no-empty
@@ -142,6 +148,7 @@ describe("issueVerifiableCredential", () => {
       await issueVerifiableCredential(
         "https://some.endpoint",
         "htps://some.subject",
+        { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       );
       // eslint-disable-next-line no-empty
@@ -157,7 +164,7 @@ describe("issueVerifiableCredential", () => {
     );
   });
 
-  it("includes the subject and claims in the request body", async () => {
+  it("includes the subject and subject claims in the request body", async () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
@@ -166,7 +173,8 @@ describe("issueVerifiableCredential", () => {
       await issueVerifiableCredential(
         "https://some.endpoint",
         "htps://some.subject",
-        { "@context": ["https://some.context"], aClaim: "a value" }
+        { "@context": ["https://some-subject.context"], aClaim: "a value" },
+        { "@context": ["https://some-credential.context"] }
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -175,10 +183,121 @@ describe("issueVerifiableCredential", () => {
       expect.objectContaining({
         body: JSON.stringify({
           credential: {
-            "@context": [...defaultContext, "https://some.context"],
+            "@context": [
+              ...defaultContext,
+              "https://some-subject.context",
+              "https://some-credential.context",
+            ],
+            type: defaultCredentialTypes,
             credentialSubject: {
               id: "htps://some.subject",
               aClaim: "a value",
+            },
+          },
+        }),
+      })
+    );
+  });
+
+  it("includes the credential claims in the request body", async () => {
+    const mockedFetch = jest.requireMock("../fetcher") as {
+      default: typeof fetch;
+    };
+    mockedFetch.default = jest.fn();
+    try {
+      await issueVerifiableCredential(
+        "https://some.endpoint",
+        "htps://some.subject",
+        { "@context": ["https://some-subject.context"] },
+        { "@context": ["https://some-credential.context"], aClaim: "a value" }
+      );
+      // eslint-disable-next-line no-empty
+    } catch (_e) {}
+    expect(mockedFetch.default).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: JSON.stringify({
+          credential: {
+            "@context": [
+              ...defaultContext,
+              "https://some-subject.context",
+              "https://some-credential.context",
+            ],
+            type: defaultCredentialTypes,
+            aClaim: "a value",
+            credentialSubject: {
+              id: "htps://some.subject",
+            },
+          },
+        }),
+      })
+    );
+  });
+
+  it("includes the credential type in the request body", async () => {
+    const mockedFetch = jest.requireMock("../fetcher") as {
+      default: typeof fetch;
+    };
+    mockedFetch.default = jest.fn();
+    try {
+      await issueVerifiableCredential(
+        "https://some.endpoint",
+        "htps://some.subject",
+        { "@context": ["https://some-subject.context"] },
+        { "@context": ["https://some-credential.context"], type: "some-type" }
+      );
+      // eslint-disable-next-line no-empty
+    } catch (_e) {}
+    expect(mockedFetch.default).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: JSON.stringify({
+          credential: {
+            "@context": [
+              ...defaultContext,
+              "https://some-subject.context",
+              "https://some-credential.context",
+            ],
+            type: [...defaultCredentialTypes, "some-type"],
+            credentialSubject: {
+              id: "htps://some.subject",
+            },
+          },
+        }),
+      })
+    );
+  });
+
+  it("supports credentials with multiple types", async () => {
+    const mockedFetch = jest.requireMock("../fetcher") as {
+      default: typeof fetch;
+    };
+    mockedFetch.default = jest.fn();
+    try {
+      await issueVerifiableCredential(
+        "https://some.endpoint",
+        "htps://some.subject",
+        { "@context": ["https://some-subject.context"] },
+        {
+          "@context": ["https://some-credential.context"],
+          type: ["some-type", "some-other-type"],
+        }
+      );
+      // eslint-disable-next-line no-empty
+    } catch (_e) {}
+    expect(mockedFetch.default).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: JSON.stringify({
+          credential: {
+            "@context": [
+              ...defaultContext,
+              "https://some-subject.context",
+              "https://some-credential.context",
+            ],
+            type: [...defaultCredentialTypes, "some-type", "some-other-type"],
+            credentialSubject: {
+              id: "htps://some.subject",
             },
           },
         }),
@@ -196,9 +315,13 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         "htps://some.subject",
         {
-          "@context": { con: "https://some.context", aClaim: "con:aClaim" },
+          "@context": {
+            con: "https://some-subject.context",
+            aClaim: "con:aClaim",
+          },
           aClaim: "a value",
-        }
+        },
+        { "@context": ["https://some-credential.context"] }
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -209,8 +332,10 @@ describe("issueVerifiableCredential", () => {
           credential: {
             "@context": [
               ...defaultContext,
-              { con: "https://some.context", aClaim: "con:aClaim" },
+              { con: "https://some-subject.context", aClaim: "con:aClaim" },
+              "https://some-credential.context",
             ],
+            type: defaultCredentialTypes,
             credentialSubject: {
               id: "htps://some.subject",
               aClaim: "a value",
