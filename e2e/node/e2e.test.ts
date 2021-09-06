@@ -113,6 +113,7 @@ describe("issueVerifiableCredential", () => {
       process.env.E2E_TEST_ESS_VC_ISSUER!,
       process.env.E2E_TEST_ESS_VC_SUBJECT!,
       validCredentialClaims,
+      { "@context": [] },
       {
         fetch: session.fetch,
       }
@@ -135,6 +136,7 @@ describe("issueVerifiableCredential", () => {
         process.env.E2E_TEST_ESS_VC_ISSUER!,
         process.env.E2E_TEST_ESS_VC_SUBJECT!,
         invalidCredentialClaims,
+        { "@context": [] },
         {
           fetch: session.fetch,
         }
