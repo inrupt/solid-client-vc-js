@@ -34,6 +34,7 @@ import fallbackFetch from "../fetcher";
  * This can be typically used for authentication. Note that if it is omitted, and
  * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
  * is picked up.
+ * @since 0.1.0
  */
 export default async function revokeVerifiableCredential(
   issuerEndpoint: Iri,

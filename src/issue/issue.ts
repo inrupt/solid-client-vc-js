@@ -44,6 +44,7 @@ import {
  * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
  * is picked up.
  * @returns the VC returned by the Issuer if the request is successful. Otherwise, an error is thrown.
+ * @since 0.1.0
  */
 export default async function issueVerifiableCredential(
   issuerEndpoint: Iri,

@@ -100,6 +100,7 @@ async function crawlDerivedCredentialAll(
  * is picked up.
  * @returns A list of VCs matching the given VC shape. The list may be empty if
  * the holder does not hold any matching VC.
+ * @since 0.1.0
  */
 export default async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
