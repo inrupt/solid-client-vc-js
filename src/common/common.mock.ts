@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Iri, VerifiableCredential } from "./common";
+import { defaultCredentialTypes, Iri, VerifiableCredential } from "./common";
 
 export type CredentialClaims = {
   "@context": unknown;
@@ -39,7 +39,7 @@ export type CredentialClaims = {
 export const defaultCredentialClaims: CredentialClaims = {
   "@context": { ex: "https://example.org/ns/" },
   id: "ex:someCredentialInstance",
-  type: ["ex:spaceDogCertificate"],
+  type: [...defaultCredentialTypes, "ex:spaceDogCertificate"],
   issuer: "https://some.vc.issuer/in-ussr",
   issuanceDate: "1960-08-19T16:08:31Z",
   subjectId: "https://some.webid.provider/strelka",
