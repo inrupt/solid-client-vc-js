@@ -147,20 +147,18 @@ jobs:
       run: |
         cd .github/workflows/cd-packaging-tests/node
         npm install @inrupt/solid-client-vc@$VERSION_NR
-      if: false
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
     - name: Verify that the package can be imported in Node from a CommonJS module
       run: |
         cd .github/workflows/cd-packaging-tests/node
         node --unhandled-rejections=strict commonjs.cjs
-      if: false
     - name: Verify that the package can be imported in Node from an ES module
       run: |
         cd .github/workflows/cd-packaging-tests/node
         node --unhandled-rejections=strict esmodule.mjs
       # Node 10 does not support ES modules:
-      if: matrix.node-version != '10.x' && false
+      if: matrix.node-version != '10.x'
 
   verify-imports-parcel:
     runs-on: ubuntu-20.04
@@ -179,7 +177,6 @@ jobs:
         npx parcel@1.12.3 build index.ts
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
-      if: false
 
     - name: Archive Parcel build artifacts
       uses: actions/upload-artifact@v2.2.2
@@ -205,7 +202,6 @@ jobs:
         npx webpack --devtool source-map
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
-      if: false
 
     - name: Archive Webpack build artifacts
       uses: actions/upload-artifact@v2.2.2
@@ -236,25 +232,17 @@ jobs:
         npm install --force @inrupt/solid-client-vc@$VERSION_NR
       env:
         VERSION_NR: ${{ needs.publish-npm.outputs.version-nr }}
-      if: false
     - name: Make sure that the end-to-end tests run against the just-published package
       run: |
         cd e2e/node
         # For all files (`-type f`) in this directory,
         # replace `../index` (i.e. in the import statement) with `@inrupt/solid-client-vc`:
         find ./ -type f -exec sed --in-place --expression='s/\.\.\/index/@inrupt\/solid-client-vc/g' {} \;
-      if: false
     - name: Run the Node-based end-to-end tests
       run: npm run e2e-test-node
-      if: false
       env:
-        E2E_TEST_ESS_POD: ${{ secrets.E2E_TEST_ESS_PROD_POD }}
-        E2E_TEST_ESS_IDP_URL: ${{ secrets.E2E_TEST_ESS_PROD_IDP_URL }}
-        E2E_TEST_ESS_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_PROD_REFRESH_TOKEN }}
-        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_ID }}
-        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_PROD_CLIENT_SECRET }}
-        E2E_TEST_ESS_COMPAT_POD: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_POD }}
-        E2E_TEST_ESS_COMPAT_IDP_URL: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_IDP_URL }}
-        E2E_TEST_ESS_COMPAT_REFRESH_TOKEN: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_REFRESH_TOKEN }}
-        E2E_TEST_ESS_COMPAT_CLIENT_ID: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_ID }}
-        E2E_TEST_ESS_COMPAT_CLIENT_SECRET: ${{ secrets.E2E_TEST_ESS_COMPAT_PROD_CLIENT_SECRET }}
+        E2E_TEST_ESS_IDP_URL: https://broker.pod.inrupt.com
+        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.POD_SPACES_CLIENT_ID }}
+        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.POD_SPACES_CLIENT_SECRET }}
+        E2E_TEST_ESS_VC_ISSUER: https://consent.pod.inrupt.com/issue
+        E2E_TEST_ESS_VC_SUBJECT: https://pod.inrupt.com/solid-client-e2e-tester-ess/profile/card#me
