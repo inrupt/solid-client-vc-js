@@ -43,7 +43,7 @@ export default {
     {
       dir: "umd",
       format: "umd",
-      name: "SolidClient",
+      name: "SolidClientVc",
     },
   ],
   plugins: [
@@ -57,5 +57,5 @@ export default {
       },
     }),
   ],
-  external: ["cross-fetch"],
+  external: ["cross-fetch", "http-link-header"],
 };
