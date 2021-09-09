@@ -114,7 +114,13 @@ export default async function getVerifiableCredentialAllFromShape(
     internalOptions.fetch = fallbackFetch;
   }
   // credentialClaims should contain all the claims, but not the context.
-  const { "@context": claimsContext, ...credentialClaims } = vcShape;
+  // const { "@context": claimsContext, ...credentialClaims } = vcShape;
+  // The following lines refactor the previous deconstruction in order to work
+  // around a misalignment between `rollup-plugin-typescript2` and NodeJS.
+  // Issue tracking: https://github.com/ezolenko/rollup-plugin-typescript2/issues/282
+  const credentialClaims = { ...vcShape };
+  delete credentialClaims["@context"];
+  const claimsContext = vcShape["@context"];
   const credentialRequestBody = {
     // See https://w3c-ccg.github.io/vc-http-api/holder.html
     credential: {
