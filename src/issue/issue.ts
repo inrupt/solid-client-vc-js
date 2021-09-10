@@ -57,20 +57,7 @@ export default async function issueVerifiableCredential(
 ): Promise<VerifiableCredential> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
-    try {
-      const { fetch: fetchFn } = await import(
-        /* eslint-disable import/no-unresolved */
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        "@inrupt/solid-client-authn-browser"
-      );
-      /* istanbul ignore next : `solid-client-authn-browser` is not a dependency of this library */
-      internalOptions.fetch = fetchFn;
-      /* eslint no-empty: 0 */
-    } catch (e) {
-      internalOptions.fetch = fallbackFetch;
-    }
-    // internalOptions.fetch = fallbackFetch;
+    internalOptions.fetch = fallbackFetch;
   }
   // credentialClaims should contain all the claims, but not the context.
   // const {
