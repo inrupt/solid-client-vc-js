@@ -111,7 +111,20 @@ export default async function getVerifiableCredentialAllFromShape(
 ): Promise<VerifiableCredential[]> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
-    internalOptions.fetch = fallbackFetch;
+    try {
+      const { fetch: fetchFn } = await import(
+        /* eslint-disable import/no-unresolved */
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        "@inrupt/solid-client-authn-browser"
+      );
+      /* istanbul ignore next : `solid-client-authn-browser` is not a dependency of this library */
+      internalOptions.fetch = fetchFn;
+      /* eslint no-empty: 0 */
+    } catch (e) {
+      internalOptions.fetch = fallbackFetch;
+    }
+    // internalOptions.fetch = fallbackFetch;
   }
   // credentialClaims should contain all the claims, but not the context.
   // const { "@context": claimsContext, ...credentialClaims } = vcShape;
@@ -128,17 +141,20 @@ export default async function getVerifiableCredentialAllFromShape(
       ...credentialClaims,
     },
   };
-  const response = await internalOptions.fetch(holderEndpoint, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-    body: JSON.stringify(credentialRequestBody),
-  });
+  const response = await (internalOptions.fetch as typeof global.fetch)(
+    holderEndpoint,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(credentialRequestBody),
+    }
+  );
   return crawlDerivedCredentialAll(
     response,
     [],
-    internalOptions.fetch,
+    internalOptions.fetch as typeof global.fetch,
     holderEndpoint
   );
 }

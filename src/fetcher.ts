@@ -31,25 +31,26 @@ const defaultFetch: typeof window.fetch = async (resource, init) => {
   }
 
   // eslint-disable-next-line no-shadow
-  let fetch;
-  try {
-    // solid-client-authn-browser may be unresolved, we just try to autodetect it.
-    const { fetch: defaultSessionFetch } = await import(
-      /* eslint-disable import/no-unresolved */
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      "@inrupt/solid-client-authn-browser"
-    );
-    /* istanbul ignore next : `solid-client-authn-browser` is not a dependency of this library */
-    fetch = defaultSessionFetch;
-  } catch (e) {
-    const crossFetchModule = await import("cross-fetch");
-    fetch = crossFetchModule.default;
-    // return await fetch(resource, init);
-  }
-  // const crossFetchModule = await import("cross-fetch");
-  // fetch = crossFetchModule.default;
-  return fetch(resource, init);
+  // let fetch;
+  // try {
+  //   // solid-client-authn-browser may be unresolved, we just try to autodetect it.
+  //   const { fetch: defaultSessionFetch } = await import(
+  //     /* eslint-disable import/no-unresolved */
+  //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //     // @ts-ignore
+  //     "@inrupt/solid-client-authn-browser"
+  //   );
+  //   /* istanbul ignore next : `solid-client-authn-browser` is not a dependency of this library */
+  //   fetch = defaultSessionFetch;
+  // } catch (e) {
+  //   const crossFetchModule = await import("cross-fetch");
+  //   fetch = crossFetchModule.default;
+  //   // return await fetch(resource, init);
+  // }
+  // return fetch(resource, init);
+
+  const crossFetchModule = await import("cross-fetch");
+  return crossFetchModule.default(resource, init);
 };
 
 export default defaultFetch;
