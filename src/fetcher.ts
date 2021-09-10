@@ -31,22 +31,32 @@ const defaultFetch: typeof window.fetch = async (resource, init) => {
   }
   /* istanbul ignore if: `require` is always defined in the unit test environment */
   if (typeof require !== "function") {
+    // Note: The following commented-out block may cause Webpack to fail, because it
+    // tries to resolve the import (even when the import is legitimately unresolved).
+    // Working around this requires to use the `IgnorePlugin` from Webpack, which
+    // would be a burden to dependants with a legitimate use case. For this reason,
+    // automatically detecting if @inrupt/solid-client-authn-browser may be imported
+    // is disabled for the time being.
+
     // When using Node.js with ES Modules, require is not defined:
-    let fetch;
-    try {
-      // solid-client-authn-browser may be unresolved, we just try to autodetect it.
-      const { fetch: defaultSessionFetch } = await import(
-        /* eslint-disable import/no-unresolved */
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        "@inrupt/solid-client-authn-browser"
-      );
-      fetch = defaultSessionFetch;
-    } catch (e) {
-      const crossFetchModule = await import("cross-fetch");
-      fetch = crossFetchModule.default;
-      return await fetch(resource, init);
-    }
+    // let fetch;
+    // try {
+    //   // solid-client-authn-browser may be unresolved, we just try to autodetect it.
+    //   const { fetch: defaultSessionFetch } = await import(
+    //     /* eslint-disable import/no-unresolved */
+    //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //     // @ts-ignore
+    //     "@inrupt/solid-client-authn-browser"
+    //   );
+    //   fetch = defaultSessionFetch;
+    // } catch (e) {
+    //   const crossFetchModule = await import("cross-fetch");
+    //   fetch = crossFetchModule.default;
+    //   return await fetch(resource, init);
+    // }
+    const crossFetchModule = await import("cross-fetch");
+    const fetch = crossFetchModule.default;
+    return fetch(resource, init);
   }
   // Implementation note: it's up to the client application to resolve these module names to their
   // respective npm packages. At least one commonly used tool (Webpack) is only able to do that if
