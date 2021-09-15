@@ -60,19 +60,41 @@ export default async function issueVerifiableCredential(
     internalOptions.fetch = fallbackFetch;
   }
   // credentialClaims should contain all the claims, but not the context.
-  const {
-    "@context": subjectClaimsContext,
-    ...contextlessSubjectClaims
-  } = subjectClaims;
-  const {
-    "@context": credentialClaimsContext,
-    ...contextlessCredentialClaims
-  } = credentialClaims !== undefined ? credentialClaims : { "@context": [] };
+  // const {
+  //   "@context": subjectClaimsContext,
+  //   ...contextlessSubjectClaims
+  // } = subjectClaims;
+  // The following lines refactor the previous deconstruction in order to work
+  // around a misalignment between `rollup-plugin-typescript2` and NodeJS.
+  // Issue tracking: https://github.com/ezolenko/rollup-plugin-typescript2/issues/282
+  const contextlessSubjectClaims = { ...subjectClaims };
+  delete contextlessSubjectClaims["@context"];
+  const subjectClaimsContext = subjectClaims["@context"];
+
+  // const {
+  //   "@context": credentialClaimsContext,
+  //   ...contextlessCredentialClaims
+  // } = credentialClaims !== undefined ? credentialClaims : { "@context": [] };
+  // The following lines refactor the previous deconstruction in order to work
+  // around a misalignment between `rollup-plugin-typescript2` and NodeJS.
+  // Issue tracking: https://github.com/ezolenko/rollup-plugin-typescript2/issues/282
   // When we add proper JSONLD parsing support, the following should be replaced.
-  const {
-    type: credentialTypeClaims,
-    ...nonTypeCredentialClaims
-  } = contextlessCredentialClaims;
+  const contextlessCredentialClaims = { ...credentialClaims };
+  delete contextlessCredentialClaims["@context"];
+  const credentialClaimsContext =
+    credentialClaims !== undefined ? credentialClaims["@context"] : [];
+
+  // const {
+  //   type: credentialTypeClaims,
+  //   ...nonTypeCredentialClaims
+  // } = contextlessCredentialClaims;
+  // The following lines refactor the previous deconstruction in order to work
+  // around a misalignment between `rollup-plugin-typescript2` and NodeJS.
+  // Issue tracking: https://github.com/ezolenko/rollup-plugin-typescript2/issues/282
+  const nonTypeCredentialClaims = { ...contextlessCredentialClaims };
+  delete nonTypeCredentialClaims.type;
+  const credentialTypeClaims = contextlessCredentialClaims.type;
+
   let credentialTypes = [];
   if (credentialTypeClaims !== undefined) {
     credentialTypes = Array.isArray(credentialTypeClaims)
@@ -95,13 +117,16 @@ export default async function issueVerifiableCredential(
       },
     },
   };
-  const response = await internalOptions.fetch(issuerEndpoint, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-    body: JSON.stringify(credentialIssueBody),
-  });
+  const response = await (internalOptions.fetch as typeof global.fetch)(
+    issuerEndpoint,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(credentialIssueBody),
+    }
+  );
   if (!response.ok) {
     // TODO: use the error library when available.
     throw new Error(
