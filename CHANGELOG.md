@@ -6,12 +6,14 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## 0.1.1 - 2021-09-15
+
 ### Bugfix
 
 - No longer uses the default session from `@inrupt/solid-client-authn-browser`
   because it causes issues with Webpack.
-
-The following sections document changes that have been released already:
 
 ## 0.1.0 - 2021-09-06
 
