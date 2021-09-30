@@ -93,55 +93,101 @@ const invalidCredentialClaims = {
   inbox: "https://pod.inrupt.com/solid-client-e2e-tester-ess/inbox/",
 };
 
-describe("issueVerifiableCredential", () => {
-  it("has the appropriate environment variables", () => {
-    expect(process.env.E2E_TEST_ESS_IDP_URL).not.toBeUndefined();
-    expect(process.env.E2E_TEST_ESS_CLIENT_ID).not.toBeUndefined();
-    expect(process.env.E2E_TEST_ESS_CLIENT_SECRET).not.toBeUndefined();
-    expect(process.env.E2E_TEST_ESS_VC_ISSUER).not.toBeUndefined();
-    expect(process.env.E2E_TEST_ESS_VC_SUBJECT).not.toBeUndefined();
-  });
+type OidcIssuer = string;
+type VcIssuer = string;
+type VcSubject = string;
+type ClientId = string;
+type ClientSecret = string;
+type AuthDetails = [OidcIssuer, ClientId, ClientSecret, VcIssuer, VcSubject];
+// Instructions for obtaining these credentials can be found here:
+// https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
+const serversUnderTest: AuthDetails[] = [
+  // pod.inrupt.com:
+  [
+    // Cumbersome workaround, but:
+    // Trim `https://` from the start of these URLs,
+    // so that GitHub Actions doesn't replace them with *** in the logs.
+    process.env.E2E_TEST_ESS_IDP_URL!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_ESS_VC_ISSUER!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_ESS_VC_SUBJECT!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_ESS_CLIENT_ID!,
+    process.env.E2E_TEST_ESS_CLIENT_SECRET!,
+  ],
+  // dev-next.inrupt.com:
+  [
+    // Cumbersome workaround, but:
+    // Trim `https://` from the start of these URLs,
+    // so that GitHub Actions doesn't replace them with *** in the logs.
+    process.env.E2E_TEST_DEV_NEXT_IDP_URL!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_DEV_NEXT_VC_ISSUER!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_DEV_NEXT_VC_SUBJECT!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_DEV_NEXT_CLIENT_ID!,
+    process.env.E2E_TEST_DEV_NEXT_CLIENT_SECRET!,
+  ],
+];
 
-  it("Successfully gets a VC from a valid issuer", async () => {
-    const session = new Session();
-    await session.login({
-      oidcIssuer: process.env.E2E_TEST_ESS_IDP_URL,
-      clientId: process.env.E2E_TEST_ESS_CLIENT_ID,
-      clientSecret: process.env.E2E_TEST_ESS_CLIENT_SECRET,
-    });
-    const credential = await issueVerifiableCredential(
-      process.env.E2E_TEST_ESS_VC_ISSUER!,
-      process.env.E2E_TEST_ESS_VC_SUBJECT!,
-      validCredentialClaims,
-      undefined,
-      {
-        fetch: session.fetch,
-      }
-    );
-    expect(credential.credentialSubject.id).toBe(
-      process.env.E2E_TEST_ESS_VC_SUBJECT
-    );
-    await session.logout();
-  });
+describe.each(serversUnderTest)(
+  "VC client end-to-end tests authenticated to [%s], issuing from [%s] for [%s]",
+  (
+    oidcIssuerDisplay,
+    vcIssuerDisplay,
+    vcSubjectDisplay,
+    clientId,
+    clientSecret
+  ) => {
+    const oidcIssuer = "https://" + oidcIssuerDisplay;
+    const vcIssuer = "https://" + vcIssuerDisplay;
+    const vcSubject = "https://" + vcSubjectDisplay;
 
-  it("throws if the issuer returns an error", async () => {
-    const session = new Session();
-    await session.login({
-      oidcIssuer: process.env.E2E_TEST_ESS_IDP_URL,
-      clientId: process.env.E2E_TEST_ESS_CLIENT_ID,
-      clientSecret: process.env.E2E_TEST_ESS_CLIENT_SECRET,
+    describe("issueVerifiableCredential", () => {
+      it("has the appropriate environment variables", () => {
+        expect(oidcIssuer).not.toBeUndefined();
+        expect(clientId).not.toBeUndefined();
+        expect(clientSecret).not.toBeUndefined();
+        expect(vcIssuer).not.toBeUndefined();
+        expect(vcSubject).not.toBeUndefined();
+      });
+
+      it("Successfully gets a VC from a valid issuer", async () => {
+        const session = new Session();
+        await session.login({
+          oidcIssuer,
+          clientId,
+          clientSecret,
+        });
+        const credential = await issueVerifiableCredential(
+          vcIssuer,
+          vcSubject,
+          validCredentialClaims,
+          undefined,
+          {
+            fetch: session.fetch,
+          }
+        );
+        expect(credential.credentialSubject.id).toBe(vcSubject);
+        await session.logout();
+      });
+
+      it("throws if the issuer returns an error", async () => {
+        const session = new Session();
+        await session.login({
+          oidcIssuer,
+          clientId,
+          clientSecret,
+        });
+        await expect(
+          issueVerifiableCredential(
+            vcIssuer,
+            vcSubject,
+            invalidCredentialClaims,
+            undefined,
+            {
+              fetch: session.fetch,
+            }
+          )
+        ).rejects.toThrow("400");
+        await session.logout();
+      });
     });
-    await expect(
-      issueVerifiableCredential(
-        process.env.E2E_TEST_ESS_VC_ISSUER!,
-        process.env.E2E_TEST_ESS_VC_SUBJECT!,
-        invalidCredentialClaims,
-        undefined,
-        {
-          fetch: session.fetch,
-        }
-      )
-    ).rejects.toThrow("400");
-    await session.logout();
-  });
-});
+  }
+);
