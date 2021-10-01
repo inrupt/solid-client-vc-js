@@ -21,7 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import { Response } from "cross-fetch";
-import { mockDefaultCredential } from "../common/common.mock";
+import { mockDefaultPresentation } from "../common/common.mock";
 import getVerifiableCredentialAllFromShape from "./derive";
 
 jest.mock("../fetcher");
@@ -119,7 +119,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
     ).rejects.toThrow(/some.endpoint.*Not a JSON/);
   });
 
-  it("throws if the holder returns JSON response which isn't a Verifiable Credential", async () => {
+  it("throws if the holder returns JSON response which isn't a Verifiable Presentation", async () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
@@ -140,37 +140,15 @@ describe("getVerifiableCredentialAllFromShape", () => {
         "@context": ["https://some.context"],
         credentialSubject: { id: "https://some.subject/" },
       })
-    ).rejects.toThrow(/some.endpoint.*unexpected.*someKey/);
+    ).rejects.toThrow(/some.endpoint.*Verifiable Presentation/);
   });
 
-  it("throws if the holder returns a response with more than one pagination links", async () => {
-    const mockedFetch = jest.requireMock("../fetcher") as {
-      default: typeof fetch;
-    };
-    mockedFetch.default = jest.fn().mockResolvedValueOnce(
-      new Response(JSON.stringify(mockDefaultCredential()), {
-        status: 200,
-        statusText: "OK",
-        headers: {
-          Link:
-            '<https://some.endpoint/some-other-vc>; rel="next", <https://some.endpoint/yet-another-vc>; rel="next"',
-        },
-      }) as never
-    ) as typeof fetch;
-    await expect(
-      getVerifiableCredentialAllFromShape("https://some.endpoint", {
-        "@context": ["https://some.context"],
-        credentialSubject: { id: "https://some.subject/" },
-      })
-    ).rejects.toThrow(/some.endpoint.*more than one/);
-  });
-
-  it("returns a VC on a successful response", async () => {
+  it("returns the VCs from the obtained VP on a successful response", async () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
     mockedFetch.default = jest.fn().mockResolvedValue(
-      new Response(JSON.stringify(mockDefaultCredential()), {
+      new Response(JSON.stringify(mockDefaultPresentation()), {
         status: 200,
         statusText: "OK",
       }) as never
@@ -180,69 +158,30 @@ describe("getVerifiableCredentialAllFromShape", () => {
         "@context": ["https://some.context"],
         credentialSubject: { id: "https://some.subject/" },
       })
-    ).resolves.toEqual([mockDefaultCredential()]);
+    ).resolves.toEqual(mockDefaultPresentation().verifiableCredential);
   });
 
-  it("crawls the rel=next Link headers to collect paginated VCs", async () => {
+  it("returns an empty array if the VP contains no VCs", async () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()), {
+    mockedFetch.default = jest.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ...mockDefaultPresentation(),
+          verifiableCredential: undefined,
+        }),
+        {
           status: 200,
           statusText: "OK",
-          headers: {
-            Link: '<https://some.endpoint/some-other-vc>; rel="next"',
-          },
-        }) as never
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()), {
-          status: 200,
-          statusText: "OK",
-        }) as never
-      ) as typeof fetch;
+        }
+      ) as never
+    ) as typeof fetch;
     await expect(
       getVerifiableCredentialAllFromShape("https://some.endpoint", {
         "@context": ["https://some.context"],
         credentialSubject: { id: "https://some.subject/" },
       })
-    ).resolves.toEqual([mockDefaultCredential(), mockDefaultCredential()]);
-    expect(mockedFetch.default).toHaveBeenCalledTimes(2);
-    expect(mockedFetch.default).toHaveBeenLastCalledWith(
-      "https://some.endpoint/some-other-vc"
-    );
-  });
-
-  it("does not follow unrelated Link headers", async () => {
-    const mockedFetch = jest.requireMock("../fetcher") as {
-      default: typeof fetch;
-    };
-    mockedFetch.default = jest
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()), {
-          status: 200,
-          statusText: "OK",
-          headers: {
-            Link: '<https://unrelated.url>; rel="some-relation"',
-          },
-        }) as never
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()), {
-          status: 200,
-          statusText: "OK",
-        }) as never
-      ) as typeof fetch;
-    await expect(
-      getVerifiableCredentialAllFromShape("https://some.endpoint", {
-        "@context": ["https://some.context"],
-        credentialSubject: { id: "https://some.subject/" },
-      })
-    ).resolves.toEqual([mockDefaultCredential()]);
-    expect(mockedFetch.default).toHaveBeenCalledTimes(1);
+    ).resolves.toEqual([]);
   });
 });

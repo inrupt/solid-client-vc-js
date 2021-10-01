@@ -19,73 +19,14 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import LinkHeader from "http-link-header";
 import {
   concatenateContexts,
   defaultContext,
   Iri,
-  isVerifiableCredential,
+  isVerifiablePresentation,
   VerifiableCredential,
 } from "../common/common";
 import fallbackFetch from "../fetcher";
-
-/**
- * This function iteratively gets all the paginated credentials from the holder's
- * response by following successive Link headers with rel=next.
- * @param holderResponse The response from the holder.
- * @param authFetch The authenticated fetch function
- * @returns An array of Verifiable Credentials.
- */
-async function crawlDerivedCredentialAll(
-  holderResponse: Response,
-  credentialAccumulator: VerifiableCredential[],
-  authFetch: typeof fallbackFetch,
-  holderEndpoint: Iri
-): Promise<VerifiableCredential[]> {
-  if (!holderResponse.ok) {
-    throw new Error(
-      `The holder [${holderEndpoint}] returned an error: ${holderResponse.status} ${holderResponse.statusText}`
-    );
-  }
-  let jsonData;
-  // This clone is only used to display a more useful error message.
-  const responseClone = holderResponse.clone();
-  try {
-    jsonData = await holderResponse.json();
-  } catch (e) {
-    throw new Error(
-      `The holder [${holderEndpoint}] returned a malformed, non-JSON response: ${await responseClone.text()}`
-    );
-  }
-
-  if (isVerifiableCredential(jsonData)) {
-    // If the Holder's response is valid, see if additional credentials are available.
-    const linkHeader = holderResponse.headers.get("Link");
-    if (linkHeader !== null) {
-      const parsedLinks = LinkHeader.parse(linkHeader);
-      // The response should only contain a single 'rel=next' Link header.
-      if (parsedLinks.get("rel", "next").length > 1) {
-        throw new Error(
-          `The holder [${holderEndpoint}] unexpectedly linked to more than one other credential.`
-        );
-      }
-      if (parsedLinks.get("rel", "next").length === 1) {
-        return crawlDerivedCredentialAll(
-          await authFetch(parsedLinks.get("rel", "next")[0].uri),
-          [jsonData, ...credentialAccumulator],
-          authFetch,
-          holderEndpoint
-        );
-      }
-    }
-    return [jsonData, ...credentialAccumulator];
-  }
-  throw new Error(
-    `The holder [${holderEndpoint}] returned an unexpected response: ${JSON.stringify(
-      jsonData
-    )}`
-  );
-}
 
 /**
  * Look up VCs from a given holder according to a subset of their claims, such as
@@ -135,10 +76,27 @@ export default async function getVerifiableCredentialAllFromShape(
     method: "POST",
     body: JSON.stringify(credentialRequestBody),
   });
-  return crawlDerivedCredentialAll(
-    response,
-    [],
-    internalOptions.fetch,
-    holderEndpoint
-  );
+  if (!response.ok) {
+    throw new Error(
+      `The holder [${holderEndpoint}] returned an error: ${response.status} ${response.statusText}`
+    );
+  }
+  const errorResponse = response.clone();
+  let data;
+  try {
+    data = await response.json();
+  } catch (e) {
+    const responseText = await errorResponse.text();
+    throw new Error(
+      `The holder [${holderEndpoint}] did not return a valid JSON response: parsing ${responseText} failed with error ${e}`
+    );
+  }
+  if (!isVerifiablePresentation(data)) {
+    throw new Error(
+      `The holder [${holderEndpoint}] did not return a Verifiable Presentation: ${JSON.stringify(
+        data
+      )}`
+    );
+  }
+  return data.verifiableCredential ?? [];
 }

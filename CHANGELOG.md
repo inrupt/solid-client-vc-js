@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugfix
+
+- `getVerifiableCredentialAllFromShape` expected a response format from the VC
+  holder mismatching the actual response.
+
 The following sections document changes that have been released already:
 
 ## 0.1.1 - 2021-09-15
