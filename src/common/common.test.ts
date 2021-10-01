@@ -20,11 +20,15 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-import { isVerifiableCredential } from "./common";
+import { VerifiableCredential } from "..";
+import { isVerifiableCredential, isVerifiablePresentation } from "./common";
 import {
   defaultCredentialClaims,
   mockPartialCredential,
   mockDefaultCredential,
+  mockDefaultPresentation,
+  mockPartialPresentation,
+  defaultVerifiableClaims,
 } from "./common.mock";
 
 describe("isVerifiableCredential", () => {
@@ -91,6 +95,50 @@ describe("isVerifiableCredential", () => {
           })
         )
       ).toBe(false);
+    });
+  });
+});
+
+describe("isVerifiablePresentation", () => {
+  describe("returns true", () => {
+    it("has all the expected fields are present in the credential", () => {
+      expect(isVerifiablePresentation(mockDefaultPresentation())).toBe(true);
+    });
+
+    it("has no associated credentials", () => {
+      expect(isVerifiablePresentation(mockDefaultPresentation([]))).toBe(true);
+    });
+
+    it("has an URL shaped holder", () => {
+      const mockedPresentation = mockDefaultPresentation();
+      mockedPresentation.holder = "https://some.holder";
+      expect(isVerifiablePresentation(mockedPresentation)).toBe(true);
+    });
+  });
+
+  describe("returns false if", () => {
+    it.each([["type"]])("is missing field %s", (entry) => {
+      expect(
+        isVerifiablePresentation(
+          mockPartialPresentation([], {
+            ...defaultVerifiableClaims,
+            [`${entry}`]: undefined,
+          })
+        )
+      ).toBe(false);
+    });
+
+    it("has a malformed credential", () => {
+      const mockedPresentation = mockDefaultPresentation([
+        {} as VerifiableCredential,
+      ]);
+      expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
+    });
+
+    it("has a non-URL shaped holder", () => {
+      const mockedPresentation = mockDefaultPresentation();
+      mockedPresentation.holder = "some non-URL holder";
+      expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
     });
   });
 });

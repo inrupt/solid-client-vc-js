@@ -23,6 +23,7 @@ import {
   concatenateContexts,
   defaultContext,
   Iri,
+  isVerifiablePresentation,
   VerifiableCredential,
 } from "../common/common";
 import fallbackFetch from "../fetcher";
@@ -75,5 +76,27 @@ export default async function getVerifiableCredentialAllFromShape(
     method: "POST",
     body: JSON.stringify(credentialRequestBody),
   });
-  return [];
+  if (!response.ok) {
+    throw new Error(
+      `The holder [${holderEndpoint}] returned an error: ${response.status} ${response.statusText}`
+    );
+  }
+  const errorResponse = response.clone();
+  let data;
+  try {
+    data = await response.json();
+  } catch (e) {
+    const responseText = await errorResponse.text();
+    throw new Error(
+      `The holder [${holderEndpoint}] did not return a valid JSON response: parsing ${responseText} failed with error ${e}`
+    );
+  }
+  if (!isVerifiablePresentation(data)) {
+    throw new Error(
+      `The holder [${holderEndpoint}] did not return a Verifiable Presentation: ${JSON.stringify(
+        data
+      )}`
+    );
+  }
+  return data.verifiableCredential ?? [];
 }

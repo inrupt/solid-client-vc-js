@@ -19,16 +19,17 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { defaultCredentialTypes, Iri, VerifiableCredential } from "./common";
+import {
+  defaultCredentialTypes,
+  Iri,
+  VerifiableCredential,
+  VerifiablePresentation,
+} from "./common";
 
-export type CredentialClaims = {
+export type VerifiableClaims = {
   "@context": unknown;
   id: Iri;
   type: Iri[];
-  issuer: Iri;
-  issuanceDate: string;
-  subjectId: Iri;
-  subjectClaims: Record<string, string>;
   proofType: string;
   proofCreated: string;
   proofVerificationMethod: string;
@@ -36,17 +37,17 @@ export type CredentialClaims = {
   proofValue: string;
 };
 
-export const defaultCredentialClaims: CredentialClaims = {
+export type CredentialClaims = VerifiableClaims & {
+  issuer: Iri;
+  issuanceDate: string;
+  subjectId: Iri;
+  subjectClaims: Record<string, string>;
+};
+
+export const defaultVerifiableClaims: VerifiableClaims = {
   "@context": { ex: "https://example.org/ns/" },
   id: "ex:someCredentialInstance",
   type: [...defaultCredentialTypes, "ex:spaceDogCertificate"],
-  issuer: "https://some.vc.issuer/in-ussr",
-  issuanceDate: "1960-08-19T16:08:31Z",
-  subjectId: "https://some.webid.provider/strelka",
-  subjectClaims: {
-    "ex:status": "https://example.org/ns/GoodDog",
-    "ex:passengerOf": "https://example.org/ns/Korabl-Sputnik2",
-  },
   proofType: "Ed25519Signature2018",
   proofCreated: "2021-08-19T16:08:31Z",
   proofVerificationMethod:
@@ -54,6 +55,17 @@ export const defaultCredentialClaims: CredentialClaims = {
   proofPurpose: "assertionMethod",
   proofValue:
     "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..YtqjEYnFENT7fNW-COD0HAACxeuQxPKAmp4nIl8jYAu__6IH2FpSxv81w-l5PvE1og50tS9tH8WyXMlXyo45CA",
+};
+
+export const defaultCredentialClaims: CredentialClaims = {
+  ...defaultVerifiableClaims,
+  issuer: "https://some.vc.issuer/in-ussr",
+  issuanceDate: "1960-08-19T16:08:31Z",
+  subjectId: "https://some.webid.provider/strelka",
+  subjectClaims: {
+    "ex:status": "https://example.org/ns/GoodDog",
+    "ex:passengerOf": "https://example.org/ns/Korabl-Sputnik2",
+  },
 };
 
 export const mockPartialCredential = (
@@ -86,4 +98,31 @@ export const mockCredential = (
 
 export const mockDefaultCredential = (): VerifiableCredential => {
   return mockPartialCredential(defaultCredentialClaims) as VerifiableCredential;
+};
+
+export const mockPartialPresentation = (
+  credentials: VerifiableCredential[],
+  claims?: Partial<VerifiableClaims>
+): Record<string, unknown> => {
+  return {
+    id: claims?.id,
+    type: claims?.type,
+    verifiableCredential: credentials,
+    proof: {
+      type: claims?.proofType,
+      created: claims?.proofCreated,
+      verificationMethod: claims?.proofVerificationMethod,
+      proofPurpose: claims?.proofPurpose,
+      proofValue: claims?.proofValue,
+    },
+  };
+};
+
+export const mockDefaultPresentation = (
+  vc: VerifiableCredential[] = [mockDefaultCredential()]
+): VerifiablePresentation => {
+  return mockPartialPresentation(
+    vc,
+    defaultVerifiableClaims
+  ) as VerifiablePresentation;
 };
