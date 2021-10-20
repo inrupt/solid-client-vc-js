@@ -6,6 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugfix
+
+- Receiving a legitimate VP could be rejected by the library if it had a single
+  string as a type, which should be acceptable.
+
 The following sections document changes that have been released already:
 
 ## 0.1.2 - 2021-10-13
