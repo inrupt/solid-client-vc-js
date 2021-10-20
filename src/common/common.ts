@@ -134,7 +134,10 @@ export function isVerifiablePresentation(
   vp: unknown | VerifiablePresentation
 ): vp is VerifiablePresentation {
   let inputIsVp = true;
-  inputIsVp = inputIsVp && Array.isArray((vp as VerifiablePresentation).type);
+  inputIsVp =
+    inputIsVp &&
+    (Array.isArray((vp as VerifiablePresentation).type) ||
+      typeof (vp as VerifiablePresentation).type === "string");
   if ((vp as VerifiablePresentation).verifiableCredential !== undefined) {
     inputIsVp =
       inputIsVp &&
