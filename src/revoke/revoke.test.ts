@@ -100,7 +100,7 @@ describe("revokeVerifiableCredential", () => {
           credentialStatus: [
             {
               type: "RevocationList2020Status",
-              status: "0",
+              status: "1",
             },
           ],
         }),

@@ -8,6 +8,11 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+### Bugfix
+
+- Revoking a VC was setting the revocation status to an incorrect value, preventing
+  the revocation to actually happen.
+
 ## 0.1.3 - 2021-10-20
 
 ### Bugfix
