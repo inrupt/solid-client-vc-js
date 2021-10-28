@@ -159,6 +159,20 @@ describe("getVerifiableCredentialAllFromShape", () => {
         credentialSubject: { id: "https://some.subject/" },
       })
     ).resolves.toEqual(mockDefaultPresentation().verifiableCredential);
+    expect(mockedFetch.default).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: JSON.stringify({
+          verifiableCredential: {
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://some.context",
+            ],
+            credentialSubject: { id: "https://some.subject/" },
+          },
+        }),
+      })
+    );
   });
 
   it("returns an empty array if the VP contains no VCs", async () => {
