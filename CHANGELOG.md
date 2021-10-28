@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugfix
+
+- Looking up a VC at the '/derive' endpoint was issuing incorrect requests.
+
 The following sections document changes that have been released already:
 
 ## 0.1.4 - 2021-10-26
