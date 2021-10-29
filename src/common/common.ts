@@ -24,7 +24,6 @@ import {
   getThingAll,
   UrlString,
 } from "@inrupt/solid-client";
-import fallbackFetch from "../fetcher";
 
 export type Iri = string;
 /**
@@ -215,21 +214,14 @@ const SOLID_VC_VERIFIER_SERVICE = SOLID_VC_NS.concat("verifierService");
  * @returns A map of the services available and their URLs.
  */
 export async function getVerifiableCredentialApiConfiguration(
-  vcServiceUrl: URL | UrlString,
-  options: {
-    fetcher?: typeof fallbackFetch;
-  } = {}
+  vcServiceUrl: URL | UrlString
 ): Promise<VerifiableCredentialApiConfiguration> {
-  const { fetcher = fallbackFetch } = options;
-
   const wellKnownIri = new URL(
     ".well-known/vc-configuration",
     vcServiceUrl.toString()
   );
 
-  const vcConfigData = await getSolidDataset(wellKnownIri.href, {
-    fetch: fetcher,
-  });
+  const vcConfigData = await getSolidDataset(wellKnownIri.href);
 
   // The dataset should have a single blank node subject of all its triples.
   const wellKnownRootBlankNode = getThingAll(vcConfigData, {

@@ -95,8 +95,7 @@ describe("getVerifiableCredentialApiConfiguration", () => {
       "https://some.example.vc/service"
     );
     expect(clientModule.getSolidDataset).toHaveBeenCalledWith(
-      "https://some.example.vc/.well-known/vc-configuration",
-      expect.anything()
+      "https://some.example.vc/.well-known/vc-configuration"
     );
   });
 
