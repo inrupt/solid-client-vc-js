@@ -28,12 +28,7 @@ import {
   buildThing,
   setThing,
 } from "@inrupt/solid-client";
-import { getVerifiableCredentialApiConfiguration } from "./configuration";
-// import { getSolidDataset } from "@inrupt/solid-client";
-// import fallbackFetch from "../fetcher";
-
-// const fallbackFetchMock = jest.fn(global.fetch);
-// const optionFetchMock = jest.fn(global.fetch);
+import { getVerifiableCredentialApiConfiguration } from "./common";
 
 jest.mock("../fetcher");
 

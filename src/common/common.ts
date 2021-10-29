@@ -18,6 +18,8 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+import { getIri, getSolidDataset, getThingAll } from "@inrupt/solid-client";
+import fallbackFetch from "../fetcher";
 
 export type Iri = string;
 /**
@@ -182,3 +184,56 @@ export const defaultCredentialTypes = [
   "VerifiableCredential",
   "SolidCredential",
 ];
+
+/**
+ * A Verifiable Credential API configuration details.
+ */
+export type VerifiableCredentialApiConfiguration = Partial<{
+  derivationService: Iri;
+  issuerService: Iri;
+  statusService: Iri;
+  verifierService: Iri;
+}>;
+
+// Solid VC URIs
+const SOLID_VC_NS = "http://www.w3.org/ns/solid/vc#";
+const SOLID_VC_DERIVATION_SERVICE = SOLID_VC_NS.concat("derivationService");
+const SOLID_VC_ISSUER_SERVICE = SOLID_VC_NS.concat("issuerService");
+const SOLID_VC_STATUS_SERVICE = SOLID_VC_NS.concat("statusService");
+const SOLID_VC_VERIFIER_SERVICE = SOLID_VC_NS.concat("verifierService");
+
+/**
+ *
+ * @param wellKnownIri
+ * @param options
+ * @returns
+ */
+export async function getVerifiableCredentialApiConfiguration(
+  wellKnownIri: URL | Iri,
+  options: {
+    fetcher?: typeof fallbackFetch;
+  } = {}
+): Promise<VerifiableCredentialApiConfiguration> {
+  const { fetcher = fallbackFetch } = options;
+
+  // Retrieve dataset
+  const vcConfigData = await getSolidDataset(wellKnownIri.toString(), {
+    fetch: fetcher,
+  });
+
+  // Get the consent
+  const wellKnownRootBlankNode = getThingAll(vcConfigData, {
+    acceptBlankNodes: true,
+  })[0];
+
+  return {
+    derivationService:
+      getIri(wellKnownRootBlankNode, SOLID_VC_DERIVATION_SERVICE) ?? undefined,
+    issuerService:
+      getIri(wellKnownRootBlankNode, SOLID_VC_ISSUER_SERVICE) ?? undefined,
+    statusService:
+      getIri(wellKnownRootBlankNode, SOLID_VC_STATUS_SERVICE) ?? undefined,
+    verifierService:
+      getIri(wellKnownRootBlankNode, SOLID_VC_VERIFIER_SERVICE) ?? undefined,
+  };
+}
