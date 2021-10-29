@@ -25,6 +25,7 @@ export {
   JsonLd,
   VerifiableCredential,
   isVerifiableCredential,
+  getVerifiableCredentialApiConfiguration,
 } from "./common/common";
 export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
 export { default as revokeVerifiableCredential } from "./revoke/revoke";
