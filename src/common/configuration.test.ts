@@ -84,6 +84,22 @@ const mockVcWellKnown = (options: {
 };
 
 describe("getVerifiableCredentialApiConfiguration", () => {
+  it("builds the well-known IRI from the given VC service domain", async () => {
+    const clientModule = jest.requireMock("@inrupt/solid-client") as {
+      getSolidDataset: typeof getSolidDataset;
+    };
+    clientModule.getSolidDataset = jest
+      .fn(getSolidDataset)
+      .mockResolvedValueOnce(mockVcWellKnown({}));
+    await getVerifiableCredentialApiConfiguration(
+      "https://some.example.vc/service"
+    );
+    expect(clientModule.getSolidDataset).toHaveBeenCalledWith(
+      "https://some.example.vc/.well-known/vc-configuration",
+      expect.anything()
+    );
+  });
+
   it("returns the IRI of the issuer service if present", async () => {
     const clientModule = jest.requireMock("@inrupt/solid-client") as {
       getSolidDataset: typeof getSolidDataset;

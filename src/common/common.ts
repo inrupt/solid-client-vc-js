@@ -18,7 +18,12 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import { getIri, getSolidDataset, getThingAll } from "@inrupt/solid-client";
+import {
+  getIri,
+  getSolidDataset,
+  getThingAll,
+  UrlString,
+} from "@inrupt/solid-client";
 import fallbackFetch from "../fetcher";
 
 export type Iri = string;
@@ -189,10 +194,10 @@ export const defaultCredentialTypes = [
  * A Verifiable Credential API configuration details.
  */
 export type VerifiableCredentialApiConfiguration = Partial<{
-  derivationService: Iri;
-  issuerService: Iri;
-  statusService: Iri;
-  verifierService: Iri;
+  derivationService: UrlString;
+  issuerService: UrlString;
+  statusService: UrlString;
+  verifierService: UrlString;
 }>;
 
 // Solid VC URIs
@@ -203,25 +208,30 @@ const SOLID_VC_STATUS_SERVICE = SOLID_VC_NS.concat("statusService");
 const SOLID_VC_VERIFIER_SERVICE = SOLID_VC_NS.concat("verifierService");
 
 /**
+ * Discover the available services for a given VC service provider. The detail of
+ * some of these services are given by the [W3C VC API](https://github.com/w3c-ccg/vc-api/).
  *
- * @param wellKnownIri
- * @param options
- * @returns
+ * @param vcServiceUrl The URL of the VC services provider. Only the domain is relevant, any provided path will be ignored.
+ * @returns A map of the services available and their URLs.
  */
 export async function getVerifiableCredentialApiConfiguration(
-  wellKnownIri: URL | Iri,
+  vcServiceUrl: URL | UrlString,
   options: {
     fetcher?: typeof fallbackFetch;
   } = {}
 ): Promise<VerifiableCredentialApiConfiguration> {
   const { fetcher = fallbackFetch } = options;
 
-  // Retrieve dataset
-  const vcConfigData = await getSolidDataset(wellKnownIri.toString(), {
+  const wellKnownIri = new URL(
+    ".well-known/vc-configuration",
+    vcServiceUrl.toString()
+  );
+
+  const vcConfigData = await getSolidDataset(wellKnownIri.href, {
     fetch: fetcher,
   });
 
-  // Get the consent
+  // The dataset should have a single blank node subject of all its triples.
   const wellKnownRootBlankNode = getThingAll(vcConfigData, {
     acceptBlankNodes: true,
   })[0];
