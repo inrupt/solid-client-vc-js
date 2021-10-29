@@ -64,7 +64,7 @@ export default async function getVerifiableCredentialAllFromShape(
   const claimsContext = vcShape["@context"];
   const credentialRequestBody = {
     // See https://w3c-ccg.github.io/vc-http-api/holder.html
-    credential: {
+    verifiableCredential: {
       "@context": concatenateContexts(defaultContext, claimsContext),
       ...credentialClaims,
     },

@@ -160,17 +160,17 @@ export function isVerifiablePresentation(
 }
 
 export function concatenateContexts(...contexts: unknown[]): unknown {
-  let result: unknown[] = [];
+  const result: Set<unknown> = new Set();
   contexts.forEach((additionalContext) => {
     // Case when the context is an array of IRIs and/or inline contexts
     if (Array.isArray(additionalContext)) {
-      result = result.concat(additionalContext);
-    } else {
+      additionalContext.forEach((context) => result.add(context));
+    } else if (additionalContext !== null && additionalContext !== undefined) {
       // Case when the context is a single remote URI or a single inline context
-      result.push(additionalContext);
+      result.add(additionalContext);
     }
   });
-  return result;
+  return Array.from(result.values());
 }
 
 /**

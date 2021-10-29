@@ -21,7 +21,11 @@
 
 import { describe, it, expect } from "@jest/globals";
 import { VerifiableCredential } from "..";
-import { isVerifiableCredential, isVerifiablePresentation } from "./common";
+import {
+  concatenateContexts,
+  isVerifiableCredential,
+  isVerifiablePresentation,
+} from "./common";
 import {
   defaultCredentialClaims,
   mockPartialCredential,
@@ -197,5 +201,43 @@ describe("isVerifiablePresentation", () => {
       mockedPresentation.holder = "some non-URL holder";
       expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
     });
+  });
+});
+
+describe("concatenateContexts", () => {
+  it("concatenates string-like contexts", () => {
+    expect(
+      concatenateContexts("https://some.context", "https://some.other.context")
+    ).toEqual(["https://some.context", "https://some.other.context"]);
+  });
+
+  it("concatenates array-like contexts", () => {
+    expect(
+      concatenateContexts(
+        ["https://some.context"],
+        ["https://some.other.context"]
+      )
+    ).toEqual(["https://some.context", "https://some.other.context"]);
+  });
+
+  it("concatenates mixed contexts", () => {
+    expect(
+      concatenateContexts(
+        ["https://some.context"],
+        "https://some.other.context"
+      )
+    ).toEqual(["https://some.context", "https://some.other.context"]);
+  });
+
+  it("prevents a value to be added twice", () => {
+    expect(
+      concatenateContexts("https://some.context", "https://some.context")
+    ).toEqual(["https://some.context"]);
+  });
+
+  it("prevents undefined values to be added", () => {
+    expect(concatenateContexts("https://some.context", undefined)).toEqual([
+      "https://some.context",
+    ]);
   });
 });
