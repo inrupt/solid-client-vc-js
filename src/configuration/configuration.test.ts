@@ -20,17 +20,22 @@
  */
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { mockSolidDatasetFrom, getSolidDataset } from "@inrupt/solid-client";
+import {
+  mockSolidDatasetFrom,
+  getSolidDataset,
+  SolidDataset,
+  WithServerResourceInfo,
+  buildThing,
+  setThing,
+} from "@inrupt/solid-client";
 import { getVerifiableCredentialApiConfiguration } from "./configuration";
 // import { getSolidDataset } from "@inrupt/solid-client";
 // import fallbackFetch from "../fetcher";
 
-const fallbackFetchMock = jest.fn(global.fetch);
-const optionFetchMock = jest.fn(global.fetch);
+// const fallbackFetchMock = jest.fn(global.fetch);
+// const optionFetchMock = jest.fn(global.fetch);
 
-jest.mock("../fetcher", () => {
-  return { default: fallbackFetchMock };
-});
+jest.mock("../fetcher");
 
 jest.mock("@inrupt/solid-client", () => {
   // TypeScript can't infer the type of modules imported via Jest;
@@ -44,24 +49,128 @@ jest.mock("@inrupt/solid-client", () => {
   return solidClientModule;
 });
 
+const MOCKED_VC_SERVICE = "https://vc-service.iri";
+
+const mockVcWellKnown = (options: {
+  issuerPresent?: boolean;
+  statusPresent?: boolean;
+  verifierPresent?: boolean;
+  derivationPresent?: boolean;
+}): SolidDataset & WithServerResourceInfo => {
+  const wellKnown = buildThing();
+  if (options.issuerPresent) {
+    wellKnown.addIri(
+      "http://www.w3.org/ns/solid/vc#issuerService",
+      `${MOCKED_VC_SERVICE}/issue`
+    );
+  }
+  if (options.statusPresent) {
+    wellKnown.addIri(
+      "http://www.w3.org/ns/solid/vc#statusService",
+      `${MOCKED_VC_SERVICE}/status`
+    );
+  }
+  if (options.verifierPresent) {
+    wellKnown.addIri(
+      "http://www.w3.org/ns/solid/vc#verifierService",
+      `${MOCKED_VC_SERVICE}/verify`
+    );
+  }
+  if (options.derivationPresent) {
+    wellKnown.addIri(
+      "http://www.w3.org/ns/solid/vc#derivationService",
+      `${MOCKED_VC_SERVICE}/derive`
+    );
+  }
+  return setThing(
+    mockSolidDatasetFrom("https://vc-service.iri/.well-known/solid"),
+    wellKnown.build()
+  );
+};
+
 describe("getVerifiableCredentialApiConfiguration", () => {
-  it("returns true if all the expected fields are present in the credential", async () => {
-    jest
-      .spyOn(
-        jest.requireMock("@inrupt/solid-client") as {
-          getSolidDataset: typeof getSolidDataset;
-        },
-        "getSolidDataset"
-      )
+  it("returns the IRI of the issuer service if present", async () => {
+    const clientModule = jest.requireMock("@inrupt/solid-client") as {
+      getSolidDataset: typeof getSolidDataset;
+    };
+    clientModule.getSolidDataset = jest
+      .fn(getSolidDataset)
+      .mockResolvedValueOnce(mockVcWellKnown({ issuerPresent: true }));
+    const result = await getVerifiableCredentialApiConfiguration(
+      "https://some.example.wellknown.iri"
+    );
+    expect(result).toEqual({ issuerService: `${MOCKED_VC_SERVICE}/issue` });
+  });
+
+  it("returns the IRI of the status service if present", async () => {
+    const clientModule = jest.requireMock("@inrupt/solid-client") as {
+      getSolidDataset: typeof getSolidDataset;
+    };
+    clientModule.getSolidDataset = jest
+      .fn(getSolidDataset)
+      .mockResolvedValueOnce(mockVcWellKnown({ statusPresent: true }));
+    const result = await getVerifiableCredentialApiConfiguration(
+      "https://some.example.wellknown.iri"
+    );
+    expect(result).toEqual({ statusService: `${MOCKED_VC_SERVICE}/status` });
+  });
+
+  it("returns the IRI of the verifier service if present", async () => {
+    const clientModule = jest.requireMock("@inrupt/solid-client") as {
+      getSolidDataset: typeof getSolidDataset;
+    };
+    clientModule.getSolidDataset = jest
+      .fn(getSolidDataset)
+      .mockResolvedValueOnce(mockVcWellKnown({ verifierPresent: true }));
+    const result = await getVerifiableCredentialApiConfiguration(
+      "https://some.example.wellknown.iri"
+    );
+    expect(result).toEqual({ verifierService: `${MOCKED_VC_SERVICE}/verify` });
+  });
+
+  it("returns the IRI of the derivation service if present", async () => {
+    const clientModule = jest.requireMock("@inrupt/solid-client") as {
+      getSolidDataset: typeof getSolidDataset;
+    };
+    clientModule.getSolidDataset = jest
+      .fn(getSolidDataset)
+      .mockResolvedValueOnce(mockVcWellKnown({ derivationPresent: true }));
+    const result = await getVerifiableCredentialApiConfiguration(
+      "https://some.example.wellknown.iri"
+    );
+    expect(result).toEqual({
+      derivationService: `${MOCKED_VC_SERVICE}/derive`,
+    });
+  });
+
+  it("returns the IRI of multiple services if present", async () => {
+    const clientModule = jest.requireMock("@inrupt/solid-client") as {
+      getSolidDataset: typeof getSolidDataset;
+    };
+    clientModule.getSolidDataset = jest
+      .fn(getSolidDataset)
       .mockResolvedValueOnce(
-        mockSolidDatasetFrom("https://some.resource/.well-known/solid")
+        mockVcWellKnown({ derivationPresent: true, issuerPresent: true })
       );
     const result = await getVerifiableCredentialApiConfiguration(
-      "https://some.example.wellknown.iri",
-      {
-        fetcher: optionFetchMock,
-      }
+      "https://some.example.wellknown.iri"
     );
-    expect(result).toBe({});
+    expect(result).toEqual({
+      issuerService: `${MOCKED_VC_SERVICE}/issue`,
+      derivationService: `${MOCKED_VC_SERVICE}/derive`,
+    });
+  });
+
+  it("returns an empty object if no services are present", async () => {
+    const clientModule = jest.requireMock("@inrupt/solid-client") as {
+      getSolidDataset: typeof getSolidDataset;
+    };
+    clientModule.getSolidDataset = jest
+      .fn(getSolidDataset)
+      .mockResolvedValueOnce(mockVcWellKnown({}));
+    const result = await getVerifiableCredentialApiConfiguration(
+      "https://some.example.wellknown.iri"
+    );
+    expect(result).toEqual({});
   });
 });
