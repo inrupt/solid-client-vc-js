@@ -6,12 +6,14 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+### 0.2.0 - 2021-10-30
+
 ### New features
 
 - `getVerifiableCredentialApiConfiguration`: If the VC service exposes a `.well-known/vc-configuration`
-  document, this fetches it, parses it, and returns known services from it.
-
-The following sections document changes that have been released already:
+  document, this function fetches it, parses it, and returns known services from it.
 
 ### 0.1.5 - 2021-10-29
 

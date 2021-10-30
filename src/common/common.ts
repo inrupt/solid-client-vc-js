@@ -212,6 +212,7 @@ const SOLID_VC_VERIFIER_SERVICE = SOLID_VC_NS.concat("verifierService");
  *
  * @param vcServiceUrl The URL of the VC services provider. Only the domain is relevant, any provided path will be ignored.
  * @returns A map of the services available and their URLs.
+ * @since 0.2.0
  */
 export async function getVerifiableCredentialApiConfiguration(
   vcServiceUrl: URL | UrlString
