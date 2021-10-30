@@ -21,7 +21,10 @@
 import { describe, it, expect } from "@jest/globals";
 import * as packageExports from "./index";
 import issueVerifiableCredential from "./issue/issue";
-import { isVerifiableCredential } from "./common/common";
+import {
+  isVerifiableCredential,
+  getVerifiableCredentialApiConfiguration,
+} from "./common/common";
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
 import revokeVerifiableCredential from "./revoke/revoke";
 
@@ -30,6 +33,7 @@ describe("exports", () => {
     expect(Object.keys(packageExports)).toEqual([
       "issueVerifiableCredential",
       "isVerifiableCredential",
+      "getVerifiableCredentialApiConfiguration",
       "getVerifiableCredentialAllFromShape",
       "revokeVerifiableCredential",
     ]);
@@ -37,6 +41,9 @@ describe("exports", () => {
       issueVerifiableCredential
     );
     expect(packageExports.isVerifiableCredential).toBe(isVerifiableCredential);
+    expect(packageExports.getVerifiableCredentialApiConfiguration).toBe(
+      getVerifiableCredentialApiConfiguration
+    );
     expect(packageExports.getVerifiableCredentialAllFromShape).toBe(
       getVerifiableCredentialAllFromShape
     );

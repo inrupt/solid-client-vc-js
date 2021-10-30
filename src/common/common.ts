@@ -18,6 +18,12 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+import {
+  getIri,
+  getSolidDataset,
+  getThingAll,
+  UrlString,
+} from "@inrupt/solid-client";
 
 export type Iri = string;
 /**
@@ -182,3 +188,54 @@ export const defaultCredentialTypes = [
   "VerifiableCredential",
   "SolidCredential",
 ];
+
+/**
+ * A Verifiable Credential API configuration details.
+ */
+export type VerifiableCredentialApiConfiguration = Partial<{
+  derivationService: UrlString;
+  issuerService: UrlString;
+  statusService: UrlString;
+  verifierService: UrlString;
+}>;
+
+// Solid VC URIs
+const SOLID_VC_NS = "http://www.w3.org/ns/solid/vc#";
+const SOLID_VC_DERIVATION_SERVICE = SOLID_VC_NS.concat("derivationService");
+const SOLID_VC_ISSUER_SERVICE = SOLID_VC_NS.concat("issuerService");
+const SOLID_VC_STATUS_SERVICE = SOLID_VC_NS.concat("statusService");
+const SOLID_VC_VERIFIER_SERVICE = SOLID_VC_NS.concat("verifierService");
+
+/**
+ * Discover the available services for a given VC service provider. The detail of
+ * some of these services are given by the [W3C VC API](https://github.com/w3c-ccg/vc-api/).
+ *
+ * @param vcServiceUrl The URL of the VC services provider. Only the domain is relevant, any provided path will be ignored.
+ * @returns A map of the services available and their URLs.
+ */
+export async function getVerifiableCredentialApiConfiguration(
+  vcServiceUrl: URL | UrlString
+): Promise<VerifiableCredentialApiConfiguration> {
+  const wellKnownIri = new URL(
+    ".well-known/vc-configuration",
+    vcServiceUrl.toString()
+  );
+
+  const vcConfigData = await getSolidDataset(wellKnownIri.href);
+
+  // The dataset should have a single blank node subject of all its triples.
+  const wellKnownRootBlankNode = getThingAll(vcConfigData, {
+    acceptBlankNodes: true,
+  })[0];
+
+  return {
+    derivationService:
+      getIri(wellKnownRootBlankNode, SOLID_VC_DERIVATION_SERVICE) ?? undefined,
+    issuerService:
+      getIri(wellKnownRootBlankNode, SOLID_VC_ISSUER_SERVICE) ?? undefined,
+    statusService:
+      getIri(wellKnownRootBlankNode, SOLID_VC_STATUS_SERVICE) ?? undefined,
+    verifierService:
+      getIri(wellKnownRootBlankNode, SOLID_VC_VERIFIER_SERVICE) ?? undefined,
+  };
+}
