@@ -23,6 +23,7 @@ import {
   getSolidDataset,
   getThingAll,
   UrlString,
+  getJsonLdParser,
 } from "@inrupt/solid-client";
 
 export type Iri = string;
@@ -222,7 +223,10 @@ export async function getVerifiableCredentialApiConfiguration(
     vcServiceUrl.toString()
   );
 
-  const vcConfigData = await getSolidDataset(wellKnownIri.href);
+  const vcConfigData = await getSolidDataset(wellKnownIri.href, {
+    // The configuration discovery document is only available as JSON-LD.
+    parsers: { "application/ld+json": getJsonLdParser() },
+  });
 
   // The dataset should have a single blank node subject of all its triples.
   const wellKnownRootBlankNode = getThingAll(vcConfigData, {
