@@ -6,13 +6,15 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+The following sections document changes that have been released already:
+
+## 0.2.1 - 2021-11-02
+
 ### Bugfixes
 
 - Looking up the configuration discovery file explicitly sets the `Accept` header
   to `application/ld+json`, preventing the a`406 Unacceptable` response when trying
   to dereference it as Turtle.
-
-The following sections document changes that have been released already:
 
 ## 0.2.0 - 2021-10-30
 
