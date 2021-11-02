@@ -6,16 +6,22 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### Bugfixes
+
+- Looking up the configuration discovery file explicitly sets the `Accept` header
+  to `application/ld+json`, preventing the a`406 Unacceptable` response when trying
+  to dereference it as Turtle.
+
 The following sections document changes that have been released already:
 
-### 0.2.0 - 2021-10-30
+## 0.2.0 - 2021-10-30
 
 ### New features
 
 - `getVerifiableCredentialApiConfiguration`: If the VC service exposes a `.well-known/vc-configuration`
   document, this function fetches it, parses it, and returns known services from it.
 
-### 0.1.5 - 2021-10-29
+## 0.1.5 - 2021-10-29
 
 - Looking up a VC at the '/derive' endpoint was issuing incorrect requests.
 
