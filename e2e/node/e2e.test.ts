@@ -19,14 +19,24 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from "@jest/globals";
 import {
   getVerifiableCredentialAllFromShape,
   getVerifiableCredentialApiConfiguration,
   issueVerifiableCredential,
+  revokeVerifiableCredential,
 } from "../../src/index";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { config } from "dotenv-flow";
+
+jest.mock("@digitalbazaar/http-client");
 
 // Load environment variables from .env.test.local if available:
 config({
@@ -143,88 +153,129 @@ describe.each(serversUnderTest)(
     const vcService = "https://" + vcServiceDisplay;
     const vcSubject = "https://" + vcSubjectDisplay;
 
-    describe("issueVerifiableCredential", () => {
-      it("has the appropriate environment variables", () => {
-        expect(oidcIssuer).not.toBeUndefined();
-        expect(clientId).not.toBeUndefined();
-        expect(clientSecret).not.toBeUndefined();
-        expect(vcService).not.toBeUndefined();
-        expect(vcSubject).not.toBeUndefined();
+    it("has the appropriate environment variables", () => {
+      expect(oidcIssuer).not.toBeUndefined();
+      expect(clientId).not.toBeUndefined();
+      expect(clientSecret).not.toBeUndefined();
+      expect(vcService).not.toBeUndefined();
+      expect(vcSubject).not.toBeUndefined();
+    });
+
+    const session = new Session();
+    // let vcConfiguration: Partial<{
+    //   derivationService: string;
+    //   issuerService: string;
+    //   statusService: string;
+    //   verifierService: string;
+    // }>;
+
+    beforeEach(async () => {
+      await session.login({
+        oidcIssuer,
+        clientId,
+        clientSecret,
       });
+      // The following code snippet doesn't work in Jest, probably because of
+      // https://github.com/standard-things/esm/issues/706 which seems to be
+      // related to https://github.com/facebook/jest/issues/9430. The JSON-LD
+      // module depends on @digitalbazaar/http-client, which uses esm, which
+      // looks like it confuses Jest. Working around this by hard-coding the
+      // endpoints IRIs.
+      // vcConfiguration = await getVerifiableCredentialApiConfiguration(
+      //   vcService
+      // );
+    });
 
-      const session = new Session();
-      let vcConfiguration: Partial<{
-        derivationService: string;
-        issuerService: string;
-        statusService: string;
-        verifierService: string;
-      }>;
+    afterEach(async () => {
+      // Making sure the session is logged out prevents tests from hanging due
+      // to the callback refreshing the access token.
+      await session.logout();
+    });
 
-      beforeEach(async () => {
-        await session.login({
-          oidcIssuer,
-          clientId,
-          clientSecret,
-        });
-        vcConfiguration = await getVerifiableCredentialApiConfiguration(
-          vcService
+    describe("issue a VC", () => {
+      it("Successfully gets a VC from a valid issuer", async () => {
+        const credential = await issueVerifiableCredential(
+          `${vcService}/issue`,
+          vcSubject,
+          validCredentialClaims,
+          undefined,
+          {
+            fetch: session.fetch,
+          }
         );
+        expect(credential.credentialSubject.id).toBe(vcSubject);
       });
 
-      afterEach(async () => {
-        // Making sure the session is logged out prevents tests from hanging due
-        // to the callback refreshing the access token.
-        await session.logout();
-      });
-
-      describe("issue a VC", () => {
-        it("Successfully gets a VC from a valid issuer", async () => {
-          expect(vcConfiguration.issuerService).not.toBeUndefined();
-          const credential = await issueVerifiableCredential(
-            vcConfiguration.issuerService!,
+      it("throws if the issuer returns an error", async () => {
+        await expect(
+          issueVerifiableCredential(
+            `${vcService}/issue`,
             vcSubject,
-            validCredentialClaims,
+            invalidCredentialClaims,
             undefined,
             {
               fetch: session.fetch,
             }
-          );
-          expect(credential.credentialSubject.id).toBe(vcSubject);
-        });
-
-        it("throws if the issuer returns an error", async () => {
-          expect(vcConfiguration.issuerService).not.toBeUndefined();
-          await expect(
-            issueVerifiableCredential(
-              vcConfiguration.issuerService!,
-              vcSubject,
-              invalidCredentialClaims,
-              undefined,
-              {
-                fetch: session.fetch,
-              }
-            )
-          ).rejects.toThrow("400");
-        });
+          )
+        ).rejects.toThrow("400");
       });
+    });
 
-      describe("lookup VCs", () => {
-        it("returns all VC issued matching a given shape", async () => {
-          if (vcConfiguration.derivationService === undefined) {
-            // This skips the test if the endpoint isn't available. It's not
-            // mandatory that it is, so the test shouldn't fail.
-            return;
+    describe("lookup VCs", () => {
+      it("returns all VC issued matching a given shape", async () => {
+        if (vcService === "https://consent.pod.inrupt.com") {
+          // This skips the test if the derive endpoint isn't available. It's not
+          // mandatory, so the test shouldn't fail.
+          return;
+        }
+        const result = await getVerifiableCredentialAllFromShape(
+          `${vcService}/derive`,
+          {
+            credentialSubject: {
+              id: vcSubject,
+            },
+          },
+          {
+            fetch: session.fetch,
           }
-          const result = await getVerifiableCredentialAllFromShape(
-            vcConfiguration.derivationService!,
-            {
-              credentialSubject: {
-                id: vcSubject,
-              },
-            }
-          );
-          expect(result).not.toHaveLength(0);
-        });
+        );
+        expect(result).not.toHaveLength(0);
+      });
+    });
+
+    describe("revoke VCs", () => {
+      it("can revoke a VC", async () => {
+        if (vcService === "https://consent.pod.inrupt.com") {
+          // This skips the test if the derive endpoint isn't available. It's not
+          // mandatory, so the test shouldn't fail.
+          return;
+        }
+        const result = await getVerifiableCredentialAllFromShape(
+          `${vcService}/derive`,
+          {},
+          {
+            fetch: session.fetch,
+          }
+        );
+        await expect(
+          revokeVerifiableCredential(`${vcService}/status`, result[0].id, {
+            fetch: session.fetch,
+          })
+        ).resolves.not.toThrow();
+        const verificationResponse = await session.fetch(
+          `${vcService}/verify`,
+          {
+            method: "POST",
+            body: JSON.stringify({ verifiableCredential: result[0] }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const verification = await verificationResponse.json();
+        expect(verification.errors).toContain([
+          expect.stringContaining("revoke"),
+        ]);
       });
     });
   }
