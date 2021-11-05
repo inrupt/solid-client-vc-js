@@ -207,6 +207,25 @@ describe.each(serversUnderTest)(
           ).rejects.toThrow("400");
         });
       });
+
+      describe("lookup VCs", () => {
+        it("returns all VC issued matching a given shape", async () => {
+          if (vcConfiguration.derivationService === undefined) {
+            // This skips the test if the endpoint isn't available. It's not
+            // mandatory that it is, so the test shouldn't fail.
+            return;
+          }
+          const result = await getVerifiableCredentialAllFromShape(
+            vcConfiguration.derivationService!,
+            {
+              credentialSubject: {
+                id: vcSubject,
+              },
+            }
+          );
+          expect(result).not.toHaveLength(0);
+        });
+      });
     });
   }
 );
