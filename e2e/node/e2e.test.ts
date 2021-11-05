@@ -20,7 +20,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
-import { issueVerifiableCredential } from "../../src/index";
+import {
+  getVerifiableCredentialAllFromShape,
+  getVerifiableCredentialApiConfiguration,
+  issueVerifiableCredential,
+} from "../../src/index";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { config } from "dotenv-flow";
 
@@ -94,11 +98,11 @@ const invalidCredentialClaims = {
 };
 
 type OidcIssuer = string;
-type VcIssuer = string;
+type VcService = string;
 type VcSubject = string;
 type ClientId = string;
 type ClientSecret = string;
-type AuthDetails = [OidcIssuer, ClientId, ClientSecret, VcIssuer, VcSubject];
+type AuthDetails = [OidcIssuer, ClientId, ClientSecret, VcService, VcSubject];
 // Instructions for obtaining these credentials can be found here:
 // https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
 const serversUnderTest: AuthDetails[] = [
@@ -108,7 +112,7 @@ const serversUnderTest: AuthDetails[] = [
     // Trim `https://` from the start of these URLs,
     // so that GitHub Actions doesn't replace them with *** in the logs.
     process.env.E2E_TEST_ESS_IDP_URL!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_VC_ISSUER!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_ESS_VC_SERVICE!.replace(/^https:\/\//, ""),
     process.env.E2E_TEST_ESS_VC_SUBJECT!.replace(/^https:\/\//, ""),
     process.env.E2E_TEST_ESS_CLIENT_ID!,
     process.env.E2E_TEST_ESS_CLIENT_SECRET!,
@@ -119,7 +123,7 @@ const serversUnderTest: AuthDetails[] = [
     // Trim `https://` from the start of these URLs,
     // so that GitHub Actions doesn't replace them with *** in the logs.
     process.env.E2E_TEST_DEV_NEXT_IDP_URL!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_DEV_NEXT_VC_ISSUER!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_DEV_NEXT_VC_SERVICE!.replace(/^https:\/\//, ""),
     process.env.E2E_TEST_DEV_NEXT_VC_SUBJECT!.replace(/^https:\/\//, ""),
     process.env.E2E_TEST_DEV_NEXT_CLIENT_ID!,
     process.env.E2E_TEST_DEV_NEXT_CLIENT_SECRET!,
@@ -130,13 +134,13 @@ describe.each(serversUnderTest)(
   "VC client end-to-end tests authenticated to [%s], issuing from [%s] for [%s]",
   (
     oidcIssuerDisplay,
-    vcIssuerDisplay,
+    vcServiceDisplay,
     vcSubjectDisplay,
     clientId,
     clientSecret
   ) => {
     const oidcIssuer = "https://" + oidcIssuerDisplay;
-    const vcIssuer = "https://" + vcIssuerDisplay;
+    const vcService = "https://" + vcServiceDisplay;
     const vcSubject = "https://" + vcSubjectDisplay;
 
     describe("issueVerifiableCredential", () => {
@@ -144,11 +148,17 @@ describe.each(serversUnderTest)(
         expect(oidcIssuer).not.toBeUndefined();
         expect(clientId).not.toBeUndefined();
         expect(clientSecret).not.toBeUndefined();
-        expect(vcIssuer).not.toBeUndefined();
+        expect(vcService).not.toBeUndefined();
         expect(vcSubject).not.toBeUndefined();
       });
 
       const session = new Session();
+      let vcConfiguration: Partial<{
+        derivationService: string;
+        issuerService: string;
+        statusService: string;
+        verifierService: string;
+      }>;
 
       beforeEach(async () => {
         await session.login({
@@ -156,6 +166,9 @@ describe.each(serversUnderTest)(
           clientId,
           clientSecret,
         });
+        vcConfiguration = await getVerifiableCredentialApiConfiguration(
+          vcService
+        );
       });
 
       afterEach(async () => {
@@ -166,8 +179,9 @@ describe.each(serversUnderTest)(
 
       describe("issue a VC", () => {
         it("Successfully gets a VC from a valid issuer", async () => {
+          expect(vcConfiguration.issuerService).not.toBeUndefined();
           const credential = await issueVerifiableCredential(
-            vcIssuer,
+            vcConfiguration.issuerService!,
             vcSubject,
             validCredentialClaims,
             undefined,
@@ -179,9 +193,10 @@ describe.each(serversUnderTest)(
         });
 
         it("throws if the issuer returns an error", async () => {
+          expect(vcConfiguration.issuerService).not.toBeUndefined();
           await expect(
             issueVerifiableCredential(
-              vcIssuer,
+              vcConfiguration.issuerService!,
               vcSubject,
               invalidCredentialClaims,
               undefined,
@@ -192,12 +207,6 @@ describe.each(serversUnderTest)(
           ).rejects.toThrow("400");
         });
       });
-
-      // describe("lookup VCs", () => {
-      //   it("returns all VC issued matching a given shape", async () => {
-
-      //   })
-      // });
     });
   }
 );
