@@ -41,7 +41,7 @@ jobs:
         E2E_TEST_ESS_CLIENT_ID: ${{ secrets.POD_SPACES_CLIENT_ID }}
         E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.POD_SPACES_CLIENT_SECRET }}
         E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
-        E2E_TEST_DEV_NEXT_VC_ISSUER: https://consent.dev-next.inrupt.com/issue
+        E2E_TEST_DEV_NEXT_VC_ISSUER: https://vc.dev-next.inrupt.com/issue
         E2E_TEST_DEV_NEXT_VC_SUBJECT: https://id.dev-next.inrupt.com/sdkdevnexte2e
         E2E_TEST_DEV_NEXT_CLIENT_ID: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_ID }}
         E2E_TEST_DEV_NEXT_CLIENT_SECRET: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_SECRET }}
