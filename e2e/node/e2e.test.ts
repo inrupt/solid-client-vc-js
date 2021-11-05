@@ -19,7 +19,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import { issueVerifiableCredential } from "../../src/index";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { config } from "dotenv-flow";
@@ -148,46 +148,56 @@ describe.each(serversUnderTest)(
         expect(vcSubject).not.toBeUndefined();
       });
 
-      it("Successfully gets a VC from a valid issuer", async () => {
-        const session = new Session();
+      const session = new Session();
+
+      beforeEach(async () => {
         await session.login({
           oidcIssuer,
           clientId,
           clientSecret,
         });
-        const credential = await issueVerifiableCredential(
-          vcIssuer,
-          vcSubject,
-          validCredentialClaims,
-          undefined,
-          {
-            fetch: session.fetch,
-          }
-        );
-        expect(credential.credentialSubject.id).toBe(vcSubject);
+      });
+
+      afterEach(async () => {
+        // Making sure the session is logged out prevents tests from hanging due
+        // to the callback refreshing the access token.
         await session.logout();
       });
 
-      it("throws if the issuer returns an error", async () => {
-        const session = new Session();
-        await session.login({
-          oidcIssuer,
-          clientId,
-          clientSecret,
-        });
-        await expect(
-          issueVerifiableCredential(
+      describe("issue a VC", () => {
+        it("Successfully gets a VC from a valid issuer", async () => {
+          const credential = await issueVerifiableCredential(
             vcIssuer,
             vcSubject,
-            invalidCredentialClaims,
+            validCredentialClaims,
             undefined,
             {
               fetch: session.fetch,
             }
-          )
-        ).rejects.toThrow("400");
-        await session.logout();
+          );
+          expect(credential.credentialSubject.id).toBe(vcSubject);
+        });
+
+        it("throws if the issuer returns an error", async () => {
+          await expect(
+            issueVerifiableCredential(
+              vcIssuer,
+              vcSubject,
+              invalidCredentialClaims,
+              undefined,
+              {
+                fetch: session.fetch,
+              }
+            )
+          ).rejects.toThrow("400");
+        });
       });
+
+      // describe("lookup VCs", () => {
+      //   it("returns all VC issued matching a given shape", async () => {
+
+      //   })
+      // });
     });
   }
 );
