@@ -273,8 +273,8 @@ describe.each(serversUnderTest)(
           }
         );
         const verification = await verificationResponse.json();
-        expect(verification.errors).toContain([
-          expect.stringContaining("revoke"),
+        expect(verification.errors).toEqual([
+          "credentialStatus validation has failed: credential has been revoked",
         ]);
       });
     });
