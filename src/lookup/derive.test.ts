@@ -116,7 +116,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
         "@context": ["https://some.context"],
         credentialSubject: { id: "https://some.subject/" },
       })
-    ).rejects.toThrow(/some.endpoint.*Not a JSON/);
+    ).rejects.toThrow(/some.endpoint.*parsing failed.*Unexpected token/);
   });
 
   it("throws if the holder returns JSON response which isn't a Verifiable Presentation", async () => {
