@@ -29,14 +29,11 @@ import {
 } from "@jest/globals";
 import {
   getVerifiableCredentialAllFromShape,
-  getVerifiableCredentialApiConfiguration,
   issueVerifiableCredential,
   revokeVerifiableCredential,
 } from "../../src/index";
 import { Session } from "@inrupt/solid-client-authn-node";
 import { config } from "dotenv-flow";
-
-jest.mock("@digitalbazaar/http-client");
 
 // Load environment variables from .env.test.local if available:
 config({
