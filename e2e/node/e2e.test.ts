@@ -146,9 +146,9 @@ describe.each(serversUnderTest)(
     clientId,
     clientSecret
   ) => {
-    const oidcIssuer = "https://" + oidcIssuerDisplay;
-    const vcService = "https://" + vcServiceDisplay;
-    const vcSubject = "https://" + vcSubjectDisplay;
+    const oidcIssuer = new URL(`https://${oidcIssuerDisplay}`).href;
+    const vcService = new URL(`https://${vcServiceDisplay}`).href;
+    const vcSubject = new URL(`https://${vcSubjectDisplay}`).href;
 
     it("has the appropriate environment variables", () => {
       expect(oidcIssuer).not.toBeUndefined();
@@ -220,7 +220,7 @@ describe.each(serversUnderTest)(
 
     describe("lookup VCs", () => {
       it("returns all VC issued matching a given shape", async () => {
-        if (vcService === "https://consent.pod.inrupt.com") {
+        if (vcService === "https://consent.pod.inrupt.com/") {
           // This skips the test if the derive endpoint isn't available. It's not
           // mandatory, so the test shouldn't fail.
           return;
@@ -242,7 +242,7 @@ describe.each(serversUnderTest)(
 
     describe("revoke VCs", () => {
       it("can revoke a VC", async () => {
-        if (vcService === "https://consent.pod.inrupt.com") {
+        if (vcService === "https://consent.pod.inrupt.com/") {
           // This skips the test if the derive endpoint isn't available. It's not
           // mandatory, so the test shouldn't fail.
           return;
