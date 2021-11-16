@@ -81,14 +81,13 @@ export default async function getVerifiableCredentialAllFromShape(
       `The holder [${holderEndpoint}] returned an error: ${response.status} ${response.statusText}`
     );
   }
-  const errorResponse = response.clone();
+
   let data;
   try {
     data = await response.json();
   } catch (e) {
-    const responseText = await errorResponse.text();
     throw new Error(
-      `The holder [${holderEndpoint}] did not return a valid JSON response: parsing ${responseText} failed with error ${e}`
+      `The holder [${holderEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`
     );
   }
   if (!isVerifiablePresentation(data)) {
