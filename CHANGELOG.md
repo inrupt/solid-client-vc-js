@@ -8,6 +8,13 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+## 0.2.2 - 2021-11-26
+
+### Bugfixes
+
+- If getting a large response from the `/derive` endpoint, the code would freeze
+  due to the response being cloned for display purpose. This is no longer the case.
+
 ## 0.2.1 - 2021-11-02
 
 ### Bugfixes
