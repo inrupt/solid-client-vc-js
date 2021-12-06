@@ -65,17 +65,21 @@ describe("isVerifiableCredential", () => {
 
     it("misses a credential subject", () => {
       const mockedCredential = mockDefaultCredential();
-      delete (mockedCredential as {
-        credentialSubject: undefined | Record<string, unknown>;
-      }).credentialSubject;
+      delete (
+        mockedCredential as {
+          credentialSubject: undefined | Record<string, unknown>;
+        }
+      ).credentialSubject;
       expect(isVerifiableCredential(mockedCredential)).toBe(false);
     });
 
     it("misses a proof", () => {
       const mockedCredential = mockDefaultCredential();
-      delete (mockedCredential as {
-        proof: undefined | Record<string, unknown>;
-      }).proof;
+      delete (
+        mockedCredential as {
+          proof: undefined | Record<string, unknown>;
+        }
+      ).proof;
       expect(isVerifiableCredential(mockedCredential)).toBe(false);
     });
 
