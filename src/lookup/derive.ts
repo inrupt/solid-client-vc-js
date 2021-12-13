@@ -31,7 +31,7 @@ import fallbackFetch from "../fetcher";
 /**
  * Look up VCs from a given holder according to a subset of their claims, such as
  * the VC type, or any property associated to the subject in the VC. The holder
- * is expected to implement the [W3C VC Holder HTTP API](https://w3c-ccg.github.io/vc-http-api/holder.html).
+ * is expected to implement the [W3C VC Holder HTTP API](https://w3c-ccg.github.io/vc-api/holder.html).
  *
  * @param holderEndpoint The `/derive` endpoint of the holder.
  * @param vcShape The subset of claims you expect the matching VCs to contain.
@@ -63,7 +63,7 @@ export default async function getVerifiableCredentialAllFromShape(
   delete credentialClaims["@context"];
   const claimsContext = vcShape["@context"];
   const credentialRequestBody = {
-    // See https://w3c-ccg.github.io/vc-http-api/holder.html
+    // See https://w3c-ccg.github.io/vc-api/holder.html
     verifiableCredential: {
       "@context": concatenateContexts(defaultContext, claimsContext),
       ...credentialClaims,
