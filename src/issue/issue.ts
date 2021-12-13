@@ -33,7 +33,7 @@ import {
 
 /**
  * Request that a given Verifiable Credential (VC) Issuer issues a VC containing
- * the provided claims. The VC Issuer is expected to implement the [W3C VC Issuer HTTP API](https://w3c-ccg.github.io/vc-http-api/issuer.html).
+ * the provided claims. The VC Issuer is expected to implement the [W3C VC Issuer HTTP API](https://w3c-ccg.github.io/vc-api/issuer.html).
  *
  * @param issuerEndpoint The `/issue` endpoint of the VC Issuer.
  * @param subjectId The identifier of the VC claims' subject.
@@ -102,7 +102,7 @@ export default async function issueVerifiableCredential(
       : [credentialTypeClaims];
   }
   const credentialIssueBody = {
-    // See https://w3c-ccg.github.io/vc-http-api/issuer.html
+    // See https://w3c-ccg.github.io/vc-api/issuer.html
     credential: {
       "@context": concatenateContexts(
         defaultContext,

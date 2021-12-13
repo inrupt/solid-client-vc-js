@@ -25,8 +25,8 @@ import fallbackFetch from "../fetcher";
 /**
  * Revoke a given VC from a given issuer. This changes the status of the VC so that
  * subsequent verifications will fail. The issuer is expected to implement the
- * [W3C VC Issuer HTTP API](https://w3c-ccg.github.io/vc-http-api/issuer.html),
- * in particular [VC status update](https://w3c-ccg.github.io/vc-http-api/issuer.html#operation/updateCredentialStatus).
+ * [W3C VC Issuer HTTP API](https://w3c-ccg.github.io/vc-api/issuer.html),
+ * in particular [VC status update](https://w3c-ccg.github.io/vc-api/issuer.html#operation/updateCredentialStatus).
  *
  * @param issuerEndpoint The `/status` endpoint of the holder.
  * @param credentialId The identifier of the VC to be revoked.

@@ -3,7 +3,7 @@
 **This library is still in alpha state**
 
 This library is a client library designed to interact with servers implementing
-the [W3C VC HTTP APIs](https://w3c-ccg.github.io/vc-http-api/).
+the [W3C VC HTTP APIs](https://w3c-ccg.github.io/vc-api/).
 
 More documentation will be added when the library matures.
 
