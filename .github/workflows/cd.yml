@@ -67,7 +67,7 @@ jobs:
         GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
     - uses: actions/setup-node@v2.5.0
       with:
-        node-version: '12.x'
+        node-version: '16.x'
         registry-url: 'https://registry.npmjs.org'
     - name: Prepare prerelease version
       id: determine-npm-version
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        node-version: [14.x, 12.x]
+        node-version: [16.x, 14.x, 12.x]
     needs: [prepare-deployment, publish-npm]
     steps:
     - uses: actions/checkout@v2.4.0
