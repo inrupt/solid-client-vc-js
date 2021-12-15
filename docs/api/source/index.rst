@@ -1,8 +1,8 @@
 :orphan:
 
-================
-solid-client API
-================
+==============================
+solid-client-access-grants API
+==============================
 
 
 .. toctree::
@@ -10,6 +10,4 @@ solid-client API
    :titlesonly:
 
    /modules/**
-   /interfaces/**
-   /classes/**
 
