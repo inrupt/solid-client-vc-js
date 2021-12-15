@@ -1,0 +1,70 @@
+name: CI
+
+on: [push]
+
+env:
+  CI: true
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+        os: [ubuntu-20.04, windows-2019, macos-10.15]
+        node-version: [16.x, 14.x, 12.x]
+    steps:
+    - uses: actions/checkout@v2.4.0
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2.5.0
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Cache node modules
+      uses: actions/cache@v2.1.7
+      env:
+        cache-name: cache-node-modules
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node${{ runner.node-version }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+    - run: npm ci
+    - run: npm run ci
+    - run: npm run build
+    - run: npm run e2e-test-node
+      # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
+      # and because behaviour on different OS's is already tested by unit tests,
+      # end-to-end tests only need to run on one OS:
+      if: runner.os == 'Linux' && matrix.node-version == '14.x' && github.actor != 'dependabot[bot]'
+      env:
+        E2E_TEST_ESS_IDP_URL: https://broker.pod.inrupt.com
+        E2E_TEST_ESS_VC_SERVICE: https://consent.pod.inrupt.com
+        E2E_TEST_ESS_VC_SUBJECT: https://pod.inrupt.com/solid-client-e2e-tester-ess/profile/card#me
+        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.POD_SPACES_CLIENT_ID }}
+        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.POD_SPACES_CLIENT_SECRET }}
+        E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
+        E2E_TEST_DEV_NEXT_VC_SERVICE: https://vc.dev-next.inrupt.com
+        E2E_TEST_DEV_NEXT_VC_SUBJECT: https://id.dev-next.inrupt.com/sdkdevnexte2e
+        E2E_TEST_DEV_NEXT_CLIENT_ID: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_ID }}
+        E2E_TEST_DEV_NEXT_CLIENT_SECRET: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_SECRET }}
+    # Ideally, we'd autodetect installed browsers and run them headlessly.
+    # See https://github.com/DevExpress/testcafe/issues/5641
+    - name: Prepare browser-based end-to-end tests
+      run: |
+        cd .codesandbox/sandbox
+        npm install
+        # Run the end-to-end tests against the code in this branch specifically:
+        npm install ../../
+        cd ../..
+    - run: npx package-check
+    - run: npm run check-licenses
+    - run: npm audit --audit-level=moderate
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v2.3.0
+      continue-on-error: true
+      with:
+        name: code-coverage-report
+        path: coverage
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v2.3.0
+      continue-on-error: true
+      with:
+        name: dist
+        path: dist
