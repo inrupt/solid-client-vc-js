@@ -32,7 +32,7 @@ jobs:
       # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
       # and because behaviour on different OS's is already tested by unit tests,
       # end-to-end tests only need to run on one OS:
-      if: runner.os == 'Linux' && matrix.node-version == '14.x' && github.actor != 'dependabot[bot]'
+      if: runner.os == 'Linux' && matrix.node-version == '16.x' && github.actor != 'dependabot[bot]'
       env:
         E2E_TEST_ESS_IDP_URL: https://broker.pod.inrupt.com
         E2E_TEST_ESS_VC_SERVICE: https://consent.pod.inrupt.com
