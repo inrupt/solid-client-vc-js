@@ -29,3 +29,4 @@ export {
 } from "./common/common";
 export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
 export { default as revokeVerifiableCredential } from "./revoke/revoke";
+export { default as isValidVc } from "./verify/verify";

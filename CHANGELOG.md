@@ -8,6 +8,12 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+### New features
+
+- `isValidVc`: this function, exported by the `verify` module, verifies that a VC
+  is valid. Such verification is performed server-side by a verification service,
+  which checks the validity of the signature, and that the VC hasn't been revoked.
+
 ## 0.2.2 - 2021-11-26
 
 ### Bugfixes

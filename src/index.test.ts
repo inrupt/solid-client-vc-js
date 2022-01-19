@@ -27,6 +27,7 @@ import {
 } from "./common/common";
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
 import revokeVerifiableCredential from "./revoke/revoke";
+import isValidVc from "./verify/verify";
 
 describe("exports", () => {
   it("includes all of the expected functions", () => {
@@ -36,6 +37,7 @@ describe("exports", () => {
       "getVerifiableCredentialApiConfiguration",
       "getVerifiableCredentialAllFromShape",
       "revokeVerifiableCredential",
+      "isValidVc",
     ]);
     expect(packageExports.issueVerifiableCredential).toBe(
       issueVerifiableCredential
@@ -50,5 +52,6 @@ describe("exports", () => {
     expect(packageExports.revokeVerifiableCredential).toBe(
       revokeVerifiableCredential
     );
+    expect(packageExports.isValidVc).toBe(isValidVc);
   });
 });
