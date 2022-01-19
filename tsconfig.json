@@ -73,6 +73,7 @@
       "src/common/common.ts",
       "src/lookup/derive.ts",
       "src/revoke/revoke.ts",
+      "src/verify/verify.ts",
     ],
     "exclude": [
       "node_modules/**",
