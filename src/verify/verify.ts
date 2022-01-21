@@ -57,6 +57,24 @@ async function dereferenceVc(
   }
 }
 
+/**
+ * Verify that a VC is valid, i.e. :
+ * - its signature matches its issuer's key
+ * - it has not been revoked
+ * - it isn't expired
+ * These verifications are done server-side by a Verification Service, either
+ * discovered from the VC Issuer or manually provided.
+ *
+ * @param vc The VC to verify
+ * @param options Additional options
+ * - `options.fetch`: An alternative `fetch` function to make the HTTP request,
+ * compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * This can be typically used for authentication.
+ * - `options.verificationEndpoint`: Pass a trusted VC verification service
+ *
+ * @returns a JSON-shaped validation report structured accoring to the [VC Verifier API](https://w3c-ccg.github.io/vc-api/verifier.html#operation/verifyCredential).
+ * @since 0.3.0
+ */
 export default async function isValidVc(
   vc: VerifiableCredential | URL | UrlString,
   options: Partial<{

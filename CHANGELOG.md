@@ -8,6 +8,8 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+## 0.3.0 - 2022-01-21
+
 ### New features
 
 - `isValidVc`: this function, exported by the `verify` module, verifies that a VC
