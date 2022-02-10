@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@inrupt/eslint-config-base": "^0.4.0",
-    "@inrupt/eslint-config-lib": "^0.3.0-alpha.2",
+    "@inrupt/eslint-config-lib": "^0.4.0",
     "@inrupt/solid-client-authn-node": "^1.11.2",
     "@skypack/package-check": "^0.2.2",
     "@testing-library/testcafe": "^4.4.0",
