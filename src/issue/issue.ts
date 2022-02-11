@@ -60,40 +60,17 @@ export default async function issueVerifiableCredential(
     internalOptions.fetch = fallbackFetch;
   }
   // credentialClaims should contain all the claims, but not the context.
-  // const {
-  //   "@context": subjectClaimsContext,
-  //   ...contextlessSubjectClaims
-  // } = subjectClaims;
-  // The following lines refactor the previous deconstruction in order to work
-  // around a misalignment between `rollup-plugin-typescript2` and NodeJS.
-  // Issue tracking: https://github.com/ezolenko/rollup-plugin-typescript2/issues/282
-  const contextlessSubjectClaims = { ...subjectClaims };
-  delete contextlessSubjectClaims["@context"];
-  const subjectClaimsContext = subjectClaims["@context"];
+  const { "@context": subjectClaimsContext, ...contextlessSubjectClaims } =
+    subjectClaims;
 
-  // const {
-  //   "@context": credentialClaimsContext,
-  //   ...contextlessCredentialClaims
-  // } = credentialClaims !== undefined ? credentialClaims : { "@context": [] };
-  // The following lines refactor the previous deconstruction in order to work
-  // around a misalignment between `rollup-plugin-typescript2` and NodeJS.
-  // Issue tracking: https://github.com/ezolenko/rollup-plugin-typescript2/issues/282
   // When we add proper JSONLD parsing support, the following should be replaced.
-  const contextlessCredentialClaims = { ...credentialClaims };
-  delete contextlessCredentialClaims["@context"];
-  const credentialClaimsContext =
-    credentialClaims !== undefined ? credentialClaims["@context"] : [];
+  const {
+    "@context": credentialClaimsContext,
+    ...contextlessCredentialClaims
+  } = credentialClaims !== undefined ? credentialClaims : { "@context": [] };
 
-  // const {
-  //   type: credentialTypeClaims,
-  //   ...nonTypeCredentialClaims
-  // } = contextlessCredentialClaims;
-  // The following lines refactor the previous deconstruction in order to work
-  // around a misalignment between `rollup-plugin-typescript2` and NodeJS.
-  // Issue tracking: https://github.com/ezolenko/rollup-plugin-typescript2/issues/282
-  const nonTypeCredentialClaims = { ...contextlessCredentialClaims };
-  delete nonTypeCredentialClaims.type;
-  const credentialTypeClaims = contextlessCredentialClaims.type;
+  const { type: credentialTypeClaims, ...nonTypeCredentialClaims } =
+    contextlessCredentialClaims;
 
   let credentialTypes = [];
   if (credentialTypeClaims !== undefined) {
