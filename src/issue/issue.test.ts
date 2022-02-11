@@ -22,7 +22,9 @@
 import { jest, describe, it, expect } from "@jest/globals";
 import { defaultContext, defaultCredentialTypes } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
-import issueVerifiableCredential from "./issue";
+import defaultIssueVerifiableCredential, {
+  issueVerifiableCredential,
+} from "./issue";
 
 jest.mock("../fetcher");
 
@@ -32,7 +34,6 @@ describe("issueVerifiableCredential", () => {
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
         {
@@ -52,7 +53,6 @@ describe("issueVerifiableCredential", () => {
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       );
@@ -72,12 +72,11 @@ describe("issueVerifiableCredential", () => {
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
-        "https://some.subject",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       )
     ).rejects.toThrow(
-      /https:\/\/some\.endpoint.*could not successfully issue a VC.*https:\/\/some.subject.*400.*Bad request/
+      /https:\/\/some\.endpoint.*could not successfully issue a VC.*400.*Bad request/
     );
   });
 
@@ -93,7 +92,6 @@ describe("issueVerifiableCredential", () => {
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       )
@@ -112,7 +110,6 @@ describe("issueVerifiableCredential", () => {
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       )
@@ -127,7 +124,6 @@ describe("issueVerifiableCredential", () => {
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       );
@@ -147,7 +143,6 @@ describe("issueVerifiableCredential", () => {
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] }
       );
@@ -172,7 +167,6 @@ describe("issueVerifiableCredential", () => {
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
         undefined
       );
@@ -186,7 +180,6 @@ describe("issueVerifiableCredential", () => {
             "@context": [...defaultContext, "https://some-subject.context"],
             type: defaultCredentialTypes,
             credentialSubject: {
-              id: "htps://some.subject",
               aClaim: "a value",
             },
           },
@@ -203,7 +196,6 @@ describe("issueVerifiableCredential", () => {
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some-subject.context"] },
         { "@context": ["https://some-credential.context"], aClaim: "a value" }
       );
@@ -221,9 +213,7 @@ describe("issueVerifiableCredential", () => {
             ],
             type: defaultCredentialTypes,
             aClaim: "a value",
-            credentialSubject: {
-              id: "htps://some.subject",
-            },
+            credentialSubject: {},
           },
         }),
       })
@@ -238,7 +228,6 @@ describe("issueVerifiableCredential", () => {
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some-subject.context"] },
         { "@context": ["https://some-credential.context"], type: "some-type" }
       );
@@ -255,9 +244,7 @@ describe("issueVerifiableCredential", () => {
               "https://some-credential.context",
             ],
             type: [...defaultCredentialTypes, "some-type"],
-            credentialSubject: {
-              id: "htps://some.subject",
-            },
+            credentialSubject: {},
           },
         }),
       })
@@ -272,7 +259,6 @@ describe("issueVerifiableCredential", () => {
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         { "@context": ["https://some-subject.context"] },
         {
           "@context": ["https://some-credential.context"],
@@ -292,9 +278,7 @@ describe("issueVerifiableCredential", () => {
               "https://some-credential.context",
             ],
             type: [...defaultCredentialTypes, "some-type", "some-other-type"],
-            credentialSubject: {
-              id: "htps://some.subject",
-            },
+            credentialSubject: {},
           },
         }),
       })
@@ -309,7 +293,6 @@ describe("issueVerifiableCredential", () => {
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
-        "htps://some.subject",
         {
           "@context": {
             con: "https://some-subject.context",
@@ -333,7 +316,68 @@ describe("issueVerifiableCredential", () => {
             ],
             type: defaultCredentialTypes,
             credentialSubject: {
-              id: "htps://some.subject",
+              aClaim: "a value",
+            },
+          },
+        }),
+      })
+    );
+  });
+
+  it("doesn't include the subject ID when using the deprecated signature", async () => {
+    const mockedFetch = jest.requireMock("../fetcher") as {
+      default: typeof fetch;
+    };
+    mockedFetch.default = jest.fn();
+    try {
+      await issueVerifiableCredential(
+        "https://some.endpoint",
+        "https://some.subject",
+        { "@context": ["https://some-subject.context"], aClaim: "a value" },
+        undefined
+      );
+      // eslint-disable-next-line no-empty
+    } catch (_e) {}
+    expect(mockedFetch.default).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: JSON.stringify({
+          credential: {
+            "@context": [...defaultContext, "https://some-subject.context"],
+            type: defaultCredentialTypes,
+            credentialSubject: {
+              // Note that the subject ID is not present
+              aClaim: "a value",
+            },
+          },
+        }),
+      })
+    );
+  });
+
+  it("doesn't include the subject ID when using the deprecated default signature", async () => {
+    const mockedFetch = jest.requireMock("../fetcher") as {
+      default: typeof fetch;
+    };
+    mockedFetch.default = jest.fn();
+    try {
+      await defaultIssueVerifiableCredential(
+        "https://some.endpoint",
+        "https://some.subject",
+        { "@context": ["https://some-subject.context"], aClaim: "a value" },
+        undefined
+      );
+      // eslint-disable-next-line no-empty
+    } catch (_e) {}
+    expect(mockedFetch.default).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: JSON.stringify({
+          credential: {
+            "@context": [...defaultContext, "https://some-subject.context"],
+            type: defaultCredentialTypes,
+            credentialSubject: {
+              // Note that the subject ID is not present
               aClaim: "a value",
             },
           },
