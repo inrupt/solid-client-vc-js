@@ -8,6 +8,10 @@ The following changes have been implemented but not released yet:
 
 The following sections document changes that have been released already:
 
+### Deprecation
+
+- Passing a subject ID to `issueVerifiableCredential` is now deprecated.
+
 ## 0.3.0 - 2022-01-21
 
 ### New features
