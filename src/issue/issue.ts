@@ -82,7 +82,7 @@ async function internal_issueVerifiableCredential(
       credentialSubject: contextlessSubjectClaims,
     },
   };
-  const response = await (internalOptions.fetch as typeof global.fetch)(
+  const response = await (internalOptions.fetch as typeof fetch)(
     issuerEndpoint,
     {
       headers: {
