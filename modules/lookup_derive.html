@@ -317,14 +317,14 @@
               <div>
                 
   <p><a class="reference internal" href="../index.html"><span class="doc std std-doc">&#64;inrupt/solid-client-vc</span></a> / lookup/derive</p>
-<section class="tex2jax_ignore mathjax_ignore" id="module-lookup-derive">
+<section id="module-lookup-derive">
 <h1>Module: lookup/derive<a class="headerlink" href="#module-lookup-derive" title="Permalink to this headline">¶</a></h1>
 <section id="table-of-contents">
 <h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
 <section id="functions">
 <h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference external" href="lookup_derive.html#default">default</a></p></li>
+<li><p><span class="xref myst">default</span></p></li>
 </ul>
 </section>
 </section>
@@ -332,7 +332,7 @@
 <h2>Functions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <section id="default">
 <h3>default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h3>
-<p>▸ <strong>default</strong>(<code class="docutils literal notranslate"><span class="pre">holderEndpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">vcShape</span></code>, <code class="docutils literal notranslate"><span class="pre">options?</span></code>): <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<a class="reference external" href="common_common.html#verifiablecredential"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></a>[]&gt;</p>
+<p>▸ <strong>default</strong>(<code class="docutils literal notranslate"><span class="pre">holderEndpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">vcShape</span></code>, <code class="docutils literal notranslate"><span class="pre">options?</span></code>): <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>[]&gt;</p>
 <p>Look up VCs from a given holder according to a subset of their claims, such as
 the VC type, or any property associated to the subject in the VC. The holder
 is expected to implement the <a class="reference external" href="https://w3c-ccg.github.io/vc-api/holder.html">W3C VC Holder HTTP API</a>.</p>
@@ -352,7 +352,7 @@ is expected to implement the <a class="reference external" href="https://w3c-ccg
 <td class="text-left"><p>The <code class="docutils literal notranslate"><span class="pre">/derive</span></code> endpoint of the holder.</p></td>
 </tr>
 <tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">vcShape</span></code></p></td>
-<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">Partial</span></code>&lt;<a class="reference external" href="common_common.html#verifiablecredential"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></a>&gt;</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">Partial</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>&gt;</p></td>
 <td class="text-left"><p>The subset of claims you expect the matching VCs to contain.</p></td>
 </tr>
 <tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">options?</span></code></p></td>
@@ -368,13 +368,13 @@ is expected to implement the <a class="reference external" href="https://w3c-ccg
 </section>
 <section id="returns">
 <h4>Returns<a class="headerlink" href="#returns" title="Permalink to this headline">¶</a></h4>
-<p><code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<a class="reference external" href="common_common.html#verifiablecredential"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></a>[]&gt;</p>
+<p><code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>[]&gt;</p>
 <p>A list of VCs matching the given VC shape. The list may be empty if
 the holder does not hold any matching VC.</p>
 </section>
 <section id="defined-in">
 <h4>Defined in<a class="headerlink" href="#defined-in" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/d1af668/src/lookup/derive.ts#L46">src/lookup/derive.ts:46</a></p>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/127966e/src/lookup/derive.ts#L46">src/lookup/derive.ts:46</a></p>
 </section>
 </section>
 </section>
