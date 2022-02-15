@@ -251,6 +251,11 @@
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#references">
+     References
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#functions">
      Functions
     </a>
@@ -259,12 +264,24 @@
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#id1">
-   Functions
+   References
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#default">
      default
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id2">
+   Functions
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#issueverifiablecredential">
+     issueVerifiableCredential
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
@@ -279,6 +296,21 @@
      </li>
      <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#defined-in">
+       Defined in
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id3">
+       Parameters
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id4">
+       Returns
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id5">
        Defined in
       </a>
      </li>
@@ -321,18 +353,31 @@
 <h1>Module: issue/issue<a class="headerlink" href="#module-issue-issue" title="Permalink to this headline">¶</a></h1>
 <section id="table-of-contents">
 <h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
-<section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<section id="references">
+<h3>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><span class="xref myst">default</span></p></li>
 </ul>
 </section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><span class="xref myst">issueVerifiableCredential</span></p></li>
+</ul>
+</section>
 </section>
 <section id="id1">
-<h2>Functions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2>References<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <section id="default">
 <h3>default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h3>
-<p>▸ <strong>default</strong>(<code class="docutils literal notranslate"><span class="pre">issuerEndpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">subjectId</span></code>, <code class="docutils literal notranslate"><span class="pre">subjectClaims</span></code>, <code class="docutils literal notranslate"><span class="pre">credentialClaims?</span></code>, <code class="docutils literal notranslate"><span class="pre">options?</span></code>): <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>&gt;</p>
+<p>Renames and re-exports <span class="xref myst">issueVerifiableCredential</span></p>
+</section>
+</section>
+<section id="id2">
+<h2>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<section id="issueverifiablecredential">
+<h3>issueVerifiableCredential<a class="headerlink" href="#issueverifiablecredential" title="Permalink to this headline">¶</a></h3>
+<p>▸ <strong>issueVerifiableCredential</strong>(<code class="docutils literal notranslate"><span class="pre">issuerEndpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">subjectClaims</span></code>, <code class="docutils literal notranslate"><span class="pre">credentialClaims?</span></code>, <code class="docutils literal notranslate"><span class="pre">options?</span></code>): <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>&gt;</p>
 <p>Request that a given Verifiable Credential (VC) Issuer issues a VC containing
 the provided claims. The VC Issuer is expected to implement the <a class="reference external" href="https://w3c-ccg.github.io/vc-api/issuer.html">W3C VC Issuer HTTP API</a>.</p>
 <p><strong><code class="docutils literal notranslate"><span class="pre">since</span></code></strong> 0.1.0</p>
@@ -350,25 +395,17 @@ the provided claims. The VC Issuer is expected to implement the <a class="refere
 <td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
 <td class="text-left"><p>The <code class="docutils literal notranslate"><span class="pre">/issue</span></code> endpoint of the VC Issuer.</p></td>
 </tr>
-<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">subjectId</span></code></p></td>
-<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
-<td class="text-left"><p>The identifier of the VC claims’ subject.</p></td>
-</tr>
-<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">subjectClaims</span></code></p></td>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">subjectClaims</span></code></p></td>
 <td class="text-left"><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">JsonLd</span></code></span></p></td>
 <td class="text-left"><p>Claims about the subject that will be attested by the VC.</p></td>
 </tr>
-<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">credentialClaims?</span></code></p></td>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">credentialClaims?</span></code></p></td>
 <td class="text-left"><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">JsonLd</span></code></span></p></td>
 <td class="text-left"><p>Claims about the credential itself, rather than its subject, e.g. credential type or expiration.</p></td>
 </tr>
-<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">options?</span></code></p></td>
-<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">Object</span></code></p></td>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">options?</span></code></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">OptionsType</span></code></p></td>
 <td class="text-left"><p>Optional parameter <code class="docutils literal notranslate"><span class="pre">options.fetch</span></code>: An alternative <code class="docutils literal notranslate"><span class="pre">fetch</span></code> function to make the HTTP request, compatible with the browser-native <a class="reference external" href="https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters">fetch API</a>. This can be typically used for authentication. Note that if it is omitted, and <code class="docutils literal notranslate"><span class="pre">&#64;inrupt/solid-client-authn-browser</span></code> is in your dependencies, the default session is picked up.</p></td>
-</tr>
-<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">options.fetch?</span></code></p></td>
-<td class="text-left"><p>(<code class="docutils literal notranslate"><span class="pre">input</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInfo</span></code>, <code class="docutils literal notranslate"><span class="pre">init?</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInit</span></code>) =&gt; <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<code class="docutils literal notranslate"><span class="pre">Response</span></code>&gt; &amp; (<code class="docutils literal notranslate"><span class="pre">input</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInfo</span></code>, <code class="docutils literal notranslate"><span class="pre">init?</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInit</span></code>) =&gt; <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<code class="docutils literal notranslate"><span class="pre">Response</span></code>&gt;</p></td>
-<td class="text-left"><p>-</p></td>
 </tr>
 </tbody>
 </table>
@@ -380,7 +417,44 @@ the provided claims. The VC Issuer is expected to implement the <a class="refere
 </section>
 <section id="defined-in">
 <h4>Defined in<a class="headerlink" href="#defined-in" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/127966e/src/issue/issue.ts#L49">src/issue/issue.ts:49</a></p>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/7e9a0f1/src/issue/issue.ts#L129">src/issue/issue.ts:129</a></p>
+<p>▸ <strong>issueVerifiableCredential</strong>(<code class="docutils literal notranslate"><span class="pre">issuerEndpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">subjectId</span></code>, <code class="docutils literal notranslate"><span class="pre">subjectClaims</span></code>, <code class="docutils literal notranslate"><span class="pre">credentialClaims?</span></code>, <code class="docutils literal notranslate"><span class="pre">options?</span></code>): <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>&gt;</p>
+<p><strong><code class="docutils literal notranslate"><span class="pre">deprecated</span></code></strong> Please remove the <code class="docutils literal notranslate"><span class="pre">subjectId</span></code> parameter</p>
+</section>
+<section id="id3">
+<h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<table class="colwidths-auto table">
+<thead>
+<tr class="row-odd"><th class="text-left head"><p>Name</p></th>
+<th class="text-left head"><p>Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">issuerEndpoint</span></code></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">subjectId</span></code></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">subjectClaims</span></code></p></td>
+<td class="text-left"><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">JsonLd</span></code></span></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">credentialClaims?</span></code></p></td>
+<td class="text-left"><p><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">JsonLd</span></code></span></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">options?</span></code></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">OptionsType</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id4">
+<h4>Returns<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>&gt;</p>
+</section>
+<section id="id5">
+<h4>Defined in<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/7e9a0f1/src/issue/issue.ts#L138">src/issue/issue.ts:138</a></p>
 </section>
 </section>
 </section>
