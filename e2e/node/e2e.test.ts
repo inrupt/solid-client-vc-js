@@ -171,8 +171,7 @@ describe.each(serversUnderTest)(
     describe("issue a VC", () => {
       it("Successfully gets a VC from a valid issuer", async () => {
         const credential = await issueVerifiableCredential(
-          `${vcService}/issue`,
-          vcSubject,
+          new URL("issue", vcService).href,
           validCredentialClaims,
           undefined,
           {
@@ -185,8 +184,7 @@ describe.each(serversUnderTest)(
       it("throws if the issuer returns an error", async () => {
         await expect(
           issueVerifiableCredential(
-            `${vcService}/issue`,
-            vcSubject,
+            new URL("issue", vcService).href,
             invalidCredentialClaims,
             undefined,
             {
@@ -205,7 +203,7 @@ describe.each(serversUnderTest)(
           return;
         }
         const result = await getVerifiableCredentialAllFromShape(
-          `${vcService}/derive`,
+          new URL("derive", vcService).href,
           {
             credentialSubject: {
               id: vcSubject,
@@ -227,19 +225,23 @@ describe.each(serversUnderTest)(
           return;
         }
         const result = await getVerifiableCredentialAllFromShape(
-          `${vcService}/derive`,
+          new URL("derive", vcService).href,
           {},
           {
             fetch: session.fetch,
           }
         );
         await expect(
-          revokeVerifiableCredential(`${vcService}/status`, result[0].id, {
-            fetch: session.fetch,
-          })
+          revokeVerifiableCredential(
+            new URL("status", vcService).href,
+            result[0].id,
+            {
+              fetch: session.fetch,
+            }
+          )
         ).resolves.not.toThrow();
         const verificationResponse = await session.fetch(
-          `${vcService}/verify`,
+          new URL("verify", vcService).href,
           {
             method: "POST",
             body: JSON.stringify({ verifiableCredential: result[0] }),
