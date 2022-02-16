@@ -6,7 +6,13 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+### New features
+
+-
+
 The following sections document changes that have been released already:
+
+## 0.3.1 - 2022-02-15
 
 ### Deprecation
 
