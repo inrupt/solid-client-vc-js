@@ -272,7 +272,7 @@ export async function getVerifiableCredential(
         return await response.json();
       } catch (e) {
         throw new Error(
-          `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e.toString()}`
+          `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`
         );
       }
     })
