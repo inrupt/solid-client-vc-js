@@ -8,7 +8,8 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
--
+- `getVerifiableCredential`: function exported by the `./common` module to dereference
+  a VC URL and validate the obtained content.
 
 The following sections document changes that have been released already:
 

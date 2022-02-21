@@ -19,12 +19,13 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { describe, it, expect } from "@jest/globals";
-import { VerifiableCredential } from "..";
+import { jest, describe, it, expect } from "@jest/globals";
 import {
   concatenateContexts,
+  getVerifiableCredential,
   isVerifiableCredential,
   isVerifiablePresentation,
+  VerifiableCredential,
 } from "./common";
 import {
   defaultCredentialClaims,
@@ -34,6 +35,9 @@ import {
   mockPartialPresentation,
   defaultVerifiableClaims,
 } from "./common.mock";
+import defaultFetch from "../fetcher";
+
+jest.mock("../fetcher");
 
 describe("isVerifiableCredential", () => {
   it("returns true if all the expected fields are present in the credential", () => {
@@ -243,5 +247,95 @@ describe("concatenateContexts", () => {
     expect(concatenateContexts("https://some.context", undefined)).toEqual([
       "https://some.context",
     ]);
+  });
+});
+
+describe("getVerifiableCredential", () => {
+  it("defaults to the embedded fetch", async () => {
+    const embeddedFetch = jest.requireMock("../fetcher") as jest.Mocked<{
+      default: typeof defaultFetch;
+    }>;
+    embeddedFetch.default.mockResolvedValueOnce(
+      new Response(JSON.stringify(mockDefaultCredential()))
+    );
+
+    const redirectUrl = new URL("https://redirect.url");
+    redirectUrl.searchParams.append(
+      "requestVcUrl",
+      encodeURI("https://some.vc")
+    );
+    redirectUrl.searchParams.append(
+      "redirectUrl",
+      encodeURI("https://requestor.redirect.url")
+    );
+
+    await getVerifiableCredential("https://some.vc");
+    expect(embeddedFetch.default).toHaveBeenCalledWith("https://some.vc");
+  });
+
+  it("uses the provided fetch if any", async () => {
+    const mockedFetch = jest
+      .fn(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockDefaultCredential()))
+      );
+
+    await getVerifiableCredential("https://some.vc", {
+      fetch: mockedFetch,
+    });
+    expect(mockedFetch).toHaveBeenCalledWith("https://some.vc");
+  });
+
+  it("throws if the VC ID cannot be dereferenced", async () => {
+    const mockedFetch = jest
+      .fn(fetch)
+      .mockResolvedValueOnce(
+        new Response(undefined, { status: 401, statusText: "Unauthenticated" })
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/https:\/\/some.vc.*401.*Unauthenticated/);
+  });
+
+  it("throws if the dereferenced data is invalid JSON", async () => {
+    const mockedFetch = jest
+      .fn(fetch)
+      .mockResolvedValueOnce(new Response("Not JSON."));
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/https:\/\/some.vc.*JSON/);
+  });
+
+  it("throws if the dereferenced data is not a VC", async () => {
+    const mockedFetch = jest
+      .fn(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ something: "but not a VC" }))
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/https:\/\/some.vc.*Verifiable Credential/);
+  });
+
+  it("returns the fetched VC and the redirect URL", async () => {
+    const mockedFetch = jest
+      .fn(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockDefaultCredential()))
+      );
+
+    const vc = await getVerifiableCredential("https://some.vc", {
+      fetch: mockedFetch,
+    });
+    expect(vc).toStrictEqual(mockDefaultCredential());
   });
 });
