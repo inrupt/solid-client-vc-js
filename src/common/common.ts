@@ -25,6 +25,7 @@ import {
   UrlString,
   getJsonLdParser,
 } from "@inrupt/solid-client";
+import defaultFetch from "../fetcher";
 
 export type Iri = string;
 /**
@@ -243,4 +244,36 @@ export async function getVerifiableCredentialApiConfiguration(
     verifierService:
       getIri(wellKnownRootBlankNode, SOLID_VC_VERIFIER_SERVICE) ?? undefined,
   };
+}
+
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: Partial<{
+    fetch: typeof fetch;
+  }>
+): Promise<VerifiableCredential> {
+  const authFetch = options?.fetch ?? defaultFetch;
+  return authFetch(vcUrl as string)
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`
+        );
+      }
+      try {
+        return await response.json();
+      } catch (e) {
+        throw new Error(
+          `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e.toString()}`
+        );
+      }
+    })
+    .then((vc) => {
+      if (!isVerifiableCredential(vc)) {
+        throw new Error(
+          `The value received from [${vcUrl}] is not a Verifiable Credential`
+        );
+      }
+      return vc;
+    });
 }
