@@ -246,6 +246,14 @@ export async function getVerifiableCredentialApiConfiguration(
   };
 }
 
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ */
 export async function getVerifiableCredential(
   vcUrl: UrlString,
   options?: Partial<{
