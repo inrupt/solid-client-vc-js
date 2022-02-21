@@ -8,10 +8,16 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
-- `getVerifiableCredential`: function exported by the `./common` module to dereference
-  a VC URL and validate the obtained content.
+-
 
 The following sections document changes that have been released already:
+
+## 0.4.0 - 2022-02-20
+
+### New features
+
+- `getVerifiableCredential`: function exported by the `./common` module to dereference
+  a VC URL and validate the obtained content.
 
 ## 0.3.1 - 2022-02-15
 
