@@ -253,6 +253,7 @@ export async function getVerifiableCredentialApiConfiguration(
  * @param options Options to customize the function behavior.
  * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
  * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
  */
 export async function getVerifiableCredential(
   vcUrl: UrlString,
