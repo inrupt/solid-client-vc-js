@@ -50,7 +50,7 @@ jobs:
     outputs:
       version-nr: ${{ steps.determine-npm-version.outputs.version-nr }}
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
     - name: Mark GitHub Deployment as in progress
       id: start-deployment
       uses: octokit/request-action@v2.x
@@ -138,7 +138,7 @@ jobs:
         node-version: [16.x, 14.x, 12.x]
     needs: [prepare-deployment, publish-npm]
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
       with:
         node-version: '16.x'
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [prepare-deployment, publish-npm]
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
       with:
         node-version: '16.x'
@@ -219,7 +219,7 @@ jobs:
         node-version: [16.x]
     needs: [prepare-deployment, publish-npm]
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
