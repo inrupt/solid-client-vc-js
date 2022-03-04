@@ -85,6 +85,26 @@ describe("getVerifiableCredentialAllFromShape", () => {
     );
   });
 
+  it("includes the expired VC options if requested", async () => {
+    const mockedFetch = mockFetch(mockDeriveEndpointDefaultResponse());
+    await getVerifiableCredentialAllFromShape(
+      "https://some.endpoint",
+      {
+        "@context": ["https://some.context"],
+        credentialSubject: { id: "https://some.subject/" },
+      },
+      {
+        includeExpiredVc: true,
+      }
+    );
+    expect(mockedFetch.default).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: expect.stringContaining("ExpiredVerifiableCredential"),
+      })
+    );
+  });
+
   it("throws if the holder returns an error", async () => {
     mockFetch(
       new Response(undefined, {

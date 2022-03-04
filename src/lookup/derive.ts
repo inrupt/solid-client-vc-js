@@ -28,6 +28,8 @@ import {
 } from "../common/common";
 import fallbackFetch from "../fetcher";
 
+const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;
+
 /**
  * Look up VCs from a given holder according to a subset of their claims, such as
  * the VC type, or any property associated to the subject in the VC. The holder
@@ -46,9 +48,10 @@ import fallbackFetch from "../fetcher";
 export default async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredential>,
-  options?: {
-    fetch?: typeof fallbackFetch;
-  }
+  options?: Partial<{
+    fetch: typeof fallbackFetch;
+    includeExpiredVc: boolean;
+  }>
 ): Promise<VerifiableCredential[]> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
@@ -62,13 +65,21 @@ export default async function getVerifiableCredentialAllFromShape(
   const credentialClaims = { ...vcShape };
   delete credentialClaims["@context"];
   const claimsContext = vcShape["@context"];
-  const credentialRequestBody = {
+  const credentialRequestBody: {
+    verifiableCredential: Partial<VerifiableCredential>;
+    options?: { include: typeof INCLUDE_EXPIRED_VC_OPTION };
+  } = {
     // See https://w3c-ccg.github.io/vc-api/holder.html
     verifiableCredential: {
       "@context": concatenateContexts(defaultContext, claimsContext),
       ...credentialClaims,
     },
   };
+  if (internalOptions.includeExpiredVc) {
+    credentialRequestBody.options = {
+      include: INCLUDE_EXPIRED_VC_OPTION,
+    };
+  }
   const response = await internalOptions.fetch(holderEndpoint, {
     headers: {
       "Content-Type": "application/json",
