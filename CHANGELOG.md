@@ -8,6 +8,12 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
+-
+
+## 0.5.0 - 2022-03-07
+
+### New features
+
 - `getVerifiableCredentialAllFromShape` supports a new option, `includeExpiredVc`.
   If set to true, the Holder endpoint will return VCs that have expired and are thus
   no longer valid. This new option defaults to false.
