@@ -37,10 +37,13 @@ const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;
  *
  * @param holderEndpoint The `/derive` endpoint of the holder.
  * @param vcShape The subset of claims you expect the matching VCs to contain.
- * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * @param options Optional parameter:
+ * - `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * This can be typically used for authentication. Note that if it is omitted, and
  * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
  * is picked up.
+ * - `options.includeExpiredVc`: include expired VC matching the shape in the
+ * result set.
  * @returns A list of VCs matching the given VC shape. The list may be empty if
  * the holder does not hold any matching VC.
  * @since 0.1.0
