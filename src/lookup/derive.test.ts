@@ -26,6 +26,20 @@ import getVerifiableCredentialAllFromShape from "./derive";
 
 jest.mock("../fetcher");
 
+const mockFetch = (response: Response) => {
+  const mockedFetch = jest.requireMock("../fetcher") as {
+    default: typeof fetch;
+  };
+  mockedFetch.default = jest.fn(fetch).mockResolvedValue(response);
+  return mockedFetch;
+};
+
+const mockDeriveEndpointDefaultResponse = () =>
+  new Response(JSON.stringify(mockDefaultPresentation()), {
+    status: 200,
+    statusText: "OK",
+  });
+
 describe("getVerifiableCredentialAllFromShape", () => {
   it("uses the provided fetch if any", async () => {
     const mockedFetch = jest.fn() as typeof fetch;
@@ -46,32 +60,20 @@ describe("getVerifiableCredentialAllFromShape", () => {
   });
 
   it("defaults to the embedded fetcher if no fetch is provided", async () => {
-    const mockedFetch = jest.requireMock("../fetcher") as {
-      default: typeof fetch;
-    };
-    mockedFetch.default = jest.fn();
-    try {
-      await getVerifiableCredentialAllFromShape("https://some.endpoint", {
-        "@context": ["https://some.context"],
-        credentialSubject: { id: "https://some.subject/" },
-      });
-      // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    const mockedFetch = mockFetch(mockDeriveEndpointDefaultResponse());
+    await getVerifiableCredentialAllFromShape("https://some.endpoint", {
+      "@context": ["https://some.context"],
+      credentialSubject: { id: "https://some.subject/" },
+    });
     expect(mockedFetch.default).toHaveBeenCalled();
   });
 
   it("posts a request with the appropriate media type", async () => {
-    const mockedFetch = jest.requireMock("../fetcher") as {
-      default: typeof fetch;
-    };
-    mockedFetch.default = jest.fn();
-    try {
-      await getVerifiableCredentialAllFromShape("https://some.endpoint", {
-        "@context": ["https://some.context"],
-        credentialSubject: { id: "https://some.subject/" },
-      });
-      // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    const mockedFetch = mockFetch(mockDeriveEndpointDefaultResponse());
+    await getVerifiableCredentialAllFromShape("https://some.endpoint", {
+      "@context": ["https://some.context"],
+      credentialSubject: { id: "https://some.subject/" },
+    });
     expect(mockedFetch.default).toHaveBeenCalledWith(
       "https://some.endpoint",
       expect.objectContaining({
@@ -83,16 +85,33 @@ describe("getVerifiableCredentialAllFromShape", () => {
     );
   });
 
+  it("includes the expired VC options if requested", async () => {
+    const mockedFetch = mockFetch(mockDeriveEndpointDefaultResponse());
+    await getVerifiableCredentialAllFromShape(
+      "https://some.endpoint",
+      {
+        "@context": ["https://some.context"],
+        credentialSubject: { id: "https://some.subject/" },
+      },
+      {
+        includeExpiredVc: true,
+      }
+    );
+    expect(mockedFetch.default).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: expect.stringContaining("ExpiredVerifiableCredential"),
+      })
+    );
+  });
+
   it("throws if the holder returns an error", async () => {
-    const mockedFetch = jest.requireMock("../fetcher") as {
-      default: typeof fetch;
-    };
-    mockedFetch.default = jest.fn().mockResolvedValue(
-      new Response("", {
+    mockFetch(
+      new Response(undefined, {
         status: 400,
         statusText: "Bad request",
-      }) as never
-    ) as typeof fetch;
+      })
+    );
     await expect(
       getVerifiableCredentialAllFromShape("https://some.endpoint", {
         "@context": ["https://some.context"],
@@ -102,15 +121,12 @@ describe("getVerifiableCredentialAllFromShape", () => {
   });
 
   it("throws if the holder returns non-JSON response", async () => {
-    const mockedFetch = jest.requireMock("../fetcher") as {
-      default: typeof fetch;
-    };
-    mockedFetch.default = jest.fn().mockResolvedValue(
+    mockFetch(
       new Response("Not a JSON", {
         status: 200,
         statusText: "OK",
-      }) as never
-    ) as typeof fetch;
+      })
+    );
     await expect(
       getVerifiableCredentialAllFromShape("https://some.endpoint", {
         "@context": ["https://some.context"],
@@ -120,10 +136,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
   });
 
   it("throws if the holder returns JSON response which isn't a Verifiable Presentation", async () => {
-    const mockedFetch = jest.requireMock("../fetcher") as {
-      default: typeof fetch;
-    };
-    mockedFetch.default = jest.fn().mockResolvedValue(
+    mockFetch(
       new Response(
         `${JSON.stringify({
           "@context": "https://some.context",
@@ -133,8 +146,8 @@ describe("getVerifiableCredentialAllFromShape", () => {
           status: 200,
           statusText: "OK",
         }
-      ) as never
-    ) as typeof fetch;
+      )
+    );
     await expect(
       getVerifiableCredentialAllFromShape("https://some.endpoint", {
         "@context": ["https://some.context"],
@@ -144,15 +157,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
   });
 
   it("returns the VCs from the obtained VP on a successful response", async () => {
-    const mockedFetch = jest.requireMock("../fetcher") as {
-      default: typeof fetch;
-    };
-    mockedFetch.default = jest.fn().mockResolvedValue(
-      new Response(JSON.stringify(mockDefaultPresentation()), {
-        status: 200,
-        statusText: "OK",
-      }) as never
-    ) as typeof fetch;
+    const mockedFetch = mockFetch(mockDeriveEndpointDefaultResponse());
     await expect(
       getVerifiableCredentialAllFromShape("https://some.endpoint", {
         "@context": ["https://some.context"],
@@ -176,10 +181,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
   });
 
   it("returns an empty array if the VP contains no VCs", async () => {
-    const mockedFetch = jest.requireMock("../fetcher") as {
-      default: typeof fetch;
-    };
-    mockedFetch.default = jest.fn().mockResolvedValue(
+    mockFetch(
       new Response(
         JSON.stringify({
           ...mockDefaultPresentation(),
@@ -189,8 +191,8 @@ describe("getVerifiableCredentialAllFromShape", () => {
           status: 200,
           statusText: "OK",
         }
-      ) as never
-    ) as typeof fetch;
+      )
+    );
     await expect(
       getVerifiableCredentialAllFromShape("https://some.endpoint", {
         "@context": ["https://some.context"],
