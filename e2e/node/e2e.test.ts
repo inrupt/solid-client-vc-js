@@ -49,6 +49,10 @@ const validCredentialClaims = {
       "@id": "gc:hasConsent",
       "@type": "@id",
     },
+    isConsentForDataSubject: {
+      "@id": "gc:isConsentForDataSubject",
+      "@type": "@id",
+    },
     hasStatus: {
       "@id": "gc:hasStatus",
       "@type": "@id",
@@ -59,6 +63,7 @@ const validCredentialClaims = {
     forPersonalData: "https://example.org/ns/someData",
     hasStatus: "gc:ConsentStatusRequested",
     mode: "acl:Read",
+    isConsentForDataSubject: "https://some.webid/resource-owner",
   },
   inbox: "https://pod.inrupt.com/solid-client-e2e-tester-ess/inbox/",
 };
