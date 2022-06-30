@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@inrupt/eslint-config-lib": "^1.0.0",
-    "@inrupt/solid-client-authn-node": "^1.11.2",
+    "@inrupt/solid-client-authn-node": "^1.12.1",
     "@rushstack/eslint-patch": "^1.1.4",
     "@testing-library/testcafe": "^4.4.0",
     "@types/dotenv-flow": "^3.1.1",
@@ -70,7 +70,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@inrupt/solid-client": "^1.15.0",
+    "@inrupt/solid-client": "^1.23.1",
     "cross-fetch": "^3.1.4"
   },
   "publishConfig": {
