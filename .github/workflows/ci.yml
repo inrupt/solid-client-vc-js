@@ -39,13 +39,3 @@ jobs:
         E2E_TEST_DEV_NEXT_VC_SUBJECT: https://id.dev-next.inrupt.com/sdkdevnexte2e
         E2E_TEST_DEV_NEXT_CLIENT_ID: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_ID }}
         E2E_TEST_DEV_NEXT_CLIENT_SECRET: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_SECRET }}
-    # Ideally, we'd autodetect installed browsers and run them headlessly.
-    # See https://github.com/DevExpress/testcafe/issues/5641
-    - name: Prepare browser-based end-to-end tests
-      run: |
-        cd .codesandbox/sandbox
-        npm install
-        # Run the end-to-end tests against the code in this branch specifically:
-        npm install ../../
-        cd ../..
-    # TODO: Persist the e2e browser results to artifacts
