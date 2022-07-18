@@ -97,17 +97,9 @@ type AuthDetails = [OidcIssuer, ClientId, ClientSecret, VcService, VcSubject];
 // Instructions for obtaining these credentials can be found here:
 // https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
 const serversUnderTest: AuthDetails[] = [
+  // Note: Disabled due to PodSpaces 2.0 migration:
   // pod.inrupt.com:
-  [
-    // Cumbersome workaround, but:
-    // Trim `https://` from the start of these URLs,
-    // so that GitHub Actions doesn't replace them with *** in the logs.
-    process.env.E2E_TEST_ESS_IDP_URL!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_VC_SERVICE!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_VC_SUBJECT!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_CLIENT_ID!,
-    process.env.E2E_TEST_ESS_CLIENT_SECRET!,
-  ],
+
   // dev-next.inrupt.com:
   [
     // Cumbersome workaround, but:
