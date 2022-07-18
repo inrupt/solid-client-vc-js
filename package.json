@@ -12,8 +12,6 @@
     "test": "jest src",
     "e2e-test-node": "jest --config=jest.e2e.config.js e2e/node",
     "e2e-test-browser": "echo \"This project has no e2e browser tests\"",
-    "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
-    "check-licenses": "license-checker --production --failOn \"AGPL-1.0-only; AGPL-1.0-or-later; AGPL-3.0-only; AGPL-3.0-or-later; Beerware; CC-BY-NC-1.0; CC-BY-NC-2.0; CC-BY-NC-2.5; CC-BY-NC-3.0; CC-BY-NC-4.0; CC-BY-NC-ND-1.0; CC-BY-NC-ND-2.0; CC-BY-NC-ND-2.5; CC-BY-NC-ND-3.0; CC-BY-NC-ND-4.0; CC-BY-NC-SA-1.0; CC-BY-NC-SA-2.0; CC-BY-NC-SA-2.5; CC-BY-NC-SA-3.0; CC-BY-NC-SA-4.0; CPAL-1.0; EUPL-1.0; EUPL-1.1; EUPL-1.1;  GPL-1.0-only; GPL-1.0-or-later; GPL-2.0-only;  GPL-2.0-or-later; GPL-3.0; GPL-3.0-only; GPL-3.0-or-later; SISSL;  SISSL-1.2; WTFPL\"",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -52,7 +50,6 @@
     "@inrupt/eslint-config-base": "^0.4.0",
     "@inrupt/eslint-config-lib": "^0.4.0",
     "@inrupt/solid-client-authn-node": "^1.11.2",
-    "@skypack/package-check": "^0.2.2",
     "@types/dotenv-flow": "^3.1.1",
     "@types/jest": "^27.0.1",
     "@types/node": "^17.0.6",
@@ -67,9 +64,7 @@
     "eslint-plugin-jest": "^26.0.0",
     "eslint-plugin-license-header": "^0.4.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "fast-check": "^2.17.0",
     "jest": "^27.4.7",
-    "license-checker": "^25.0.1",
     "prettier": "2.6.2",
     "rollup": "^2.56.2",
     "rollup-plugin-typescript2": "^0.31.1",

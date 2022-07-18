@@ -5,6 +5,9 @@ on: [push]
 env:
   CI: true
 jobs:
+  lint:
+    uses: inrupt/javascript-style-configs/.github/workflows/reusable-lint.yml@v1.1.0
+
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -21,8 +24,6 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm run test
-    # TODO: Replace with shared auditing:
-    - run: npm run check-licenses
     - run: npm run e2e-test-node
       # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
       # and because behaviour on different OS's is already tested by unit tests,
