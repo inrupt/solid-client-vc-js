@@ -29,11 +29,6 @@ jobs:
       # end-to-end tests only need to run on one OS:
       if: runner.os == 'Linux' && matrix.node-version == '16.x' && github.actor != 'dependabot[bot]'
       env:
-        E2E_TEST_ESS_IDP_URL: https://broker.pod.inrupt.com
-        E2E_TEST_ESS_VC_SERVICE: https://consent.pod.inrupt.com
-        E2E_TEST_ESS_VC_SUBJECT: https://pod.inrupt.com/solid-client-e2e-tester-ess/profile/card#me
-        E2E_TEST_ESS_CLIENT_ID: ${{ secrets.POD_SPACES_CLIENT_ID }}
-        E2E_TEST_ESS_CLIENT_SECRET: ${{ secrets.POD_SPACES_CLIENT_SECRET }}
         E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
         E2E_TEST_DEV_NEXT_VC_SERVICE: https://vc.dev-next.inrupt.com
         E2E_TEST_DEV_NEXT_VC_SUBJECT: https://id.dev-next.inrupt.com/sdkdevnexte2e
