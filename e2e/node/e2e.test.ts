@@ -186,17 +186,29 @@ describe.each(serversUnderTest)(
         expect(credential.credentialSubject.id).toBe(vcSubject);
       });
 
+      // FIXME: based on configuration, the server may have one of two behaviors
+      // when receiving a VC not matching any preconfigured shape. It may respond
+      // with 400 bad request, but may also respond with a VC not having the type
+      // associated to the preconfigured shape.
       it("throws if the issuer returns an error", async () => {
-        await expect(
-          issueVerifiableCredential(
-            new URL("issue", vcService).href,
-            invalidCredentialClaims,
-            undefined,
-            {
-              fetch: session.fetch,
-            }
-          )
-        ).rejects.toThrow("400");
+        const vcPromise = issueVerifiableCredential(
+          new URL("issue", vcService).href,
+          invalidCredentialClaims,
+          undefined,
+          {
+            fetch: session.fetch,
+          }
+        );
+        try {
+          const vc = await vcPromise;
+          expect(vc.type).not.toContain("SolidAccessGrant");
+          // There are two default type values, there should not be more.
+          expect(vc.type).toHaveLength(2);
+        } catch(error) {
+          // If the promise rejects, it means the
+          // server responded with an error.
+          expect((error as Object).toString()).toMatch("400")
+        }
       });
     });
 
