@@ -337,7 +337,8 @@
 subsequent verifications will fail. The issuer is expected to implement the
 <a class="reference external" href="https://w3c-ccg.github.io/vc-api/issuer.html">W3C VC Issuer HTTP API</a>,
 in particular <a class="reference external" href="https://w3c-ccg.github.io/vc-api/issuer.html#operation/updateCredentialStatus">VC status update</a>.</p>
-<p><strong><code class="docutils literal notranslate"><span class="pre">since</span></code></strong> 0.1.0</p>
+<p><strong><code class="docutils literal notranslate"><span class="pre">Since</span></code></strong></p>
+<p>0.1.0</p>
 <section id="parameters">
 <h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">#</a></h4>
 <table class="colwidths-auto table">
@@ -361,7 +362,7 @@ in particular <a class="reference external" href="https://w3c-ccg.github.io/vc-a
 <td class="text-left"><p>Optional parameter <code class="docutils literal notranslate"><span class="pre">options.fetch</span></code>: An alternative <code class="docutils literal notranslate"><span class="pre">fetch</span></code> function to make the HTTP request, compatible with the browser-native <a class="reference external" href="https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters">fetch API</a>. This can be typically used for authentication. Note that if it is omitted, and <code class="docutils literal notranslate"><span class="pre">&#64;inrupt/solid-client-authn-browser</span></code> is in your dependencies, the default session is picked up.</p></td>
 </tr>
 <tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">options.fetch</span></code></p></td>
-<td class="text-left"><p>(<code class="docutils literal notranslate"><span class="pre">input</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInfo</span></code>, <code class="docutils literal notranslate"><span class="pre">init?</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInit</span></code>) =&gt; <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<code class="docutils literal notranslate"><span class="pre">Response</span></code>&gt;</p></td>
+<td class="text-left"><p>(<code class="docutils literal notranslate"><span class="pre">input</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInfo</span></code> | <code class="docutils literal notranslate"><span class="pre">URL</span></code>, <code class="docutils literal notranslate"><span class="pre">init?</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInit</span></code>) =&gt; <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<code class="docutils literal notranslate"><span class="pre">Response</span></code>&gt;</p></td>
 <td class="text-left"><p>-</p></td>
 </tr>
 </tbody>
@@ -373,7 +374,7 @@ in particular <a class="reference external" href="https://w3c-ccg.github.io/vc-a
 </section>
 <section id="defined-in">
 <h4>Defined in<a class="headerlink" href="#defined-in" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/82fb415/src/revoke/revoke.ts#L39">src/revoke/revoke.ts:39</a></p>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/6991652/src/revoke/revoke.ts#L39">src/revoke/revoke.ts:39</a></p>
 </section>
 </section>
 </section>

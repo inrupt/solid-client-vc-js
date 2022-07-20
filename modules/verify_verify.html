@@ -340,7 +340,8 @@
 These verifications are done server-side by a Verification Service, either
 discovered from the VC Issuer or manually provided.</p></li>
 </ul>
-<p><strong><code class="docutils literal notranslate"><span class="pre">since</span></code></strong> 0.3.0</p>
+<p><strong><code class="docutils literal notranslate"><span class="pre">Since</span></code></strong></p>
+<p>0.3.0</p>
 <section id="parameters">
 <h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">#</a></h4>
 <table class="colwidths-auto table">
@@ -352,11 +353,11 @@ discovered from the VC Issuer or manually provided.</p></li>
 </thead>
 <tbody>
 <tr class="row-even"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">vc</span></code></p></td>
-<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">string</span></code> | <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span> | <code class="docutils literal notranslate"><span class="pre">URL</span></code></p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">string</span></code> | <code class="docutils literal notranslate"><span class="pre">URL</span></code> | <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span></p></td>
 <td class="text-left"><p>The VC to verify</p></td>
 </tr>
 <tr class="row-odd"><td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">options</span></code></p></td>
-<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">Partial</span></code>&lt;{ <code class="docutils literal notranslate"><span class="pre">fetch?</span></code>: (<code class="docutils literal notranslate"><span class="pre">input</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInfo</span></code>, <code class="docutils literal notranslate"><span class="pre">init?</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInit</span></code>) =&gt; <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<code class="docutils literal notranslate"><span class="pre">Response</span></code>&gt; ; <code class="docutils literal notranslate"><span class="pre">verificationEndpoint?</span></code>: <code class="docutils literal notranslate"><span class="pre">string</span></code>  }&gt;</p></td>
+<td class="text-left"><p><code class="docutils literal notranslate"><span class="pre">Partial</span></code>&lt;{ <code class="docutils literal notranslate"><span class="pre">fetch?</span></code>: (<code class="docutils literal notranslate"><span class="pre">input</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInfo</span></code> | <code class="docutils literal notranslate"><span class="pre">URL</span></code>, <code class="docutils literal notranslate"><span class="pre">init?</span></code>: <code class="docutils literal notranslate"><span class="pre">RequestInit</span></code>) =&gt; <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<code class="docutils literal notranslate"><span class="pre">Response</span></code>&gt; ; <code class="docutils literal notranslate"><span class="pre">verificationEndpoint?</span></code>: <code class="docutils literal notranslate"><span class="pre">string</span></code>  }&gt;</p></td>
 <td class="text-left"><p>Additional options - <code class="docutils literal notranslate"><span class="pre">options.fetch</span></code>: An alternative <code class="docutils literal notranslate"><span class="pre">fetch</span></code> function to make the HTTP request, compatible with the browser-native <a class="reference external" href="https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters">fetch API</a>. This can be typically used for authentication. - <code class="docutils literal notranslate"><span class="pre">options.verificationEndpoint</span></code>: Pass a trusted VC verification service</p></td>
 </tr>
 </tbody>
@@ -369,7 +370,7 @@ discovered from the VC Issuer or manually provided.</p></li>
 </section>
 <section id="defined-in">
 <h4>Defined in<a class="headerlink" href="#defined-in" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/82fb415/src/verify/verify.ts#L78">src/verify/verify.ts:78</a></p>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/6991652/src/verify/verify.ts#L78">src/verify/verify.ts:78</a></p>
 </section>
 </section>
 </section>
