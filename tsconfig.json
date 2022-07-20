@@ -81,8 +81,6 @@
       "**/*.test.ts",
       // Internal helpers:
       "**/*.internal.ts",
-      // End-to-end tests:
-      "src/e2e-*/**",
       // Re-exported functions are already documented in their own modules:
       "src/index.ts",
       // Constants are only used internally:
@@ -92,7 +90,7 @@
     "readme": "none",
     "entryDocument": "index.md",
   },
-  "include": ["src/**/*.ts", ".eslintrc.js"],
+  "include": ["src/**/*.ts"],
   "exclude": [
     "**/node_modules",
     // These end-to-end tests reference code in `.codesandbox`,

@@ -1,18 +1,35 @@
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  jest,
-} from "@jest/globals";
+//
+// Copyright 2022 Inrupt Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+// Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// FIXME: Remove when refactoring to test matrix
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
+import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import { Session } from "@inrupt/solid-client-authn-node";
+import { config } from "dotenv-flow";
 import {
   getVerifiableCredentialAllFromShape,
   issueVerifiableCredential,
   revokeVerifiableCredential,
 } from "../../src/index";
-import { Session } from "@inrupt/solid-client-authn-node";
-import { config } from "dotenv-flow";
 
 // Load environment variables from .env.test.local if available:
 config({
@@ -97,17 +114,9 @@ type AuthDetails = [OidcIssuer, ClientId, ClientSecret, VcService, VcSubject];
 // Instructions for obtaining these credentials can be found here:
 // https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
 const serversUnderTest: AuthDetails[] = [
+  // Note: Disabled due to PodSpaces 2.0 migration:
   // pod.inrupt.com:
-  [
-    // Cumbersome workaround, but:
-    // Trim `https://` from the start of these URLs,
-    // so that GitHub Actions doesn't replace them with *** in the logs.
-    process.env.E2E_TEST_ESS_IDP_URL!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_VC_SERVICE!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_VC_SUBJECT!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_ESS_CLIENT_ID!,
-    process.env.E2E_TEST_ESS_CLIENT_SECRET!,
-  ],
+
   // dev-next.inrupt.com:
   [
     // Cumbersome workaround, but:
@@ -135,11 +144,11 @@ describe.each(serversUnderTest)(
     const vcSubject = new URL(`https://${vcSubjectDisplay}`).href;
 
     it("has the appropriate environment variables", () => {
-      expect(oidcIssuer).not.toBeUndefined();
-      expect(clientId).not.toBeUndefined();
-      expect(clientSecret).not.toBeUndefined();
-      expect(vcService).not.toBeUndefined();
-      expect(vcSubject).not.toBeUndefined();
+      expect(oidcIssuer).toBeDefined();
+      expect(clientId).toBeDefined();
+      expect(clientSecret).toBeDefined();
+      expect(vcService).toBeDefined();
+      expect(vcSubject).toBeDefined();
     });
 
     const session = new Session();
@@ -186,17 +195,30 @@ describe.each(serversUnderTest)(
         expect(credential.credentialSubject.id).toBe(vcSubject);
       });
 
+      // FIXME: based on configuration, the server may have one of two behaviors
+      // when receiving a VC not matching any preconfigured shape. It may respond
+      // with 400 bad request, but may also respond with a VC not having the type
+      // associated to the preconfigured shape.
       it("throws if the issuer returns an error", async () => {
-        await expect(
-          issueVerifiableCredential(
-            new URL("issue", vcService).href,
-            invalidCredentialClaims,
-            undefined,
-            {
-              fetch: session.fetch,
-            }
-          )
-        ).rejects.toThrow("400");
+        const vcPromise = issueVerifiableCredential(
+          new URL("issue", vcService).href,
+          invalidCredentialClaims,
+          undefined,
+          {
+            fetch: session.fetch,
+          }
+        );
+        try {
+          const vc = await vcPromise;
+          expect(vc.type).not.toContain("SolidAccessGrant");
+          // There are two default type values, there should not be more.
+          expect(vc.type).toHaveLength(2);
+        } catch (error) {
+          // If the promise rejects, it means the
+          // server responded with an error.
+          // eslint-disable-next-line jest/no-conditional-expect
+          expect((error as Error).toString()).toMatch("400");
+        }
       });
     });
 
