@@ -1,7 +1,0 @@
-{
-  "name": "cd-packaging-test-node",
-  "private": true,
-  "dependencies": {
-    "@inrupt/solid-client-vc": "0.0.2"
-  }
-}
