@@ -1,18 +1,22 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Module: common/common &#8212; Inrupt solid-client-access-grants API Documentation</title>
-    
-  <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<script>
+  document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+  document.documentElement.dataset.theme = localStorage.getItem("theme") || "light"
+</script>
 
-    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=92025949c220c2e29695" rel="stylesheet">
+
+
   <link rel="stylesheet"
     href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
   <link rel="preload" as="font" type="font/woff2" crossorigin
@@ -21,34 +25,28 @@
     href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="icon" sizes="16x16" type="image/png" href="https://docs.inrupt.com/inrupt_stickers_v2-03.png" />
     <link rel="stylesheet" href="../_static/css/inrupt.css" type="text/css" />
-    
+
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695">
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Module: issue/issue" href="issue_issue.html" />
+    <link rel="next" title="Module: index" href="index.html" />
     <link rel="prev" title="solid-client-access-grants API" href="../index.html" />
   
   <meta name="robots" content="index" />
   
 
   
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="docsearch:language" content="None">
-    
-      
-      <link rel="icon" sizes="16x16" href="https://docs.inrupt.com/inrupt_stickers_v2-03.png">
-      
-    
-
-    <!-- Google Analytics -->
-    
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="docsearch:language" content="en">
 
   <script type="text/javascript"
  src="https://inrupt.atlassian.net/s/d41d8cd98f00b204e9800998ecf8427e-T/-egccmf/b/24/a44af77267a987a660377e5c46e0fb64/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=41592d74"></script>
@@ -81,12 +79,16 @@
 
   
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
-    
-    <div class="container-fluid" id="banner"></div>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+    <div class="bd-header-announcement container-fluid" id="banner">
+      
+
+    </div>
 
     
-    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+    <nav class="bd-header navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="bd-header__inner container-xl">
 
   <div id="navbar-start">
     
@@ -99,7 +101,7 @@
   </div>
 
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
+    <span class="fas fa-bars"></span>
   </button>
 
   
@@ -158,6 +160,14 @@
     <div id="navbar-end">
       
       <div class="navbar-end-item">
+        <span id="theme-switch" class="btn btn-sm btn-outline-primary navbar-btn rounded-circle">
+    <a class="theme-switch" data-mode="light"><i class="fas fa-sun"></i></a>
+    <a class="theme-switch" data-mode="dark"><i class="far fa-moon"></i></a>
+    <a class="theme-switch" data-mode="auto"><i class="fas fa-adjust"></i></a>
+</span>
+      </div>
+      
+      <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           <a class="nav-link" href="https://twitter.com/inrupt" rel="noopener" target="_blank" title="Inrupt on Twitter"><span><i class="fab fa-twitter-square"></i></span>
@@ -180,13 +190,13 @@
     </nav>
     
 
-    <div class="container-xl">
-      <div class="row">
+    <div class="bd-container container-xl">
+      <div class="bd-container__inner row">
           
-            
-            <!-- Only show if we have sidebars configured, else just a small margin  -->
-            <div class="col-12 col-md-3 bd-sidebar">
-              <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+
+<!-- Only show if we have sidebars configured, else just a small margin  -->
+<div class="bd-sidebar-primary col-12 col-md-3 bd-sidebar">
+  <div class="sidebar-start-items"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
@@ -200,6 +210,11 @@
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
    Module: common/common
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="index.html">
+   Module: index
   </a>
  </li>
  <li class="toctree-l1">
@@ -226,19 +241,20 @@
 
   </div>
 </nav>
-              </div>
-              <div class="sidebar-end-items">
-              </div>
-            </div>
-            
-          
+  </div>
+  <div class="sidebar-end-items">
+  </div>
+</div>
+
 
           
-          <div class="d-none d-xl-block col-xl-2 bd-toc">
-            
-              
-              <div class="toc-item">
-                
+
+
+<div class="bd-sidebar-secondary d-none d-xl-block col-xl-2 bd-toc">
+  
+    
+    <div class="toc-item">
+      
 <div class="tocsection onthispage mt-5 pt-1 pb-3">
     <i class="fas fa-list"></i> On this page
 </div>
@@ -495,21 +511,19 @@
 </ul>
 
 </nav>
-              </div>
-              
-              <div class="toc-item">
-                
-              </div>
-              
-            
-          </div>
-          
+    </div>
+    
+    <div class="toc-item">
+      
+    </div>
+    
+  
+</div>
+
 
           
           
-            
-          
-          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+          <div class="bd-content col-12 col-md-9 col-xl-7">
               
  
   <div class="related">
@@ -520,15 +534,15 @@
     </div>
 
   
-              <div>
+              <article class="bd-article" role="main">
                 
   <p><a class="reference internal" href="../index.html"><span class="doc std std-doc">&#64;inrupt/solid-client-vc</span></a> / common/common</p>
 <section id="module-common-common">
-<h1>Module: common/common<a class="headerlink" href="#module-common-common" title="Permalink to this headline">#</a></h1>
+<h1>Module: common/common<a class="headerlink" href="#module-common-common" title="Permalink to this heading">#</a></h1>
 <section id="table-of-contents">
-<h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">#</a></h2>
+<h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this heading">#</a></h2>
 <section id="type-aliases">
-<h3>Type Aliases<a class="headerlink" href="#type-aliases" title="Permalink to this headline">#</a></h3>
+<h3>Type Aliases<a class="headerlink" href="#type-aliases" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p><span class="xref myst">Iri</span></p></li>
 <li><p><span class="xref myst">JsonLd</span></p></li>
@@ -538,14 +552,14 @@
 </ul>
 </section>
 <section id="variables">
-<h3>Variables<a class="headerlink" href="#variables" title="Permalink to this headline">#</a></h3>
+<h3>Variables<a class="headerlink" href="#variables" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p><span class="xref myst">defaultContext</span></p></li>
 <li><p><span class="xref myst">defaultCredentialTypes</span></p></li>
 </ul>
 </section>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">#</a></h3>
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p><span class="xref myst">concatenateContexts</span></p></li>
 <li><p><span class="xref myst">getVerifiableCredential</span></p></li>
@@ -556,33 +570,33 @@
 </section>
 </section>
 <section id="id1">
-<h2>Type Aliases<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h2>
+<h2>Type Aliases<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h2>
 <section id="iri">
-<h3>Iri<a class="headerlink" href="#iri" title="Permalink to this headline">#</a></h3>
+<h3>Iri<a class="headerlink" href="#iri" title="Permalink to this heading">#</a></h3>
 <p>Ƭ <strong>Iri</strong>: <code class="docutils literal notranslate"><span class="pre">string</span></code></p>
 <section id="defined-in">
-<h4>Defined in<a class="headerlink" href="#defined-in" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L30">src/common/common.ts:30</a></p>
+<h4>Defined in<a class="headerlink" href="#defined-in" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L30">src/common/common.ts:30</a></p>
 </section>
 </section>
 <hr class="docutils" />
 <section id="jsonld">
-<h3>JsonLd<a class="headerlink" href="#jsonld" title="Permalink to this headline">#</a></h3>
+<h3>JsonLd<a class="headerlink" href="#jsonld" title="Permalink to this heading">#</a></h3>
 <p>Ƭ <strong>JsonLd</strong>: <code class="docutils literal notranslate"><span class="pre">Object</span></code></p>
 <p>A JSON-LD document is a JSON document including an</p>
 <p><strong><code class="docutils literal notranslate"><span class="pre">Context</span></code></strong></p>
 <p>entry. The other
 fields may contain any value.</p>
 <section id="index-signature">
-<h4>Index signature<a class="headerlink" href="#index-signature" title="Permalink to this headline">#</a></h4>
+<h4>Index signature<a class="headerlink" href="#index-signature" title="Permalink to this heading">#</a></h4>
 <p>▪ [property: <code class="docutils literal notranslate"><span class="pre">string</span></code>]: <code class="docutils literal notranslate"><span class="pre">unknown</span></code></p>
 </section>
 <section id="type-declaration">
-<h4>Type declaration<a class="headerlink" href="#type-declaration" title="Permalink to this headline">#</a></h4>
-<table class="colwidths-auto table">
+<h4>Type declaration<a class="headerlink" href="#type-declaration" title="Permalink to this heading">#</a></h4>
+<table class="table">
 <thead>
-<tr class="row-odd"><th class="text-left head"><p>Name</p></th>
-<th class="text-left head"><p>Type</p></th>
+<tr class="row-odd"><th class="head text-left"><p>Name</p></th>
+<th class="head text-left"><p>Type</p></th>
 </tr>
 </thead>
 <tbody>
@@ -593,72 +607,72 @@ fields may contain any value.</p>
 </table>
 </section>
 <section id="id2">
-<h4>Defined in<a class="headerlink" href="#id2" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L35">src/common/common.ts:35</a></p>
+<h4>Defined in<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L35">src/common/common.ts:35</a></p>
 </section>
 </section>
 <hr class="docutils" />
 <section id="verifiablecredential">
-<h3>VerifiableCredential<a class="headerlink" href="#verifiablecredential" title="Permalink to this headline">#</a></h3>
+<h3>VerifiableCredential<a class="headerlink" href="#verifiablecredential" title="Permalink to this heading">#</a></h3>
 <p>Ƭ <strong>VerifiableCredential</strong>: <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">JsonLd</span></code></span> &amp; { <code class="docutils literal notranslate"><span class="pre">credentialSubject</span></code>: { <code class="docutils literal notranslate"><span class="pre">[property:</span> <span class="pre">string]</span></code>: <code class="docutils literal notranslate"><span class="pre">unknown</span></code>; <code class="docutils literal notranslate"><span class="pre">id</span></code>: <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Iri</span></code></span>  } ; <code class="docutils literal notranslate"><span class="pre">id</span></code>: <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Iri</span></code></span> ; <code class="docutils literal notranslate"><span class="pre">issuanceDate</span></code>: <code class="docutils literal notranslate"><span class="pre">string</span></code> ; <code class="docutils literal notranslate"><span class="pre">issuer</span></code>: <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Iri</span></code></span> ; <code class="docutils literal notranslate"><span class="pre">proof</span></code>: <code class="docutils literal notranslate"><span class="pre">Proof</span></code> ; <code class="docutils literal notranslate"><span class="pre">type</span></code>: <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Iri</span></code></span>[]  }</p>
 <p>A Verifiable Credential JSON-LD document, as specified by the W3C VC HTTP API.</p>
 <section id="id3">
-<h4>Defined in<a class="headerlink" href="#id3" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L54">src/common/common.ts:54</a></p>
+<h4>Defined in<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L54">src/common/common.ts:54</a></p>
 </section>
 </section>
 <hr class="docutils" />
 <section id="verifiablecredentialapiconfiguration">
-<h3>VerifiableCredentialApiConfiguration<a class="headerlink" href="#verifiablecredentialapiconfiguration" title="Permalink to this headline">#</a></h3>
+<h3>VerifiableCredentialApiConfiguration<a class="headerlink" href="#verifiablecredentialapiconfiguration" title="Permalink to this heading">#</a></h3>
 <p>Ƭ <strong>VerifiableCredentialApiConfiguration</strong>: <code class="docutils literal notranslate"><span class="pre">Partial</span></code>&lt;{ <code class="docutils literal notranslate"><span class="pre">derivationService</span></code>: <code class="docutils literal notranslate"><span class="pre">UrlString</span></code> ; <code class="docutils literal notranslate"><span class="pre">issuerService</span></code>: <code class="docutils literal notranslate"><span class="pre">UrlString</span></code> ; <code class="docutils literal notranslate"><span class="pre">statusService</span></code>: <code class="docutils literal notranslate"><span class="pre">UrlString</span></code> ; <code class="docutils literal notranslate"><span class="pre">verifierService</span></code>: <code class="docutils literal notranslate"><span class="pre">UrlString</span></code>  }&gt;</p>
 <p>A Verifiable Credential API configuration details.</p>
 <section id="id4">
-<h4>Defined in<a class="headerlink" href="#id4" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L197">src/common/common.ts:197</a></p>
+<h4>Defined in<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L197">src/common/common.ts:197</a></p>
 </section>
 </section>
 <hr class="docutils" />
 <section id="verifiablepresentation">
-<h3>VerifiablePresentation<a class="headerlink" href="#verifiablepresentation" title="Permalink to this headline">#</a></h3>
+<h3>VerifiablePresentation<a class="headerlink" href="#verifiablepresentation" title="Permalink to this heading">#</a></h3>
 <p>Ƭ <strong>VerifiablePresentation</strong>: <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">JsonLd</span></code></span> &amp; { <code class="docutils literal notranslate"><span class="pre">holder?</span></code>: <code class="docutils literal notranslate"><span class="pre">string</span></code> ; <code class="docutils literal notranslate"><span class="pre">id?</span></code>: <code class="docutils literal notranslate"><span class="pre">string</span></code> ; <code class="docutils literal notranslate"><span class="pre">proof?</span></code>: <code class="docutils literal notranslate"><span class="pre">Proof</span></code> ; <code class="docutils literal notranslate"><span class="pre">type</span></code>: <code class="docutils literal notranslate"><span class="pre">string</span></code>[] ; <code class="docutils literal notranslate"><span class="pre">verifiableCredential?</span></code>: <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>[]  }</p>
 <section id="id5">
-<h4>Defined in<a class="headerlink" href="#id5" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L75">src/common/common.ts:75</a></p>
+<h4>Defined in<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L75">src/common/common.ts:75</a></p>
 </section>
 </section>
 </section>
 <section id="id6">
-<h2>Variables<a class="headerlink" href="#id6" title="Permalink to this headline">#</a></h2>
+<h2>Variables<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h2>
 <section id="defaultcontext">
-<h3>defaultContext<a class="headerlink" href="#defaultcontext" title="Permalink to this headline">#</a></h3>
+<h3>defaultContext<a class="headerlink" href="#defaultcontext" title="Permalink to this heading">#</a></h3>
 <p>• <code class="docutils literal notranslate"><span class="pre">Const</span></code> <strong>defaultContext</strong>: <code class="docutils literal notranslate"><span class="pre">string</span></code>[]</p>
 <p>This context contains the required elements to build a valid VC issuance request.</p>
 <section id="id7">
-<h4>Defined in<a class="headerlink" href="#id7" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L187">src/common/common.ts:187</a></p>
+<h4>Defined in<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L187">src/common/common.ts:187</a></p>
 </section>
 </section>
 <hr class="docutils" />
 <section id="defaultcredentialtypes">
-<h3>defaultCredentialTypes<a class="headerlink" href="#defaultcredentialtypes" title="Permalink to this headline">#</a></h3>
+<h3>defaultCredentialTypes<a class="headerlink" href="#defaultcredentialtypes" title="Permalink to this heading">#</a></h3>
 <p>• <code class="docutils literal notranslate"><span class="pre">Const</span></code> <strong>defaultCredentialTypes</strong>: <code class="docutils literal notranslate"><span class="pre">string</span></code>[]</p>
 <section id="id8">
-<h4>Defined in<a class="headerlink" href="#id8" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L189">src/common/common.ts:189</a></p>
+<h4>Defined in<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L189">src/common/common.ts:189</a></p>
 </section>
 </section>
 </section>
 <section id="id9">
-<h2>Functions<a class="headerlink" href="#id9" title="Permalink to this headline">#</a></h2>
+<h2>Functions<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h2>
 <section id="concatenatecontexts">
-<h3>concatenateContexts<a class="headerlink" href="#concatenatecontexts" title="Permalink to this headline">#</a></h3>
+<h3>concatenateContexts<a class="headerlink" href="#concatenatecontexts" title="Permalink to this heading">#</a></h3>
 <p>▸ <strong>concatenateContexts</strong>(…<code class="docutils literal notranslate"><span class="pre">contexts</span></code>): <code class="docutils literal notranslate"><span class="pre">unknown</span></code></p>
 <section id="parameters">
-<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">#</a></h4>
-<table class="colwidths-auto table">
+<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">#</a></h4>
+<table class="table">
 <thead>
-<tr class="row-odd"><th class="text-left head"><p>Name</p></th>
-<th class="text-left head"><p>Type</p></th>
+<tr class="row-odd"><th class="head text-left"><p>Name</p></th>
+<th class="head text-left"><p>Type</p></th>
 </tr>
 </thead>
 <tbody>
@@ -669,28 +683,28 @@ fields may contain any value.</p>
 </table>
 </section>
 <section id="returns">
-<h4>Returns<a class="headerlink" href="#returns" title="Permalink to this headline">#</a></h4>
+<h4>Returns<a class="headerlink" href="#returns" title="Permalink to this heading">#</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">unknown</span></code></p>
 </section>
 <section id="id10">
-<h4>Defined in<a class="headerlink" href="#id10" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L170">src/common/common.ts:170</a></p>
+<h4>Defined in<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L170">src/common/common.ts:170</a></p>
 </section>
 </section>
 <hr class="docutils" />
 <section id="getverifiablecredential">
-<h3>getVerifiableCredential<a class="headerlink" href="#getverifiablecredential" title="Permalink to this headline">#</a></h3>
+<h3>getVerifiableCredential<a class="headerlink" href="#getverifiablecredential" title="Permalink to this heading">#</a></h3>
 <p>▸ <strong>getVerifiableCredential</strong>(<code class="docutils literal notranslate"><span class="pre">vcUrl</span></code>, <code class="docutils literal notranslate"><span class="pre">options?</span></code>): <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>&gt;</p>
 <p>Dereference a VC URL, and verify that the resulting content is valid.</p>
 <p><strong><code class="docutils literal notranslate"><span class="pre">Since</span></code></strong></p>
 <p>0.4.0</p>
 <section id="id11">
-<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this headline">#</a></h4>
-<table class="colwidths-auto table">
+<h4>Parameters<a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h4>
+<table class="table">
 <thead>
-<tr class="row-odd"><th class="text-left head"><p>Name</p></th>
-<th class="text-left head"><p>Type</p></th>
-<th class="text-left head"><p>Description</p></th>
+<tr class="row-odd"><th class="head text-left"><p>Name</p></th>
+<th class="head text-left"><p>Type</p></th>
+<th class="head text-left"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
@@ -706,30 +720,30 @@ fields may contain any value.</p>
 </table>
 </section>
 <section id="id12">
-<h4>Returns<a class="headerlink" href="#id12" title="Permalink to this headline">#</a></h4>
+<h4>Returns<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredential</span></code></span>&gt;</p>
 <p>The dereferenced VC if valid. Throws otherwise.</p>
 </section>
 <section id="id13">
-<h4>Defined in<a class="headerlink" href="#id13" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L258">src/common/common.ts:258</a></p>
+<h4>Defined in<a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L258">src/common/common.ts:258</a></p>
 </section>
 </section>
 <hr class="docutils" />
 <section id="getverifiablecredentialapiconfiguration">
-<h3>getVerifiableCredentialApiConfiguration<a class="headerlink" href="#getverifiablecredentialapiconfiguration" title="Permalink to this headline">#</a></h3>
+<h3>getVerifiableCredentialApiConfiguration<a class="headerlink" href="#getverifiablecredentialapiconfiguration" title="Permalink to this heading">#</a></h3>
 <p>▸ <strong>getVerifiableCredentialApiConfiguration</strong>(<code class="docutils literal notranslate"><span class="pre">vcServiceUrl</span></code>): <code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredentialApiConfiguration</span></code></span>&gt;</p>
 <p>Discover the available services for a given VC service provider. The detail of
 some of these services are given by the <a class="reference external" href="https://github.com/w3c-ccg/vc-api/">W3C VC API</a>.</p>
 <p><strong><code class="docutils literal notranslate"><span class="pre">Since</span></code></strong></p>
 <p>0.2.0</p>
 <section id="id14">
-<h4>Parameters<a class="headerlink" href="#id14" title="Permalink to this headline">#</a></h4>
-<table class="colwidths-auto table">
+<h4>Parameters<a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h4>
+<table class="table">
 <thead>
-<tr class="row-odd"><th class="text-left head"><p>Name</p></th>
-<th class="text-left head"><p>Type</p></th>
-<th class="text-left head"><p>Description</p></th>
+<tr class="row-odd"><th class="head text-left"><p>Name</p></th>
+<th class="head text-left"><p>Type</p></th>
+<th class="head text-left"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
@@ -741,28 +755,28 @@ some of these services are given by the <a class="reference external" href="http
 </table>
 </section>
 <section id="id15">
-<h4>Returns<a class="headerlink" href="#id15" title="Permalink to this headline">#</a></h4>
+<h4>Returns<a class="headerlink" href="#id15" title="Permalink to this heading">#</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">Promise</span></code>&lt;<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">VerifiableCredentialApiConfiguration</span></code></span>&gt;</p>
 <p>A map of the services available and their URLs.</p>
 </section>
 <section id="id16">
-<h4>Defined in<a class="headerlink" href="#id16" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L219">src/common/common.ts:219</a></p>
+<h4>Defined in<a class="headerlink" href="#id16" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L219">src/common/common.ts:219</a></p>
 </section>
 </section>
 <hr class="docutils" />
 <section id="isverifiablecredential">
-<h3>isVerifiableCredential<a class="headerlink" href="#isverifiablecredential" title="Permalink to this headline">#</a></h3>
+<h3>isVerifiableCredential<a class="headerlink" href="#isverifiablecredential" title="Permalink to this heading">#</a></h3>
 <p>▸ <strong>isVerifiableCredential</strong>(<code class="docutils literal notranslate"><span class="pre">data</span></code>): data is VerifiableCredential</p>
 <p>Verifies that a given JSON-LD payload conforms to the Verifiable Credential
 schema we expect.</p>
 <section id="id17">
-<h4>Parameters<a class="headerlink" href="#id17" title="Permalink to this headline">#</a></h4>
-<table class="colwidths-auto table">
+<h4>Parameters<a class="headerlink" href="#id17" title="Permalink to this heading">#</a></h4>
+<table class="table">
 <thead>
-<tr class="row-odd"><th class="text-left head"><p>Name</p></th>
-<th class="text-left head"><p>Type</p></th>
-<th class="text-left head"><p>Description</p></th>
+<tr class="row-odd"><th class="head text-left"><p>Name</p></th>
+<th class="head text-left"><p>Type</p></th>
+<th class="head text-left"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
@@ -774,25 +788,25 @@ schema we expect.</p>
 </table>
 </section>
 <section id="id18">
-<h4>Returns<a class="headerlink" href="#id18" title="Permalink to this headline">#</a></h4>
+<h4>Returns<a class="headerlink" href="#id18" title="Permalink to this heading">#</a></h4>
 <p>data is VerifiableCredential</p>
 <p>true is the payload matches our expectation.</p>
 </section>
 <section id="id19">
-<h4>Defined in<a class="headerlink" href="#id19" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L89">src/common/common.ts:89</a></p>
+<h4>Defined in<a class="headerlink" href="#id19" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L89">src/common/common.ts:89</a></p>
 </section>
 </section>
 <hr class="docutils" />
 <section id="isverifiablepresentation">
-<h3>isVerifiablePresentation<a class="headerlink" href="#isverifiablepresentation" title="Permalink to this headline">#</a></h3>
+<h3>isVerifiablePresentation<a class="headerlink" href="#isverifiablepresentation" title="Permalink to this heading">#</a></h3>
 <p>▸ <strong>isVerifiablePresentation</strong>(<code class="docutils literal notranslate"><span class="pre">vp</span></code>): vp is VerifiablePresentation</p>
 <section id="id20">
-<h4>Parameters<a class="headerlink" href="#id20" title="Permalink to this headline">#</a></h4>
-<table class="colwidths-auto table">
+<h4>Parameters<a class="headerlink" href="#id20" title="Permalink to this heading">#</a></h4>
+<table class="table">
 <thead>
-<tr class="row-odd"><th class="text-left head"><p>Name</p></th>
-<th class="text-left head"><p>Type</p></th>
+<tr class="row-odd"><th class="head text-left"><p>Name</p></th>
+<th class="head text-left"><p>Type</p></th>
 </tr>
 </thead>
 <tbody>
@@ -803,57 +817,63 @@ schema we expect.</p>
 </table>
 </section>
 <section id="id21">
-<h4>Returns<a class="headerlink" href="#id21" title="Permalink to this headline">#</a></h4>
+<h4>Returns<a class="headerlink" href="#id21" title="Permalink to this heading">#</a></h4>
 <p>vp is VerifiablePresentation</p>
 </section>
 <section id="id22">
-<h4>Defined in<a class="headerlink" href="#id22" title="Permalink to this headline">#</a></h4>
-<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/74a6474/src/common/common.ts#L141">src/common/common.ts:141</a></p>
+<h4>Defined in<a class="headerlink" href="#id22" title="Permalink to this heading">#</a></h4>
+<p><a class="reference external" href="https://github.com/inrupt/solid-client-vc-js/blob/771c37d/src/common/common.ts#L141">src/common/common.ts:141</a></p>
 </section>
 </section>
 </section>
 </section>
 
 
-              </div>
+              </article>
               
 
 
+
               
-              <!-- Previous / next buttons -->
-<div class='prev-next-area'> 
-    <a class='left-prev' id="prev-link" href="../index.html" title="previous page">
-        <i class="fas fa-angle-left"></i>
-        <div class="prev-next-info">
-            <p class="prev-next-title">solid-client-access-grants API</p>
-        </div>
-    </a>
-    <a class='right-next' id="next-link" href="issue_issue.html" title="next page">
-    <div class="prev-next-info">
-        <p class="prev-next-title">Module: issue/issue</p>
-    </div>
-    <i class="fas fa-angle-right"></i>
-    </a>
+              <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="../index.html" title="previous page">
+      <i class="fas fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">solid-client-access-grants API</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="index.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">Module: index</p>
+  </div>
+  <i class="fas fa-angle-right"></i>
+  </a>
 </div>
+              </footer>
               
-          </main>
+          </div>
           
-
       </div>
     </div>
+
+  
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
-<footer class="footer mt-5 mt-md-0">
-  <div class="container">
-    
-    <div class="footer-item">
-      <div class="container">
+  <script src="../_static/scripts/pydata-sphinx-theme.js?digest=92025949c220c2e29695"></script>
+
+<footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    <div class="container">
       <p>&copy; 2022 Inrupt Inc. </p>
 </div>
-    </div>
-    
   </div>
+  
+</div>
 </footer>
   </body>
 </html>
