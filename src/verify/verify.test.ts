@@ -98,6 +98,8 @@ describe("isValidVc", () => {
   it("sends the given vc to the verify endpoint", async () => {
     mocked(getVerifiableCredentialApiConfiguration).mockResolvedValueOnce({
       verifierService: "https://some.vc.verifier",
+      legacy: {},
+      specCompliant: {},
     });
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
@@ -208,6 +210,8 @@ describe("isValidVc", () => {
       getVerifiableCredentialApiConfiguration
     ).mockResolvedValueOnce({
       verifierService: "https://some.vc.verifier",
+      legacy: {},
+      specCompliant: {},
     });
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
 
@@ -231,7 +235,10 @@ describe("isValidVc", () => {
   });
 
   it("throws if no verification endpoint is discovered", async () => {
-    mocked(getVerifiableCredentialApiConfiguration).mockResolvedValueOnce({});
+    mocked(getVerifiableCredentialApiConfiguration).mockResolvedValueOnce({
+      legacy: {},
+      specCompliant: {},
+    });
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
     const mockedFetch = jest
       .fn(global.fetch)
