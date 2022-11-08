@@ -45,7 +45,7 @@ describe("revokeVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await revokeVerifiableCredential(
         "https://some.endpoint",
