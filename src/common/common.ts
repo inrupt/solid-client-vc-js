@@ -194,36 +194,36 @@ export const defaultCredentialTypes = [
 /**
  * A Verifiable Credential API configuration details.
  */
-export type VerifiableCredentialApiConfiguration = 
-// Legacy endpoints 
-Partial<{
-  derivationService: UrlString;
-  issuerService: UrlString;
-  statusService: UrlString;
-  verifierService: UrlString;
-}> & 
-// Spec-compliant endpoints, available in the `specCompliant` object
-{ specCompliant: Partial<{
-  derivationService: UrlString;
-  issuerService: UrlString;
-  issuerCredentialAll: UrlString;
-  holderPresentationAll: UrlString;
-  statusService: UrlString;
-  credentialVerifierService: UrlString;
-  presentationVerifierService: UrlString;
-  queryService: UrlString;
-  exchangeService: UrlString;
-  proveService: UrlString;
-}>} &
-// Legacy endpoints, available in the `legacy` object too to ease transition
-{
-  legacy: Partial<{
-  derivationService: UrlString;
-  issuerService: UrlString;
-  statusService: UrlString;
-  verifierService: UrlString;
-  }>
-};
+export type VerifiableCredentialApiConfiguration =
+  // Legacy endpoints
+  Partial<{
+    derivationService: UrlString;
+    issuerService: UrlString;
+    statusService: UrlString;
+    verifierService: UrlString;
+  }> & {
+    // Spec-compliant endpoints, available in the `specCompliant` object
+    specCompliant: Partial<{
+      derivationService: UrlString;
+      issuerService: UrlString;
+      issuerCredentialAll: UrlString;
+      holderPresentationAll: UrlString;
+      statusService: UrlString;
+      credentialVerifierService: UrlString;
+      presentationVerifierService: UrlString;
+      queryService: UrlString;
+      exchangeService: UrlString;
+      proveService: UrlString;
+    }>;
+  } & {
+    // Legacy endpoints, available in the `legacy` object too to ease transition
+    legacy: Partial<{
+      derivationService: UrlString;
+      issuerService: UrlString;
+      statusService: UrlString;
+      verifierService: UrlString;
+    }>;
+  };
 
 // Solid VC URIs
 const SOLID_VC_NS = "http://www.w3.org/ns/solid/vc#";
@@ -232,26 +232,26 @@ const SOLID_VC_ISSUER_SERVICE = SOLID_VC_NS.concat("issuerService");
 const SOLID_VC_STATUS_SERVICE = SOLID_VC_NS.concat("statusService");
 const SOLID_VC_VERIFIER_SERVICE = SOLID_VC_NS.concat("verifierService");
 
-async function discoverLegacyEndpoints(vcServiceUrl: UrlString): Promise<VerifiableCredentialApiConfiguration["legacy"]> {
-  const wellKnownIri = new URL(
-    ".well-known/vc-configuration",
-    vcServiceUrl
-  );
-  
+async function discoverLegacyEndpoints(
+  vcServiceUrl: UrlString
+): Promise<VerifiableCredentialApiConfiguration["legacy"]> {
+  const wellKnownIri = new URL(".well-known/vc-configuration", vcServiceUrl);
+
   try {
     const vcConfigData = await getSolidDataset(wellKnownIri.href, {
       // The configuration discovery document is only available as JSON-LD.
       parsers: { "application/ld+json": getJsonLdParser() },
     });
-  
+
     // The dataset should have a single blank node subject of all its triples.
     const wellKnownRootBlankNode = getThingAll(vcConfigData, {
       acceptBlankNodes: true,
     })[0];
-  
+
     return {
       derivationService:
-        getIri(wellKnownRootBlankNode, SOLID_VC_DERIVATION_SERVICE) ?? undefined,
+        getIri(wellKnownRootBlankNode, SOLID_VC_DERIVATION_SERVICE) ??
+        undefined,
       issuerService:
         getIri(wellKnownRootBlankNode, SOLID_VC_ISSUER_SERVICE) ?? undefined,
       statusService:
@@ -261,24 +261,31 @@ async function discoverLegacyEndpoints(vcServiceUrl: UrlString): Promise<Verifia
     };
   } catch (e) {
     // The target provider may not implement the legacy endpoints, in which case
-    // the request above would fail. 
-    return {}
+    // the request above would fail.
+    return {};
   }
-  
 }
 
-function discoverSpecCompliantEndpoints(vcServiceUrl: UrlString): VerifiableCredentialApiConfiguration["specCompliant"] {
+function discoverSpecCompliantEndpoints(
+  vcServiceUrl: UrlString
+): VerifiableCredentialApiConfiguration["specCompliant"] {
   return {
-      issuerService: new URL("/credentials/issue", vcServiceUrl).toString(),
-      issuerCredentialAll: new URL("/credentials", vcServiceUrl).toString(),
-      statusService: new URL("/credentials/status", vcServiceUrl).toString(),
-      holderPresentationAll: new URL("/presentations", vcServiceUrl).toString(),
-      derivationService: new URL("/credentials/derive", vcServiceUrl).toString(),
-      exchangeService: new URL("/exchanges", vcServiceUrl).toString(),
-      proveService: new URL("/presentations/prove", vcServiceUrl).toString(),
-      queryService: new URL("/query", vcServiceUrl).toString(),
-      credentialVerifierService: new URL("/credentials/verify", vcServiceUrl).toString(),
-      presentationVerifierService: new URL("/presentations/verify", vcServiceUrl).toString()
+    issuerService: new URL("/credentials/issue", vcServiceUrl).toString(),
+    issuerCredentialAll: new URL("/credentials", vcServiceUrl).toString(),
+    statusService: new URL("/credentials/status", vcServiceUrl).toString(),
+    holderPresentationAll: new URL("/presentations", vcServiceUrl).toString(),
+    derivationService: new URL("/credentials/derive", vcServiceUrl).toString(),
+    exchangeService: new URL("/exchanges", vcServiceUrl).toString(),
+    proveService: new URL("/presentations/prove", vcServiceUrl).toString(),
+    queryService: new URL("/query", vcServiceUrl).toString(),
+    credentialVerifierService: new URL(
+      "/credentials/verify",
+      vcServiceUrl
+    ).toString(),
+    presentationVerifierService: new URL(
+      "/presentations/verify",
+      vcServiceUrl
+    ).toString(),
   };
 }
 
@@ -293,15 +300,16 @@ function discoverSpecCompliantEndpoints(vcServiceUrl: UrlString): VerifiableCred
 export async function getVerifiableCredentialApiConfiguration(
   vcServiceUrl: URL | UrlString
 ): Promise<VerifiableCredentialApiConfiguration> {
-  const legacyEndpoints = await discoverLegacyEndpoints(vcServiceUrl.toString());
+  const legacyEndpoints = await discoverLegacyEndpoints(
+    vcServiceUrl.toString()
+  );
   const specEndpoints = discoverSpecCompliantEndpoints(vcServiceUrl.toString());
   return {
     ...legacyEndpoints,
     legacy: legacyEndpoints,
-    specCompliant: specEndpoints
-  }
+    specCompliant: specEndpoints,
+  };
 }
-  
 
 /**
  * Dereference a VC URL, and verify that the resulting content is valid.
