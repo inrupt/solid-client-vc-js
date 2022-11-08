@@ -197,7 +197,7 @@ describe("getVerifiableCredentialApiConfiguration", () => {
       const result = await getVerifiableCredentialApiConfiguration(
         "https://some.example.wellknown.iri"
       );
-      
+
       expect(result.derivationService).toBeUndefined();
       expect(result.issuerService).toBeUndefined();
       expect(result.statusService).toBeUndefined();
@@ -215,7 +215,9 @@ describe("getVerifiableCredentialApiConfiguration", () => {
         "https://some.example.wellknown.iri"
       );
       expect(result.issuerService).toStrictEqual(result.legacy.issuerService);
-      expect(result.derivationService).toStrictEqual(result.legacy.derivationService);
+      expect(result.derivationService).toStrictEqual(
+        result.legacy.derivationService
+      );
     });
   });
 
@@ -224,11 +226,13 @@ describe("getVerifiableCredentialApiConfiguration", () => {
       const clientModule = jest.requireMock(
         "@inrupt/solid-client"
       ) as jest.Mocked<typeof SolidClient>;
-      clientModule.getSolidDataset.mockRejectedValueOnce(new Error("A network error"));
+      clientModule.getSolidDataset.mockRejectedValueOnce(
+        new Error("A network error")
+      );
       const result = await getVerifiableCredentialApiConfiguration(
         "https://some.example.wellknown.iri"
       );
-      expect(result.specCompliant).not.toBeUndefined();
+      expect(result.specCompliant).toBeDefined();
       expect(result.legacy).toEqual({});
     });
 
@@ -237,16 +241,34 @@ describe("getVerifiableCredentialApiConfiguration", () => {
       const result = await getVerifiableCredentialApiConfiguration(
         "https://some.example.iri"
       );
-      expect(result.specCompliant.credentialVerifierService).toStrictEqual(`${BASE_URL}/credentials/verify`);
-      expect(result.specCompliant.derivationService).toStrictEqual(`${BASE_URL}/credentials/derive`);
-      expect(result.specCompliant.exchangeService).toStrictEqual(`${BASE_URL}/exchanges`);
-      expect(result.specCompliant.holderPresentationAll).toStrictEqual(`${BASE_URL}/presentations`);
-      expect(result.specCompliant.issuerCredentialAll).toStrictEqual(`${BASE_URL}/credentials`);
-      expect(result.specCompliant.issuerService).toStrictEqual(`${BASE_URL}/credentials/issue`);
-      expect(result.specCompliant.presentationVerifierService).toStrictEqual(`${BASE_URL}/presentations/verify`);
-      expect(result.specCompliant.proveService).toStrictEqual(`${BASE_URL}/presentations/prove`);
-      expect(result.specCompliant.queryService).toStrictEqual(`${BASE_URL}/query`);
-      expect(result.specCompliant.statusService).toStrictEqual(`${BASE_URL}/credentials/status`);
+      expect(result.specCompliant.credentialVerifierService).toBe(
+        `${BASE_URL}/credentials/verify`
+      );
+      expect(result.specCompliant.derivationService).toBe(
+        `${BASE_URL}/credentials/derive`
+      );
+      expect(result.specCompliant.exchangeService).toBe(
+        `${BASE_URL}/exchanges`
+      );
+      expect(result.specCompliant.holderPresentationAll).toBe(
+        `${BASE_URL}/presentations`
+      );
+      expect(result.specCompliant.issuerCredentialAll).toBe(
+        `${BASE_URL}/credentials`
+      );
+      expect(result.specCompliant.issuerService).toBe(
+        `${BASE_URL}/credentials/issue`
+      );
+      expect(result.specCompliant.presentationVerifierService).toBe(
+        `${BASE_URL}/presentations/verify`
+      );
+      expect(result.specCompliant.proveService).toBe(
+        `${BASE_URL}/presentations/prove`
+      );
+      expect(result.specCompliant.queryService).toBe(`${BASE_URL}/query`);
+      expect(result.specCompliant.statusService).toBe(
+        `${BASE_URL}/credentials/status`
+      );
     });
   });
 });
