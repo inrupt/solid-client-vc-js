@@ -8,7 +8,8 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
--
+- `getVerifiableCredentialApiConfiguration` now discovers the future-compatible
+specification-compliant endpoints, as well as the legacy endpoints. 
 
 ## 0.5.0 - 2022-03-07
 
