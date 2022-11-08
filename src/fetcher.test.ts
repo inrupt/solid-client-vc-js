@@ -26,9 +26,8 @@ import authFetch from "./fetcher";
 jest.mock("cross-fetch");
 
 it("should fallback to cross-fetch if no Solid-specific fetcher is available", async () => {
-  const crossFetch = jest.requireMock("cross-fetch") as jest.Mock<
-    ReturnType<typeof window.fetch>,
-    [RequestInfo, RequestInit]
+  const crossFetch = jest.requireMock("cross-fetch") as jest.Mocked<
+    typeof fetch
   >;
 
   await authFetch("https://some.url");

@@ -49,7 +49,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -120,7 +120,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -139,7 +139,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -163,7 +163,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -192,7 +192,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -224,7 +224,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -255,7 +255,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -289,7 +289,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -328,7 +328,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -359,7 +359,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.requireMock("../fetcher") as {
       default: typeof fetch;
     };
-    mockedFetch.default = jest.fn();
+    mockedFetch.default = jest.fn<typeof fetch>();
     try {
       await defaultIssueVerifiableCredential(
         "https://some.endpoint",
