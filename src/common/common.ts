@@ -194,12 +194,36 @@ export const defaultCredentialTypes = [
 /**
  * A Verifiable Credential API configuration details.
  */
-export type VerifiableCredentialApiConfiguration = Partial<{
+export type VerifiableCredentialApiConfiguration = 
+// Legacy endpoints 
+Partial<{
   derivationService: UrlString;
   issuerService: UrlString;
   statusService: UrlString;
   verifierService: UrlString;
-}>;
+}> & 
+// Spec-compliant endpoints, available in the `specCompliant` object
+{ specCompliant: Partial<{
+  derivationService: UrlString;
+  issuerService: UrlString;
+  issuerCredentialAll: UrlString;
+  holderPresentationAll: UrlString;
+  statusService: UrlString;
+  credentialVerifierService: UrlString;
+  presentationVerifierService: UrlString;
+  queryService: UrlString;
+  exchangeService: UrlString;
+  proveService: UrlString;
+}>} &
+// Legacy endpoints, available in the `legacy` object too to ease transition
+{
+  legacy: Partial<{
+  derivationService: UrlString;
+  issuerService: UrlString;
+  statusService: UrlString;
+  verifierService: UrlString;
+  }>
+};
 
 // Solid VC URIs
 const SOLID_VC_NS = "http://www.w3.org/ns/solid/vc#";
@@ -208,20 +232,10 @@ const SOLID_VC_ISSUER_SERVICE = SOLID_VC_NS.concat("issuerService");
 const SOLID_VC_STATUS_SERVICE = SOLID_VC_NS.concat("statusService");
 const SOLID_VC_VERIFIER_SERVICE = SOLID_VC_NS.concat("verifierService");
 
-/**
- * Discover the available services for a given VC service provider. The detail of
- * some of these services are given by the [W3C VC API](https://github.com/w3c-ccg/vc-api/).
- *
- * @param vcServiceUrl The URL of the VC services provider. Only the domain is relevant, any provided path will be ignored.
- * @returns A map of the services available and their URLs.
- * @since 0.2.0
- */
-export async function getVerifiableCredentialApiConfiguration(
-  vcServiceUrl: URL | UrlString
-): Promise<VerifiableCredentialApiConfiguration> {
+async function discoverLegacyEndpoints(vcServiceUrl: UrlString): Promise<VerifiableCredentialApiConfiguration["legacy"]> {
   const wellKnownIri = new URL(
     ".well-known/vc-configuration",
-    vcServiceUrl.toString()
+    
   );
 
   const vcConfigData = await getSolidDataset(wellKnownIri.href, {
@@ -245,6 +259,82 @@ export async function getVerifiableCredentialApiConfiguration(
       getIri(wellKnownRootBlankNode, SOLID_VC_VERIFIER_SERVICE) ?? undefined,
   };
 }
+
+async function discoverSpecCompliantEndpoints(vcServiceUrl: UrlString): Promise<VerifiableCredentialApiConfiguration["specCompliant"]> {
+  const endpoints: Record<keyof VerifiableCredentialApiConfiguration["specCompliant"], { url: string, ok?: boolean }> = {
+    issuerService: {
+      url: new URL("/credentials/issue", vcServiceUrl).toString()
+    },
+    statusService: {
+      url: new URL("/credentials/status", vcServiceUrl).toString()
+    },
+    issuerCredentialAll: {
+      url: new URL("/credentials", vcServiceUrl).toString()
+    },
+    holderPresentationAll: {
+      url: new URL("/presentations", vcServiceUrl).toString()
+    },
+    proveService: {
+      url: new URL("/presentations/prove", vcServiceUrl).toString()
+    },
+    derivationService: {
+      url: new URL("/credentials/derive", vcServiceUrl).toString()
+    },
+    exchangeService: {
+      url: new URL("/exchanges", vcServiceUrl).toString()
+    },
+    queryService: {
+      url: new URL("/query", vcServiceUrl).toString()
+    },
+    credentialVerifierService: {
+      url: new URL("/credentials/verify", vcServiceUrl).toString()
+    },
+    presentationVerifierService: {
+      url: new URL("/presentations/verify", vcServiceUrl).toString()
+    }
+  }
+  // For each endpoint, check if it exists (some are optional)
+  const responses = await Promise.all(
+    Object.entries(endpoints).map((endpoint) => defaultFetch(endpoint[1].url, { method: "HEAD" }))
+  );
+  Object.entries(endpoints).forEach((endpoint, index) => {
+    endpoint[1].ok = responses[index]?.ok;
+  });
+
+  return {
+      issuerService: endpoints.issuerService.ok ? endpoints.issuerService.url : undefined,
+      issuerCredentialAll: endpoints.issuerCredentialAll.ok ? endpoints.issuerCredentialAll.url : undefined,
+      statusService: endpoints.statusService.ok ? endpoints.statusService.url : undefined,
+      holderPresentationAll: endpoints.holderPresentationAll.ok ? endpoints.holderPresentationAll.url : undefined,
+      derivationService: endpoints.derivationService.ok ? endpoints.derivationService.url : undefined,
+      exchangeService: endpoints.exchangeService.ok ? endpoints.exchangeService.url : undefined,
+      proveService: endpoints.proveService.ok ? endpoints.proveService.url : undefined,
+      queryService: endpoints.queryService.ok ? endpoints.queryService.url : undefined,
+      credentialVerifierService: endpoints.credentialVerifierService.ok ? endpoints.credentialVerifierService.url : undefined,
+      presentationVerifierService: endpoints.presentationVerifierService.ok ? endpoints.presentationVerifierService.url : undefined,
+  };
+}
+
+/**
+ * Discover the available services for a given VC service provider. The detail of
+ * some of these services are given by the [W3C VC API](https://github.com/w3c-ccg/vc-api/).
+ *
+ * @param vcServiceUrl The URL of the VC services provider. Only the domain is relevant, any provided path will be ignored.
+ * @returns A map of the services available and their URLs.
+ * @since 0.2.0
+ */
+export async function getVerifiableCredentialApiConfiguration(
+  vcServiceUrl: URL | UrlString
+): Promise<VerifiableCredentialApiConfiguration> {
+  const legacyEndpoints = await discoverLegacyEndpoints(vcServiceUrl.toString());
+  const specEndpoints = await discoverSpecCompliantEndpoints(vcServiceUrl.toString());
+  return {
+    ...legacyEndpoints,
+    legacy: legacyEndpoints,
+    specCompliant: specEndpoints
+  }
+}
+  
 
 /**
  * Dereference a VC URL, and verify that the resulting content is valid.
