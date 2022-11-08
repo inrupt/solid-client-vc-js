@@ -292,7 +292,28 @@ function discoverSpecCompliantEndpoints(
 /**
  * Discover the available services for a given VC service provider. The detail of
  * some of these services are given by the [W3C VC API](https://github.com/w3c-ccg/vc-api/).
- *
+ * 
+ * The returned value has two entries at its top-level, `legacy` and `specCompliant`.
+ * The former reflects the legacy (default) behavior, and relies on an ad-hoc discovery
+ * mechanism. The latter follows what the VC-API specification requires.
+ * 
+ * Note that since the specification only mandates URL patterns, what the discovery
+ * gets you is the URL where the endpoint should be available **if it is present**.
+ * Whether it actually is available or not is something you cannot assume and must
+ * explicitly check.
+ * 
+ * @example
+ * Here is how the spec-compliant endpoints are discovered:
+ * ```
+ * const config = await getVerifiableCredentialApiConfiguration("https://example.org/vc-provider");
+ * const issuer = config.specCompliant.issuerService;
+ * ```
+ * 
+ * Here is how legacy endpoints are accessed: 
+ * ```
+ * const config = await getVerifiableCredentialApiConfiguration("https://example.org/vc-provider");
+ * const legacyIssuer = config.legacy.issuerService;
+ *```
  * @param vcServiceUrl The URL of the VC services provider. Only the domain is relevant, any provided path will be ignored.
  * @returns A map of the services available and their URLs.
  * @since 0.2.0
