@@ -44,23 +44,16 @@ function buildLegacyQuery(
 ) {
   // credentialClaims should contain all the claims, but not the context.
   const { "@context": claimsContext, ...credentialClaims } = vcShape;
-  const credentialRequestBody: {
-    verifiableCredential: Partial<VerifiableCredential>;
-    options?: { include: typeof INCLUDE_EXPIRED_VC_OPTION };
-  } = {
+  return {
     // See https://w3c-ccg.github.io/vc-api/holder.html
     verifiableCredential: {
       "@context": concatenateContexts(defaultContext, claimsContext),
       ...credentialClaims,
     },
+    options: {
+      include: includeExpiredVc ? INCLUDE_EXPIRED_VC_OPTION : undefined,
+    },
   };
-  if (includeExpiredVc) {
-    credentialRequestBody.options = {
-      include: INCLUDE_EXPIRED_VC_OPTION,
-    };
-  }
-
-  return credentialRequestBody;
 }
 
 /**
