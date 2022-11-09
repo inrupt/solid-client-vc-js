@@ -36,6 +36,7 @@
     "./common": "./dist/common/common.mjs",
     "./issue": "./dist/issue/issue.mjs",
     "./derive": "./dist/lookup/derive.mjs",
+    "./query": "./dist/lookup/query.mjs",
     "./revoke": "./dist/revoke/revoke.mjs",
     "./verify": "./dist/verify/verify"
   },

@@ -29,6 +29,7 @@ import {
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
 import revokeVerifiableCredential from "./revoke/revoke";
 import isValidVc from "./verify/verify";
+import { query } from "./lookup/query";
 
 describe("exports", () => {
   it("includes all of the expected functions", () => {
@@ -38,6 +39,7 @@ describe("exports", () => {
       "getVerifiableCredential",
       "getVerifiableCredentialApiConfiguration",
       "getVerifiableCredentialAllFromShape",
+      "query",
       "revokeVerifiableCredential",
       "isValidVc",
     ]);
@@ -58,5 +60,6 @@ describe("exports", () => {
       revokeVerifiableCredential
     );
     expect(packageExports.isValidVc).toBe(isValidVc);
+    expect(packageExports.query).toBe(query);
   });
 });
