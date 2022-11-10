@@ -20,14 +20,17 @@
 //
 
 export { default as issueVerifiableCredential } from "./issue/issue";
+export type { Iri, JsonLd, VerifiableCredential } from "./common/common";
 export {
-  Iri,
-  JsonLd,
-  VerifiableCredential,
   isVerifiableCredential,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
 } from "./common/common";
 export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
+export { query } from "./lookup/query";
+export type {
+  QueryByExample,
+  VerifiablePresentationRequest,
+} from "./lookup/query";
 export { default as revokeVerifiableCredential } from "./revoke/revoke";
 export { default as isValidVc } from "./verify/verify";

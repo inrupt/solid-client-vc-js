@@ -23,12 +23,60 @@ import {
   concatenateContexts,
   defaultContext,
   Iri,
-  isVerifiablePresentation,
   VerifiableCredential,
 } from "../common/common";
 import fallbackFetch from "../fetcher";
+import { query, VerifiablePresentationRequest } from "./query";
 
 const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;
+
+/**
+ * This creates the proprietary data structure used for querying the legacy /derive
+ * endpoint of ESS.
+ *
+ * @param vcShape The VC example used for the VP request
+ * @param includeExpiredVc An option to query for expired VC as well
+ * @returns A legacy object expected by the /derive endpoint of the ESS 2.0 VC service
+ */
+function buildLegacyQuery(
+  vcShape: Partial<VerifiableCredential>,
+  includeExpiredVc: boolean
+) {
+  // credentialClaims should contain all the claims, but not the context.
+  const { "@context": claimsContext, ...credentialClaims } = vcShape;
+  return {
+    // See https://w3c-ccg.github.io/vc-api/holder.html
+    verifiableCredential: {
+      "@context": concatenateContexts(defaultContext, claimsContext),
+      ...credentialClaims,
+    },
+    options: {
+      include: includeExpiredVc ? INCLUDE_EXPIRED_VC_OPTION : undefined,
+    },
+  };
+}
+
+/**
+ * See https://w3c-ccg.github.io/vp-request-spec/#query-by-example.
+ * @param vcShape The VC example used for the VP request
+ * @returns A Query by Example VP Request based on the provided example.
+ */
+function buildQueryByExample(
+  vcShape: Partial<VerifiableCredential>
+): VerifiablePresentationRequest {
+  return {
+    query: [
+      {
+        type: "QueryByExample",
+        credentialQuery: [
+          {
+            example: vcShape,
+          },
+        ],
+      },
+    ],
+  };
+}
 
 /**
  * Look up VCs from a given holder according to a subset of their claims, such as
@@ -60,56 +108,20 @@ export default async function getVerifiableCredentialAllFromShape(
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;
   }
-  // credentialClaims should contain all the claims, but not the context.
-  // const { "@context": claimsContext, ...credentialClaims } = vcShape;
-  // The following lines refactor the previous deconstruction in order to work
-  // around a misalignment between `rollup-plugin-typescript2` and NodeJS.
-  // Issue tracking: https://github.com/ezolenko/rollup-plugin-typescript2/issues/282
-  const credentialClaims = { ...vcShape };
-  delete credentialClaims["@context"];
-  const claimsContext = vcShape["@context"];
-  const credentialRequestBody: {
-    verifiableCredential: Partial<VerifiableCredential>;
-    options?: { include: typeof INCLUDE_EXPIRED_VC_OPTION };
-  } = {
-    // See https://w3c-ccg.github.io/vc-api/holder.html
-    verifiableCredential: {
-      "@context": concatenateContexts(defaultContext, claimsContext),
-      ...credentialClaims,
-    },
-  };
-  if (internalOptions.includeExpiredVc) {
-    credentialRequestBody.options = {
-      include: INCLUDE_EXPIRED_VC_OPTION,
-    };
-  }
-  const response = await internalOptions.fetch(holderEndpoint, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-    body: JSON.stringify(credentialRequestBody),
+  // The request payload depends on the target endpoint.
+  const vpRequest = holderEndpoint.endsWith("/query")
+    ? // The target endpoint is spec-compliant, and uses a standard VP request.
+      // This is based on an implementation-specific assumption about the endpoint
+      // being available under the /query path.
+      buildQueryByExample(vcShape)
+    : // The target endpoint is legacy, and uses a proprietary request format.
+      (buildLegacyQuery(
+        vcShape,
+        options?.includeExpiredVc ?? false
+        // The legacy proprietary format is casted as a VP request to be passed to the `query` function.
+      ) as unknown as VerifiablePresentationRequest);
+  const vp = await query(holderEndpoint, vpRequest, {
+    fetch: options?.fetch ?? fallbackFetch,
   });
-  if (!response.ok) {
-    throw new Error(
-      `The holder [${holderEndpoint}] returned an error: ${response.status} ${response.statusText}`
-    );
-  }
-
-  let data;
-  try {
-    data = await response.json();
-  } catch (e) {
-    throw new Error(
-      `The holder [${holderEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`
-    );
-  }
-  if (!isVerifiablePresentation(data)) {
-    throw new Error(
-      `The holder [${holderEndpoint}] did not return a Verifiable Presentation: ${JSON.stringify(
-        data
-      )}`
-    );
-  }
-  return data.verifiableCredential ?? [];
+  return vp.verifiableCredential ?? [];
 }
