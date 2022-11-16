@@ -118,9 +118,10 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
   const clientSecret = clientCredentials.owner.secret;
 
   const vcSubject =
-    process.env.E2E_TEST_VC_SERVICE ||
+    process.env.E2E_TEST_VC_SUBJEC3T ||
     // eslint-disable-next-line no-unsafe-optional-chaining
-    vcProvider?.replace(/^vc:\/\//, "id") + username;
+    vcProvider?.replace("vc", "id").concat(username.toLowerCase()) ||
+    "";
 
   it("has the appropriate environment variables", () => {
     expect(oidcIssuer).toBeDefined();
