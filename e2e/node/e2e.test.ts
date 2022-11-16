@@ -31,14 +31,7 @@ import {
   revokeVerifiableCredential,
 } from "../../src/index";
 
-// Load environment variables from .env.test.local if available:
-// config({
-//   path: __dirname,
-//   // In CI, actual environment variables will overwrite values from .env files.
-//   // We don't need warning messages in the logs for that:
-//   silent: process.env.CI === "true",
-// });
-
+// Load environment variables from .env.local if available:
 setupEnv();
 
 const validCredentialClaims = {
@@ -113,9 +106,10 @@ type VcSubject = string;
 type ClientId = string;
 type ClientSecret = string;
 type AuthDetails = [OidcIssuer, ClientId, ClientSecret, VcService, VcSubject];
-console.log(process.env);
+
 // Instructions for obtaining these credentials can be found here:
 // https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
+
 const serversUnderTest: AuthDetails[] = [
   // Note: Disabled due to PodSpaces 2.0 migration:
   // pod.inrupt.com:
@@ -125,11 +119,11 @@ const serversUnderTest: AuthDetails[] = [
     // Cumbersome workaround, but:
     // Trim `https://` from the start of these URLs,
     // so that GitHub Actions doesn't replace them with *** in the logs.
-    process.env.E2E_TEST_DEV_NEXT_IDP_URL!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_DEV_NEXT_VC_SERVICE!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_DEV_NEXT_VC_SUBJECT!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_DEV_NEXT_CLIENT_ID!,
-    process.env.E2E_TEST_DEV_NEXT_CLIENT_SECRET!,
+    process.env.E2E_TEST_IDP!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_VC_PROVIDER!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_VC_SUBJECT!.replace(/^https:\/\//, ""),
+    process.env.E2E_TEST_REQUESTOR_CLIENT_ID!,
+    process.env.E2E_TEST_REQUESTOR_CLIENT_SECRET!,
   ],
 ];
 
