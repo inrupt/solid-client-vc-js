@@ -24,7 +24,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import { Session } from "@inrupt/solid-client-authn-node";
-import { config } from "dotenv-flow";
+import { setupEnv } from "@inrupt/internal-test-env";
 import {
   getVerifiableCredentialAllFromShape,
   issueVerifiableCredential,
@@ -32,12 +32,14 @@ import {
 } from "../../src/index";
 
 // Load environment variables from .env.test.local if available:
-config({
-  path: __dirname,
-  // In CI, actual environment variables will overwrite values from .env files.
-  // We don't need warning messages in the logs for that:
-  silent: process.env.CI === "true",
-});
+// config({
+//   path: __dirname,
+//   // In CI, actual environment variables will overwrite values from .env files.
+//   // We don't need warning messages in the logs for that:
+//   silent: process.env.CI === "true",
+// });
+
+setupEnv();
 
 const validCredentialClaims = {
   "@context": {
@@ -111,6 +113,7 @@ type VcSubject = string;
 type ClientId = string;
 type ClientSecret = string;
 type AuthDetails = [OidcIssuer, ClientId, ClientSecret, VcService, VcSubject];
+console.log(process.env);
 // Instructions for obtaining these credentials can be found here:
 // https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
 const serversUnderTest: AuthDetails[] = [
