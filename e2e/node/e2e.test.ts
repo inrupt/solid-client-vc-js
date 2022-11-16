@@ -101,48 +101,26 @@ const invalidCredentialClaims = {
 };
 
 const {
-  vcProvider,
-  clientCredentials,
   environment,
   idp: oidcIssuer,
+  vcProvider,
+  clientCredentials,
 } = getNodeTestingEnvironment({
   vcProvider: "",
   clientCredentials: {
-    owner: { id: "", secret: "" },
+    owner: { id: "", secret: "", login: "" },
   },
 });
 
-type OidcIssuer = string;
-type vcProvider = string;
-type VcSubject = string;
-type ClientId = string;
-type ClientSecret = string;
-type AuthDetails = [OidcIssuer, ClientId, ClientSecret, vcProvider, VcSubject];
-
-// Instructions for obtaining these credentials can be found here:
-// https://github.com/inrupt/solid-client-authn-js/blob/1a97ef79057941d8ac4dc328fff18333eaaeb5d1/packages/node/example/bootstrappedApp/README.md
-
-const serversUnderTest: AuthDetails[] = [
-  // Note: Disabled due to PodSpaces 2.0 migration:
-  // pod.inrupt.com:
-
-  // dev-next.inrupt.com:
-  [
-    // Cumbersome workaround, but:
-    // Trim `https://` from the start of these URLs,
-    // so that GitHub Actions doesn't replace them with *** in the logs.
-    process.env.E2E_TEST_IDP!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_VC_PROVIDER!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_VC_SUBJECT!.replace(/^https:\/\//, ""),
-    process.env.E2E_TEST_REQUESTOR_CLIENT_ID!,
-    process.env.E2E_TEST_REQUESTOR_CLIENT_SECRET!,
-  ],
-];
-
 describe(`End-to-end verifiable credentials tests for environment:[${environment}}]`, () => {
-  const vcSubject = process.env.E2E_TEST_VC_SERVICE || "";
+  const username = clientCredentials.owner.login || "";
   const clientId = clientCredentials.owner.id;
   const clientSecret = clientCredentials.owner.secret;
+
+  const vcSubject =
+    process.env.E2E_TEST_VC_SERVICE ||
+    // eslint-disable-next-line no-unsafe-optional-chaining
+    vcProvider?.replace(/^vc:\/\//, "id") + username;
 
   it("has the appropriate environment variables", () => {
     expect(oidcIssuer).toBeDefined();
