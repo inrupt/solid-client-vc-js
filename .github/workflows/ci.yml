@@ -24,7 +24,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test
-      - run: npm run e2e-test-node
+      - run: npm run test:e2e:node
         # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
         # and because behaviour on different OS's is already tested by unit tests,
         # end-to-end tests only need to run on one OS:
