@@ -77,7 +77,6 @@ const validCredentialClaims = {
     mode: "acl:Read",
     isConsentForDataSubject: "https://some.webid/resource-owner",
   },
-  inbox: "https://pod.inrupt.com/solid-client-e2e-tester-ess/inbox/",
 };
 
 /**
@@ -97,7 +96,6 @@ const invalidCredentialClaims = {
       "@type": "@id",
     },
   },
-  inbox: "https://pod.inrupt.com/solid-client-e2e-tester-ess/inbox/",
 };
 
 const {
@@ -108,43 +106,24 @@ const {
 } = getNodeTestingEnvironment({
   vcProvider: "",
   clientCredentials: {
-    owner: { id: "", secret: "", login: "" },
+    owner: { id: "", secret: "" },
   },
 });
 
 describe(`End-to-end verifiable credentials tests for environment:[${environment}}]`, () => {
-  const username = clientCredentials.owner.login || "";
   const clientId = clientCredentials.owner.id;
   const clientSecret = clientCredentials.owner.secret;
-
-  const vcSubject =
-    process.env.E2E_TEST_VC_SUBJECT ||
-    // eslint-disable-next-line no-unsafe-optional-chaining
-    vcProvider?.replace("vc", "id").concat(username.toLowerCase()) ||
-    "";
-
-  it("has the appropriate environment variables", () => {
-    expect(oidcIssuer).toBeDefined();
-    expect(clientCredentials.owner.id).toBeDefined();
-    expect(clientCredentials.owner.secret).toBeDefined();
-    expect(vcProvider).toBeDefined();
-    expect(vcSubject).toBeDefined();
-  });
-
+  let vcSubject: string;
   const session = new Session();
-  // let vcConfiguration: Partial<{
-  //   derivationService: string;
-  //   issuerService: string;
-  //   statusService: string;
-  //   verifierService: string;
-  // }>;
-
   beforeEach(async () => {
     await session.login({
       oidcIssuer,
       clientId,
       clientSecret,
     });
+
+    vcSubject = session.info.webId || "";
+
     // The following code snippet doesn't work in Jest, probably because of
     // https://github.com/standard-things/esm/issues/706 which seems to be
     // related to https://github.com/facebook/jest/issues/9430. The JSON-LD
@@ -204,11 +183,6 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
 
   describe("lookup VCs", () => {
     it("returns all VC issued matching a given shape", async () => {
-      if (vcProvider === "https://consent.pod.inrupt.com/") {
-        // This skips the test if the derive endpoint isn't available. It's not
-        // mandatory, so the test shouldn't fail.
-        return;
-      }
       const result = await getVerifiableCredentialAllFromShape(
         new URL("derive", vcProvider).href,
         {
@@ -226,11 +200,6 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
 
   describe("revoke VCs", () => {
     it("can revoke a VC", async () => {
-      if (vcProvider === "https://consent.pod.inrupt.com/") {
-        // This skips the test if the derive endpoint isn't available. It's not
-        // mandatory, so the test shouldn't fail.
-        return;
-      }
       const result = await getVerifiableCredentialAllFromShape(
         new URL("derive", vcProvider).href,
         {},
