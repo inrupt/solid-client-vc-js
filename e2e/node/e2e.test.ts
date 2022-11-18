@@ -164,17 +164,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           fetch: session.fetch,
         }
       );
-      try {
-        const vc = await vcPromise;
-        expect(vc.type).not.toContain("SolidAccessGrant");
-        // There are two default type values, there should not be more.
-        expect(vc.type).toHaveLength(2);
-      } catch (error) {
-        // If the promise rejects, it means the
-        // server responded with an error.
-        // eslint-disable-next-line jest/no-conditional-expect
-        expect((error as Error).toString()).toMatch("400");
-      }
+      await expect(vcPromise).rejects.toThrow(/400/);
     });
   });
 
