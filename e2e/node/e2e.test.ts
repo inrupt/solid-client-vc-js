@@ -98,31 +98,28 @@ const invalidCredentialClaims = {
   },
 };
 
-const {
-  environment,
-  idp: oidcIssuer,
-  vcProvider,
-  clientCredentials,
-} = getNodeTestingEnvironment({
+const env = getNodeTestingEnvironment({
   vcProvider: "",
   clientCredentials: {
     owner: { id: "", secret: "" },
   },
 });
 
-describe(`End-to-end verifiable credentials tests for environment:[${environment}}]`, () => {
-  const clientId = clientCredentials.owner.id;
-  const clientSecret = clientCredentials.owner.secret;
+describe("End-to-end verifiable credentials tests for environment", () => {
   let vcSubject: string;
   const session = new Session();
   beforeEach(async () => {
     await session.login({
-      oidcIssuer,
-      clientId,
-      clientSecret,
+      oidcIssuer: env.idp,
+      clientId: env.clientCredentials.owner.id,
+      clientSecret: env.clientCredentials.owner.secret,
     });
 
-    vcSubject = session.info.webId || "";
+    if (!session.info.webId) {
+      throw new Error("Client session missing critical data: webId");
+    } else {
+      vcSubject = session.info.webId;
+    }
 
     // The following code snippet doesn't work in Jest, probably because of
     // https://github.com/standard-things/esm/issues/706 which seems to be
@@ -144,7 +141,7 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
   describe("issue a VC", () => {
     it("Successfully gets a VC from a valid issuer", async () => {
       const credential = await issueVerifiableCredential(
-        new URL("issue", vcProvider).href,
+        new URL("issue", env.vcProvider).href,
         validCredentialClaims,
         undefined,
         {
@@ -160,7 +157,7 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
     // associated to the preconfigured shape.
     it("throws if the issuer returns an error", async () => {
       const vcPromise = issueVerifiableCredential(
-        new URL("issue", vcProvider).href,
+        new URL("issue", env.vcProvider).href,
         invalidCredentialClaims,
         undefined,
         {
@@ -184,7 +181,7 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
   describe("lookup VCs", () => {
     it("returns all VC issued matching a given shape", async () => {
       const result = await getVerifiableCredentialAllFromShape(
-        new URL("derive", vcProvider).href,
+        new URL("derive", env.vcProvider).href,
         {
           credentialSubject: {
             id: vcSubject,
@@ -201,7 +198,7 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
   describe("revoke VCs", () => {
     it("can revoke a VC", async () => {
       const result = await getVerifiableCredentialAllFromShape(
-        new URL("derive", vcProvider).href,
+        new URL("derive", env.vcProvider).href,
         {},
         {
           fetch: session.fetch,
@@ -209,7 +206,7 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
       );
       await expect(
         revokeVerifiableCredential(
-          new URL("status", vcProvider).href,
+          new URL("status", env.vcProvider).href,
           result[0].id,
           {
             fetch: session.fetch,
@@ -217,7 +214,7 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
         )
       ).resolves.not.toThrow();
       const verificationResponse = await session.fetch(
-        new URL("verify", vcProvider).href,
+        new URL("verify", env.vcProvider).href,
         {
           method: "POST",
           body: JSON.stringify({ verifiableCredential: result[0] }),
