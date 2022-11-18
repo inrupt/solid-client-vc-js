@@ -24,7 +24,14 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test
-        # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
-        # and because behaviour on different OS's is already tested by unit tests,
-        # end-to-end tests only need to run on one OS:
-        if: runner.os == 'Linux' && matrix.node-version == '16.x' && github.actor != 'dependabot[bot]'
+
+      # Sonar analysis needs the full history for features like automatic assignment of bugs. If the following step
+      # is not included the project will show a warning about incomplete information.
+      - run: git fetch --unshallow
+        if: ${{ matrix.node-version == '16.x' && runner.os == 'Linux' && github.actor != 'dependabot[bot]' }}
+      # Run Sonar Scan
+      - uses: SonarSource/sonarcloud-github-action@v1.7
+        if: ${{ matrix.node-version == '16.x' && runner.os == 'Linux' && github.actor != 'dependabot[bot]' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
