@@ -25,12 +25,14 @@ export default {
   reporters: ["default", "github-actions"],
   collectCoverage: true,
   coverageReporters: process.env.CI ? ["text", "lcov"] : ["text"],
+  // NOTE: Coverage thresholds here have been adjusted due to current coverage levels
+  //    levels should be adjust back to 100 as soon as full coverage is achieved again.
   coverageThreshold: {
     global: {
       branches: 50,
       functions: 48,
-      lines: 50,
-      statements: 50,
+      lines: 67,
+      statements: 68,
     },
   },
   coveragePathIgnorePatterns: [
