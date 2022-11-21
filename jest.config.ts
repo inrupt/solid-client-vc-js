@@ -17,10 +17,6 @@ const baseConfig: ArrayElement<NonNullable<Config["projects"]>> = {
   injectGlobals: false,
 };
 
-// Required by @peculiar/webcrypto, which comes from the polyfills
-// loaded in the setup file.
-process.env.OPENSSL_CONF = "/dev/null";
-
 export default {
   reporters: ["default", "github-actions"],
   collectCoverage: true,
@@ -42,7 +38,7 @@ export default {
     {
       ...baseConfig,
       testEnvironment: "jsdom",
-      displayName: "src",
+      displayName: "browser",
       roots: ["<rootDir>/src"],
       // This test environment is an extension of jsdom. This module targets the
       // browser environment only, so tests only need to run in jsdom.
