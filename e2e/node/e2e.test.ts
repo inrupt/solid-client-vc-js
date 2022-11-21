@@ -31,9 +31,6 @@ import {
   revokeVerifiableCredential,
 } from "../../src/index";
 
-// Load environment variables from .env.local if available:
-setupEnv();
-
 const validCredentialClaims = {
   "@context": {
     gc: "https://w3id.org/GConsent#",

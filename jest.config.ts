@@ -35,18 +35,8 @@ export default {
       statements: 68,
     },
   },
-  coveragePathIgnorePatterns: [
-    "/node_modules/",
-    "<rootDir>/dist",
-    "./*.mock.ts",
-  ],
-  testPathIgnorePatterns: [
-    "/node_modules/",
-    // By default we only run unit tests:
-    "/src/e2e-node/",
-    "/src/e2e-browser/",
-  ],
   injectGlobals: false,
+  clearMocks: true,
   collectCoverageFrom: ["<rootDir>/src/**/*.ts"],
   projects: [
     {
@@ -64,7 +54,7 @@ export default {
       testEnvironment: "node",
       displayName: "e2e-node",
       roots: ["<rootDir>/e2e/node"],
-      setupFiles: ["<rootDir>/jest.e2e.setup.ts"],
+      setupFiles: ["<rootDir>/e2e/node/jest.e2e.setup.ts"],
       slowTestThreshold: 30,
     },
   ],
