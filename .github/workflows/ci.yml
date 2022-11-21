@@ -24,27 +24,6 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test
-      - run: npm run e2e-test-node
-        # To prevent conflicts of multiple jobs trying to modify the same Resource at the same time,
-        # and because behaviour on different OS's is already tested by unit tests,
-        # end-to-end tests only need to run on one OS:
-        if: runner.os == 'Linux' && matrix.node-version == '16.x' && github.actor != 'dependabot[bot]'
-        env:
-          E2E_TEST_DEV_NEXT_IDP_URL: ${{ secrets.E2E_TEST_DEV_NEXT_IDP_URL }}
-          E2E_TEST_DEV_NEXT_VC_SERVICE: https://vc.dev-next.inrupt.com
-          E2E_TEST_DEV_NEXT_VC_SUBJECT: https://id.dev-next.inrupt.com/sdkdevnexte2e
-          E2E_TEST_DEV_NEXT_CLIENT_ID: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_ID }}
-          E2E_TEST_DEV_NEXT_CLIENT_SECRET: ${{ secrets.E2E_TEST_DEV_NEXT_CLIENT_SECRET }}
-      # Ideally, we'd autodetect installed browsers and run them headlessly.
-      # See https://github.com/DevExpress/testcafe/issues/5641
-      # - name: Prepare browser-based end-to-end tests
-      #   run: |
-      #     cd .codesandbox/sandbox
-      #     npm install
-      #     # Run the end-to-end tests against the code in this branch specifically:
-      #     npm install ../../
-      #     cd ../..
-      # TODO: Persist the e2e browser results to artifacts
 
       # Sonar analysis needs the full history for features like automatic assignment of bugs. If the following step
       # is not included the project will show a warning about incomplete information.
