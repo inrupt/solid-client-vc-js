@@ -1,5 +1,4 @@
-jest.config.js
-jest.e2e.config.js
+jest.config.ts
 license-header.js
 rollup.config.js
 tsconfig.json

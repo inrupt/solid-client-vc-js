@@ -31,7 +31,14 @@ import {
   revokeVerifiableCredential,
 } from "../../src/index";
 
-// Load environment variables from .env.local if available:
+// Load environment variables from .env.test.local if available:
+// config({
+//   path: __dirname,
+//   // In CI, actual environment variables will overwrite values from .env files.
+//   // We don't need warning messages in the logs for that:
+//   silent: process.env.CI === "true",
+// });
+
 setupEnv();
 
 const validCredentialClaims = {
@@ -109,20 +116,21 @@ const {
     owner: { id: "", secret: "" },
   },
 });
-
-describe(`End-to-end verifiable credentials tests for environment:[${environment}}]`, () => {
-  const clientId = clientCredentials.owner.id;
-  const clientSecret = clientCredentials.owner.secret;
+describe("End-to-end verifiable credentials tests for environment", () => {
   let vcSubject: string;
   const session = new Session();
   beforeEach(async () => {
     await session.login({
-      oidcIssuer,
-      clientId,
-      clientSecret,
+      oidcIssuer: oidcIssuer,
+      clientId: clientCredentials.owner.id,
+      clientSecret: clientCredentials.owner.secret,
     });
 
-    vcSubject = session.info.webId || "";
+    if (!session.info.webId) {
+      throw new Error("Client session missing critical data: webId");
+    } else {
+      vcSubject = session.info.webId;
+    }
 
     // The following code snippet doesn't work in Jest, probably because of
     // https://github.com/standard-things/esm/issues/706 which seems to be
@@ -167,17 +175,7 @@ describe(`End-to-end verifiable credentials tests for environment:[${environment
           fetch: session.fetch,
         }
       );
-      try {
-        const vc = await vcPromise;
-        expect(vc.type).not.toContain("SolidAccessGrant");
-        // There are two default type values, there should not be more.
-        expect(vc.type).toHaveLength(2);
-      } catch (error) {
-        // If the promise rejects, it means the
-        // server responded with an error.
-        // eslint-disable-next-line jest/no-conditional-expect
-        expect((error as Error).toString()).toMatch("400");
-      }
+      await expect(vcPromise).rejects.toThrow(/400/);
     });
   });
 
