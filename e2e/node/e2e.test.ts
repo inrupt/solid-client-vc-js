@@ -106,7 +106,6 @@ const invalidCredentialClaims = {
 };
 
 const {
-  environment,
   idp: oidcIssuer,
   vcProvider,
   clientCredentials,
@@ -121,7 +120,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
   const session = new Session();
   beforeEach(async () => {
     await session.login({
-      oidcIssuer: oidcIssuer,
+      oidcIssuer,
       clientId: clientCredentials.owner.id,
       clientSecret: clientCredentials.owner.secret,
     });
