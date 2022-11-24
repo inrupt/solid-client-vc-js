@@ -24,22 +24,12 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import { Session } from "@inrupt/solid-client-authn-node";
-import { setupEnv, getNodeTestingEnvironment } from "@inrupt/internal-test-env";
+import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
 import {
   getVerifiableCredentialAllFromShape,
   issueVerifiableCredential,
   revokeVerifiableCredential,
 } from "../../src/index";
-
-// Load environment variables from .env.test.local if available:
-// config({
-//   path: __dirname,
-//   // In CI, actual environment variables will overwrite values from .env files.
-//   // We don't need warning messages in the logs for that:
-//   silent: process.env.CI === "true",
-// });
-
-setupEnv();
 
 const validCredentialClaims = {
   "@context": {
