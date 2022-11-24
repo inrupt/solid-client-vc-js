@@ -101,7 +101,6 @@ const env = getNodeTestingEnvironment({
     owner: { id: "", secret: "" },
   },
 });
-
 describe("End-to-end verifiable credentials tests for environment", () => {
   let vcSubject: string;
   const session = new Session();
