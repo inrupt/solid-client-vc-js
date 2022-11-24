@@ -22,10 +22,9 @@ jobs:
         environment-name: ["ESS PodSpaces"]
         experimental: [false]
         include:
-          - version: "18.x"
+          - node-version: ["14.x", "16.x"]
             experimental: true
-          - environment-name: "ESS Dev-Next"
-            experimental: true
+            environment-name: "ESS Dev-Next"
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
