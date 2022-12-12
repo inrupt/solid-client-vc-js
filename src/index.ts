@@ -23,6 +23,7 @@ export { default as issueVerifiableCredential } from "./issue/issue";
 export type { Iri, JsonLd, VerifiableCredential } from "./common/common";
 export {
   isVerifiableCredential,
+  isVerifiablePresentation,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
 } from "./common/common";
@@ -33,4 +34,4 @@ export type {
   VerifiablePresentationRequest,
 } from "./lookup/query";
 export { default as revokeVerifiableCredential } from "./revoke/revoke";
-export { default as isValidVc } from "./verify/verify";
+export { isValidVc, isValidVerifiablePresentation } from "./verify/verify";

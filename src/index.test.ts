@@ -28,7 +28,7 @@ import {
 } from "./common/common";
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
 import revokeVerifiableCredential from "./revoke/revoke";
-import isValidVc from "./verify/verify";
+import { isValidVc } from "./verify/verify";
 import { query } from "./lookup/query";
 
 describe("exports", () => {
@@ -36,12 +36,14 @@ describe("exports", () => {
     expect(Object.keys(packageExports)).toEqual([
       "issueVerifiableCredential",
       "isVerifiableCredential",
+      "isVerifiablePresentation",
       "getVerifiableCredential",
       "getVerifiableCredentialApiConfiguration",
       "getVerifiableCredentialAllFromShape",
       "query",
       "revokeVerifiableCredential",
       "isValidVc",
+      "isValidVerifiablePresentation",
     ]);
     expect(packageExports.issueVerifiableCredential).toBe(
       issueVerifiableCredential
