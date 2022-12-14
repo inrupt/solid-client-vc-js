@@ -106,7 +106,7 @@ export async function isValidVc(
 
   if (verifierEndpoint === undefined) {
     throw new Error(
-      `The VC service provider ${vcObject.issuer} does not advertise for a verifier service in its .well-known/vc-configuration document`
+      `The VC service provider ${vcObject.issuer} does not advertize for a verifier service in its .well-known/vc-configuration document`
     );
   }
 
@@ -148,6 +148,7 @@ export async function isValidVc(
  * compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * This can be typically used for authentication.
  * - `options.domain`: Pass a domain
+ * - `options.challenge`: Pass a challenge
  *
  * @returns a JSON-shaped validation report structured accoring to the [VP Verifier API](https://w3c-ccg.github.io/vc-api/verifier.html#operation/verifyPresentation).
  * @since
@@ -158,6 +159,7 @@ export async function isValidVerifiablePresentation(
   options: Partial<{
     fetch: typeof fetch;
     domain: string;
+    challenge: string;
   }> = {}
 ): Promise<{ checks: string[]; warnings: string[]; errors: string[] }> {
   const fetcher = options.fetch ?? fallbackFetch;
@@ -182,7 +184,7 @@ export async function isValidVerifiablePresentation(
 
   if (verifierEndpoint === undefined) {
     throw new Error(
-      `The VC service provider ${verifiablePresentation.holder} does not advertise for a verifier service in its .well-known/vc-configuration document`
+      `The VC service provider ${verifiablePresentation.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`
     );
   }
 
@@ -195,6 +197,7 @@ export async function isValidVerifiablePresentation(
       verifiablePresentation,
       options: {
         domain: options.domain,
+        challenge: options.challenge,
       },
     }),
   });

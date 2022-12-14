@@ -258,7 +258,7 @@ describe("isValidVc", () => {
         fetch: mockedFetch,
       })
     ).rejects.toThrow(
-      `The VC service provider ${MOCK_VC.issuer} does not advertise for a verifier service in its .well-known/vc-configuration document`
+      `The VC service provider ${MOCK_VC.issuer} does not advertize for a verifier service in its .well-known/vc-configuration document`
     );
   });
 
@@ -331,6 +331,7 @@ describe("isValidVerifiable Presentation", () => {
     );
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
       domain: "domain",
+      challenge: "challenge",
     });
 
     expect(fallbackFetch).toHaveBeenCalled();
@@ -346,6 +347,7 @@ describe("isValidVerifiable Presentation", () => {
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
       fetch: mockedFetch,
       domain: "domain",
+      challenge: "challenge",
     });
 
     expect(mockedFetch).toHaveBeenCalled();
@@ -362,6 +364,7 @@ describe("isValidVerifiable Presentation", () => {
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
       fetch: mockedFetch,
       domain: "domain",
+      challenge: "challenge",
     });
 
     expect(mockedFetch).toHaveBeenCalledWith(
@@ -369,7 +372,7 @@ describe("isValidVerifiable Presentation", () => {
       expect.objectContaining({
         body: JSON.stringify({
           verifiablePresentation: MOCK_VP,
-          options: { domain: "domain" },
+          options: { domain: "domain", challenge: "challenge" },
         }),
       })
     );
@@ -437,7 +440,7 @@ describe("isValidVerifiable Presentation", () => {
         fetch: mockedFetch,
       })
     ).rejects.toThrow(
-      `The VC service provider ${MOCK_VP.holder} does not advertise for a verifier service in its .well-known/vc-configuration document`
+      `The VC service provider ${MOCK_VP.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`
     );
   });
 
