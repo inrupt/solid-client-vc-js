@@ -460,7 +460,7 @@ describe("isValidVerifiable Presentation", () => {
     ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
   });
 
-  it("returns the validation result from the access endpoint", async () => {
+  it("returns the validation result from the verification endpoint", async () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
