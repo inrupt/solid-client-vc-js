@@ -185,7 +185,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
     it("can revoke a VC", async () => {
       const result = await getVerifiableCredentialAllFromShape(
         new URL("derive", env.vcProvider).href,
-        {},
+        { credentialSubject: { id: session.info.webId as string } },
         {
           fetch: session.fetch,
         }
