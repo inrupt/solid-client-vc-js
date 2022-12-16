@@ -13,7 +13,7 @@
     "lint:eslint": "eslint --config .eslintrc.js \"src/\" \"e2e/\"",
     "lint:prettier": "prettier \"{src,e2e}/**/*.{ts,tsx,js,jsx,css}\" \"**/*.{md,mdx,yml}\"",
     "test": "jest --selectProjects browser",
-    "test:e2e:node": "jest --selectProjects e2e-node",
+    "test:e2e:node": "jest --selectProjects e2e-node --collectCoverage false",
     "test:e2e:browser": "echo \"This project has no e2e browser tests\"",
     "prepublishOnly": "npm run build"
   },

@@ -12,7 +12,7 @@ const baseConfig: ArrayElement<NonNullable<Config["projects"]>> = {
   // deliberately set to an empty array to allow including node_modules when transforming code:
   transformIgnorePatterns: [],
   modulePathIgnorePatterns: ["dist/"],
-  coveragePathIgnorePatterns: [".*.spec.ts", "dist/"],
+  coveragePathIgnorePatterns: [".*.spec.ts", "dist/", "node_modules/", ".*\.mock\..*"],
   clearMocks: true,
   injectGlobals: false,
 };
@@ -25,10 +25,10 @@ export default {
   //    levels should be adjust back to 100 as soon as full coverage is achieved again.
   coverageThreshold: {
     global: {
-      branches: 50,
-      functions: 48,
-      lines: 67,
-      statements: 68,
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100,
     },
   },
   injectGlobals: false,
