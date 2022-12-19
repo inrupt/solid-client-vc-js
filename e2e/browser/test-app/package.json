@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@inrupt/internal-test-env": "^1.5.3",
     "@inrupt/solid-client-vc": "^0.5.0",
     "@types/node": "18.11.12",
     "@types/react": "18.0.26",

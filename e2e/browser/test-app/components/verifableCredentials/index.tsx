@@ -24,18 +24,19 @@ import {
   issueVerifiableCredential,
   revokeVerifiableCredential,
 } from "@inrupt/solid-client-vc";
-// import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
 import {
   getPodUrlAll,
   saveFileInContainer,
   getSourceUrl,
   deleteFile,
 } from "@inrupt/solid-client";
+
 import React, { useState } from "react";
 
 const session = getDefaultSession();
 const SHARED_FILE_CONTENT = "Some content.\n";
-const env = { vcProvider: "" };
+
+const env = { vcProvider: "https://vc.dev-next.inrupt.com" };
 export default function VerifiableCredential({
   setErrorMessage,
 }: {
@@ -43,12 +44,89 @@ export default function VerifiableCredential({
 }) {
   const [verifiableCredential, setVerifiableCredential] = useState<string>();
   const [sharedResourceIri, setSharedResourceIri] = useState<string>();
-  // const env = getNodeTestingEnvironment({
-  //   vcProvider: "",
-  //   clientCredentials: {
-  //     owner: { id: "", secret: "" },
-  //   },
-  // });
+
+  const validCredentialClaims = {
+    "@context": {
+      gc: "https://w3id.org/GConsent#",
+      consent: "http://www.w3.org/ns/solid/consent#",
+      ldp: "http://www.w3.org/ns/ldp#",
+      acl: "http://www.w3.org/ns/auth/acl#",
+      inbox: {
+        "@id": "ldp:inbox",
+        "@type": "@id",
+      },
+      Read: "acl:Read",
+      mode: {
+        "@id": "acl:mode",
+        "@type": "@id",
+      },
+      forPersonalData: {
+        "@id": "gc:forPersonalData",
+        "@type": "@id",
+      },
+      forPurpose: {
+        "@id": "gc:forPurpose",
+        "@type": "@id",
+      },
+      hasConsent: {
+        "@id": "gc:hasConsent",
+        "@type": "@id",
+      },
+      isConsentForDataSubject: {
+        "@id": "gc:isConsentForDataSubject",
+        "@type": "@id",
+      },
+      hasStatus: {
+        "@id": "gc:hasStatus",
+        "@type": "@id",
+      },
+    },
+    hasConsent: {
+      forPurpose: "https://example.org/ns/somePurpose",
+      forPersonalData: "https://example.org/ns/someData",
+      hasStatus: "gc:ConsentStatusRequested",
+      mode: "acl:Read",
+      isConsentForDataSubject: "https://some.webid/resource-owner",
+    },
+  };
+
+  const invalidCredentialClaims = {
+    "@context": {
+      gc: "https://w3id.org/GConsent#",
+      consent: "http://www.w3.org/ns/solid/consent#",
+      ldp: "http://www.w3.org/ns/ldp#",
+      acl: "http://www.w3.org/ns/auth/acl#",
+      inbox: {
+        "@id": "ldp:inbox",
+        "@type": "@id",
+      },
+      Read: "acl:Read",
+      mode: {
+        "@id": "acl:mode",
+        "@type": "@id",
+      },
+      forPersonalData: {
+        "@id": "gc:forPersonalData",
+        "@type": "@id",
+      },
+      forPurpose: {
+        "@id": "gc:forPurpose",
+        "@type": "@id",
+      },
+      hasConsent: {
+        "@id": "gc:hasConsent",
+        "@type": "@id",
+      },
+      isConsentForDataSubject: {
+        "@id": "gc:isConsentForDataSubject",
+        "@type": "@id",
+      },
+      hasStatus: {
+        "@id": "gc:hasStatus",
+        "@type": "@id",
+      },
+    },
+  };
 
   const handleCreate = async (e): Promise<void> => {
     // This prevents the default behaviour of the button, i.e. to resubmit, which reloads the page.
@@ -94,7 +172,7 @@ export default function VerifiableCredential({
     setSharedResourceIri(undefined);
   };
 
-  const handleIssue = async (e) => {
+  const handleIssue = async (e, issueInvalid = true) => {
     // This prevents the default behaviour of the button, i.e. to resubmit, which reloads the page.
     e.preventDefault();
     if (typeof sharedResourceIri !== "string") {
@@ -102,19 +180,15 @@ export default function VerifiableCredential({
       return;
     }
 
-    const { webId } = session.info;
-    const vcRequest = await issueVerifiableCredential(
-      `${env.vcProvider}/issue`,
-
-      // Ends up being the subject. We will want to modify this to be someone
-      // else so that we can issue a VC to someone else, not myself. This is the
-      // vcSubject parameter.
-      webId || "n/a",
-      JSON.parse("{}") || undefined,
-      JSON.parse("{}") || undefined,
-      { fetch: session.fetch }
+    const credential = await issueVerifiableCredential(
+      new URL("issue", env.vcProvider).href,
+      issueInvalid ? validCredentialClaims : invalidCredentialClaims,
+      undefined,
+      {
+        fetch: session.fetch,
+      }
     );
-    setVerifiableCredential(JSON.stringify(vcRequest, null, "  "));
+    setVerifiableCredential(JSON.stringify(credential, null, "  "));
   };
 
   const handleRevoke = async (e) => {
@@ -125,10 +199,9 @@ export default function VerifiableCredential({
       return;
     }
 
-    const { webId } = session.info;
     await revokeVerifiableCredential(
       `${env.vcProvider}/status`,
-      webId || "n/a",
+      session.info.webId || "n/a",
       {
         fetch: session.fetch,
       }
@@ -163,6 +236,12 @@ export default function VerifiableCredential({
         </button>
         <button onClick={async (e) => handleRevoke(e)} data-testid="revoke-vc">
           Revoke access via VC
+        </button>
+        <button
+          onClick={async (e) => handleIssue(e, false)}
+          data-testid="issue-invalid-vc"
+        >
+          Issue invalid access via VC
         </button>
       </div>
       <p>

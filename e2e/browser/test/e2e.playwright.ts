@@ -43,8 +43,10 @@ test("Issue credential to a resource, then revoking it", async ({
     page.waitForResponse((response) => response.status() === 201),
   ]);
   await expect(
-    page.innerText("pre[data-testid=access-grant]")
+    page.innerText("pre[data-testid=verifiable-credential]")
   ).resolves.not.toBe("");
+
+  // TODO add extra validation of claims here?
 
   // Revoke VC for resource
   await Promise.all([
@@ -53,9 +55,44 @@ test("Issue credential to a resource, then revoking it", async ({
     page.waitForResponse((response) => response.status() === 201),
   ]);
   await expect(
-    page.innerText("pre[data-testid=access-grant]")
+    page.innerText("pre[data-testid=verifiable-credential]")
   ).resolves.not.toBe("");
 
+  // Cleanup the resource
+  await Promise.all([
+    page.click("button[data-testid=delete-resource]"),
+    page.waitForRequest((request) => request.method() === "DELETE"),
+    page.waitForResponse((response) => response.status() === 204),
+  ]);
+  await expect(
+    page.innerText("span[data-testid=resource-iri]")
+  ).resolves.toMatch("");
+});
+
+test("Try issuing an invalid credential, get an error", async ({
+  page,
+  auth,
+}) => {
+  await auth.login({ allow: true });
+  // Create the resource
+  await Promise.all([
+    page.click("button[data-testid=create-resource]"),
+    page.waitForRequest((request) => request.method() === "POST"),
+    page.waitForResponse((response) => response.status() === 201),
+  ]);
+  await expect(
+    page.innerText("span[data-testid=resource-iri]")
+  ).resolves.toMatch(/https:\/\/.*\.txt/);
+
+  // Try to issue VC for resource
+  await Promise.all([
+    page.click("button[data-testid=issue-invalid-vc]"),
+    page.waitForRequest((request) => request.method() === "POST"),
+    page.waitForResponse((response) => response.status() === 400),
+  ]);
+  await expect(
+    page.innerText("pre[data-testid=verifiable-credential]")
+  ).resolves.not.toBe("");
 
   // Cleanup the resource
   await Promise.all([
