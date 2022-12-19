@@ -444,6 +444,40 @@ describe("isValidVerifiable Presentation", () => {
     );
   });
 
+  it("throws if passed VP is not a verifiable presentation", async () => {
+    const mockedFetch = jest.fn(global.fetch);
+    mocked(isVerifiablePresentation).mockReturnValueOnce(false);
+
+    await expect(
+      isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+        fetch: mockedFetch as typeof fetch,
+      })
+    ).rejects.toThrow(
+      `The request to [${MOCK_VP}] returned an unexpected response: ${JSON.stringify(
+        MOCK_VP,
+        null,
+        "  "
+      )}`
+    );
+  });
+
+  it("throws if response is not valid JSON", async () => {
+    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+      new Response(`some non-JSON response`, {
+        status: 200,
+      })
+    );
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+
+    await expect(
+      isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+        fetch: mockedFetch as typeof fetch,
+      })
+    ).rejects.toThrow(
+      `Parsing the response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] as JSON failed: ${`SyntaxError: Unexpected token s in JSON at position 0`}`
+    );
+  });
+
   it("throws if the verification endpoint returns an error", async () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(undefined, {

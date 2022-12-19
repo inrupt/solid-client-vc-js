@@ -23,12 +23,13 @@ import * as packageExports from "./index";
 import issueVerifiableCredential from "./issue/issue";
 import {
   isVerifiableCredential,
+  isVerifiablePresentation,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
 } from "./common/common";
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
 import revokeVerifiableCredential from "./revoke/revoke";
-import { isValidVc } from "./verify/verify";
+import { isValidVc, isValidVerifiablePresentation } from "./verify/verify";
 import { query } from "./lookup/query";
 
 describe("exports", () => {
@@ -49,6 +50,9 @@ describe("exports", () => {
       issueVerifiableCredential
     );
     expect(packageExports.isVerifiableCredential).toBe(isVerifiableCredential);
+    expect(packageExports.isVerifiablePresentation).toBe(
+      isVerifiablePresentation
+    );
     expect(packageExports.getVerifiableCredential).toBe(
       getVerifiableCredential
     );
@@ -62,6 +66,9 @@ describe("exports", () => {
       revokeVerifiableCredential
     );
     expect(packageExports.isValidVc).toBe(isValidVc);
+    expect(packageExports.isValidVerifiablePresentation).toBe(
+      isValidVerifiablePresentation
+    );
     expect(packageExports.query).toBe(query);
   });
 });
