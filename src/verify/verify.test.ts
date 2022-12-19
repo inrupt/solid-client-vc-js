@@ -24,42 +24,42 @@ import { mocked } from "jest-mock";
 import {
   getVerifiableCredentialApiConfiguration,
   isVerifiableCredential,
+  isVerifiablePresentation,
 } from "../common/common";
-import isValidVc from "./verify";
+import { isValidVc, isValidVerifiablePresentation } from "./verify";
 import fallbackFetch from "../fetcher";
 
 jest.mock("../common/common");
 jest.mock("../fetcher");
-
+const MOCK_VC = {
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://consent.pod.inrupt.com/credentials/v1",
+  ],
+  id: "https://example.com/id",
+  issuer: "https://example.com/issuer",
+  type: ["VerifiableCredential", "SolidCredential", "SolidAccessGrant"],
+  issuanceDate: "2021-05-26T16:40:03",
+  expirationDate: "2021-06-09T16:40:03",
+  credentialSubject: {
+    id: "https://pod.inrupt.com/alice/profile/card#me",
+    providedConsent: {
+      mode: ["http://www.w3.org/ns/auth/acl#Read"],
+      hasStatus: "ConsentStatusExplicitlyGiven",
+      forPersonalData: "https://pod.inrupt.com/alice/private/data",
+      forPurpose: "https://example.com/SomeSpecificPurpose",
+      isProvidedToPerson: "https://pod.inrupt.com/bob/profile/card#me",
+    },
+  },
+  proof: {
+    created: "2021-05-26T16:40:03.009Z",
+    proofPurpose: "assertionMethod",
+    proofValue: "eqp8h_kL1DwJCpn65z-d1Arnysx6b11...jb8j0MxUCc1uDQ",
+    type: "Ed25519Signature2020",
+    verificationMethod: "https://consent.pod.inrupt.com/key/396f686b",
+  },
+};
 describe("isValidVc", () => {
-  const MOCK_VC = {
-    "@context": [
-      "https://www.w3.org/2018/credentials/v1",
-      "https://consent.pod.inrupt.com/credentials/v1",
-    ],
-    id: "https://example.com/id",
-    issuer: "https://example.com/issuer",
-    type: ["VerifiableCredential", "SolidCredential", "SolidAccessGrant"],
-    issuanceDate: "2021-05-26T16:40:03",
-    expirationDate: "2021-06-09T16:40:03",
-    credentialSubject: {
-      id: "https://pod.inrupt.com/alice/profile/card#me",
-      providedConsent: {
-        mode: ["http://www.w3.org/ns/auth/acl#Read"],
-        hasStatus: "ConsentStatusExplicitlyGiven",
-        forPersonalData: "https://pod.inrupt.com/alice/private/data",
-        forPurpose: "https://example.com/SomeSpecificPurpose",
-        isProvidedToPerson: "https://pod.inrupt.com/bob/profile/card#me",
-      },
-    },
-    proof: {
-      created: "2021-05-26T16:40:03.009Z",
-      proofPurpose: "assertionMethod",
-      proofValue: "eqp8h_kL1DwJCpn65z-d1Arnysx6b11...jb8j0MxUCc1uDQ",
-      type: "Ed25519Signature2020",
-      verificationMethod: "https://consent.pod.inrupt.com/key/396f686b",
-    },
-  };
   const MOCK_VERIFY_ENDPOINT = "https://consent.example.com";
   const MOCK_VERIFY_RESPONSE = { checks: [], warning: [], errors: [] };
 
@@ -305,6 +305,206 @@ describe("isValidVc", () => {
       isValidVc(MOCK_VC, {
         fetch: mockedFetch,
         verificationEndpoint: "https://some.verification.api",
+      })
+    ).resolves.toEqual({ checks: [], errors: [], warning: [] });
+  });
+});
+describe("isValidVerifiable Presentation", () => {
+  const MOCK_VP = {
+    "@context": ["https://www.w3.org/2018/credentials/v1"],
+    type: "VerifiablePresentation",
+    verifiableCredential: [MOCK_VC],
+    holder: "https://vc.inrupt.com",
+  };
+  const MOCK_VERIFY_ENDPOINT = "https://consent.example.com";
+  const MOCK_VERIFY_RESPONSE = { checks: [], warning: [], errors: [] };
+
+  it("falls back to the embedded fetch if none is provided", async () => {
+    const mockedFetch = jest.requireMock("../fetcher") as jest.Mocked<{
+      default: typeof fetch;
+    }>;
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+    mockedFetch.default.mockResolvedValueOnce(
+      new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+        status: 200,
+      })
+    );
+    await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+      domain: "domain",
+      challenge: "challenge",
+    });
+
+    expect(fallbackFetch).toHaveBeenCalled();
+  });
+
+  it("uses the provided fetch if any", async () => {
+    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+        status: 200,
+      })
+    );
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+    await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+      fetch: mockedFetch,
+      domain: "domain",
+      challenge: "challenge",
+    });
+
+    expect(mockedFetch).toHaveBeenCalled();
+  });
+
+  it("sends the given vp to the verify endpoint", async () => {
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+        status: 200,
+      })
+    );
+
+    await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+      fetch: mockedFetch,
+      domain: "domain",
+      challenge: "challenge",
+    });
+
+    expect(mockedFetch).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: JSON.stringify({
+          verifiablePresentation: MOCK_VP,
+          options: { domain: "domain", challenge: "challenge" },
+        }),
+      })
+    );
+  });
+
+  it("uses the provided verification endpoint if any", async () => {
+    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+        status: 200,
+      })
+    );
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+
+    await isValidVerifiablePresentation(
+      "https://some.verification.api",
+      MOCK_VP,
+      {
+        fetch: mockedFetch,
+      }
+    );
+    expect(mockedFetch).toHaveBeenCalledWith(
+      "https://some.verification.api",
+      expect.anything()
+    );
+    expect(getVerifiableCredentialApiConfiguration).not.toHaveBeenCalled();
+  });
+
+  it("discovers the verification endpoint if none is provided", async () => {
+    const mockedDiscovery = mocked(
+      getVerifiableCredentialApiConfiguration
+    ).mockResolvedValueOnce({
+      verifierService: "https://some.vc.verifier",
+      legacy: {},
+      specCompliant: {},
+    });
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+
+    const mockedFetch = jest.requireMock("../fetcher") as jest.Mocked<{
+      default: typeof fetch;
+    }>;
+    mockedFetch.default.mockResolvedValueOnce(
+      new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+        status: 200,
+      })
+    );
+
+    await isValidVerifiablePresentation(null, MOCK_VP);
+    expect(mockedDiscovery).toHaveBeenCalledWith(MOCK_VP.holder);
+  });
+
+  it("throws if no verification endpoint is discovered", async () => {
+    mocked(getVerifiableCredentialApiConfiguration).mockResolvedValueOnce({
+      legacy: {},
+      specCompliant: {},
+    });
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+        status: 200,
+      })
+    );
+
+    await expect(
+      isValidVerifiablePresentation(null, MOCK_VP, {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(
+      `The VC service provider ${MOCK_VP.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`
+    );
+  });
+
+  it("throws if passed VP is not a verifiable presentation", async () => {
+    const mockedFetch = jest.fn(global.fetch);
+    mocked(isVerifiablePresentation).mockReturnValueOnce(false);
+
+    await expect(
+      isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+        fetch: mockedFetch as typeof fetch,
+      })
+    ).rejects.toThrow(
+      `The request to [${MOCK_VP}] returned an unexpected response: ${JSON.stringify(
+        MOCK_VP,
+        null,
+        "  "
+      )}`
+    );
+  });
+
+  it("throws if response is not valid JSON", async () => {
+    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+      new Response(`some non-JSON response`, {
+        status: 200,
+      })
+    );
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+
+    await expect(
+      isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+        fetch: mockedFetch as typeof fetch,
+      })
+    ).rejects.toThrow(
+      `Parsing the response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] as JSON failed: ${`SyntaxError: Unexpected token s in JSON at position 0`}`
+    );
+  });
+
+  it("throws if the verification endpoint returns an error", async () => {
+    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      })
+    );
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+
+    await expect(
+      isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+        fetch: mockedFetch as typeof fetch,
+      })
+    ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
+  });
+
+  it("returns the validation result from the verification endpoint", async () => {
+    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+        status: 200,
+      })
+    );
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+
+    await expect(
+      isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+        fetch: mockedFetch as typeof fetch,
       })
     ).resolves.toEqual({ checks: [], errors: [], warning: [] });
   });

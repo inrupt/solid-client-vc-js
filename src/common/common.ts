@@ -74,7 +74,7 @@ export type VerifiableCredential = JsonLd & {
 
 export type VerifiablePresentation = JsonLd & {
   id?: string;
-  type: string[];
+  type: string | string[];
   verifiableCredential?: VerifiableCredential[];
   holder?: string;
   proof?: Proof;

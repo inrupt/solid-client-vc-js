@@ -24,6 +24,8 @@ import {
   VerifiableCredential,
   getVerifiableCredentialApiConfiguration,
   isVerifiableCredential,
+  isVerifiablePresentation,
+  VerifiablePresentation,
 } from "../common/common";
 import fallbackFetch from "../fetcher";
 
@@ -75,7 +77,7 @@ async function dereferenceVc(
  * @returns a JSON-shaped validation report structured accoring to the [VC Verifier API](https://w3c-ccg.github.io/vc-api/verifier.html#operation/verifyCredential).
  * @since 0.3.0
  */
-export default async function isValidVc(
+export async function isValidVc(
   vc: VerifiableCredential | URL | UrlString,
   options: Partial<{
     fetch?: typeof fetch;
@@ -129,6 +131,88 @@ export default async function isValidVc(
   } catch (e) {
     throw new Error(
       `Parsing the response of the verification service hosted at [${verifierEndpoint}] as JSON failed: ${
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (e as any).toString()
+      }`
+    );
+  }
+}
+
+/**
+ * Verify that a VP is valid and content has not ben tampered with.
+ *
+ * @param verificationEndpoint The verification endpoint
+ * @param verifiablePresentation The VP to verify
+ * @param options Additional options
+ * - `options.fetch`: An alternative `fetch` function to make the HTTP request,
+ * compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * This can be typically used for authentication.
+ * - `options.domain`: Pass a domain
+ * - `options.challenge`: Pass a challenge
+ *
+ * @returns a JSON-shaped validation report structured accoring to the [VP Verifier API](https://w3c-ccg.github.io/vc-api/verifier.html#operation/verifyPresentation).
+ * @since
+ */
+export async function isValidVerifiablePresentation(
+  verificationEndpoint: string | null,
+  verifiablePresentation: VerifiablePresentation,
+  options: Partial<{
+    fetch: typeof fetch;
+    domain: string;
+    challenge: string;
+  }> = {}
+): Promise<{ checks: string[]; warnings: string[]; errors: string[] }> {
+  const fetcher = options.fetch ?? fallbackFetch;
+
+  if (!isVerifiablePresentation(verifiablePresentation)) {
+    throw new Error(
+      `The request to [${verifiablePresentation}] returned an unexpected response: ${JSON.stringify(
+        verifiablePresentation,
+        null,
+        "  "
+      )}`
+    );
+  }
+
+  const verifierEndpoint =
+    verificationEndpoint ??
+    (
+      await getVerifiableCredentialApiConfiguration(
+        verifiablePresentation.holder as string
+      )
+    ).verifierService;
+
+  if (verifierEndpoint === undefined) {
+    throw new Error(
+      `The VC service provider ${verifiablePresentation.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`
+    );
+  }
+
+  const response = await fetcher(verifierEndpoint, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({
+      verifiablePresentation,
+      options: {
+        domain: options.domain,
+        challenge: options.challenge,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `The request to the verification endpoint [${verificationEndpoint}] failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  try {
+    return await response.json();
+  } catch (e) {
+    throw new Error(
+      `Parsing the response of the verification service hosted at [${verificationEndpoint}] as JSON failed: ${
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (e as any).toString()
       }`
