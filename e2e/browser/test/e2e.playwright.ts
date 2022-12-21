@@ -20,6 +20,12 @@
 //
 
 import { test, expect } from "@inrupt/internal-playwright-helpers";
+import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
+
+// TODO: Add "vcProvider" to TestingEnvironmentBase instead of TestingEnvironmentNode since it is used by both instances.
+const { vcProvider } = getNodeTestingEnvironment({
+  vcProvider: "",
+});
 
 test("Issue credential to a resource, then revoking it", async ({
   page,
@@ -31,6 +37,8 @@ test("Issue credential to a resource, then revoking it", async ({
     page.click("button[data-testid=create-resource]"),
     page.waitForRequest((request) => request.method() === "POST"),
     page.waitForResponse((response) => response.status() === 201),
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    page.fill("input[data-testid=vcProvider]", vcProvider || ""),
   ]);
   await expect(
     page.innerText("span[data-testid=resource-iri]")
@@ -90,9 +98,10 @@ test("Try issuing an invalid credential, get an error", async ({
     page.waitForRequest((request) => request.method() === "POST"),
     page.waitForResponse((response) => response.status() === 400),
   ]);
+  // Validate we get nothing in response
   await expect(
     page.innerText("pre[data-testid=verifiable-credential]")
-  ).resolves.not.toBe("");
+  ).resolves.toBe("");
 
   // Cleanup the resource
   await Promise.all([

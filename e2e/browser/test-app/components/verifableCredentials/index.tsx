@@ -34,14 +34,16 @@ import {
 import React, { useState } from "react";
 
 const session = getDefaultSession();
+const DEFAULT_VC_PROVIDER = "https://vc.inrupt.com/";
 const SHARED_FILE_CONTENT = "Some content.\n";
 
-const env = { vcProvider: "https://vc.dev-next.inrupt.com" };
 export default function VerifiableCredential({
   setErrorMessage,
 }: {
   setErrorMessage: (msg: string) => void;
 }) {
+  const [vcProvider, setVcProvider] = useState<string>(DEFAULT_VC_PROVIDER);
+
   const [verifiableCredential, setVerifiableCredential] = useState<string>();
   const [sharedResourceIri, setSharedResourceIri] = useState<string>();
 
@@ -172,7 +174,7 @@ export default function VerifiableCredential({
     setSharedResourceIri(undefined);
   };
 
-  const handleIssue = async (e, issueInvalid = true) => {
+  const handleIssue = async (e, provider: string, issueInvalid = true) => {
     // This prevents the default behaviour of the button, i.e. to resubmit, which reloads the page.
     e.preventDefault();
     if (typeof sharedResourceIri !== "string") {
@@ -181,7 +183,7 @@ export default function VerifiableCredential({
     }
 
     const credential = await issueVerifiableCredential(
-      new URL("issue", env.vcProvider).href,
+      new URL("issue", provider).href,
       issueInvalid ? validCredentialClaims : invalidCredentialClaims,
       undefined,
       {
@@ -191,7 +193,7 @@ export default function VerifiableCredential({
     setVerifiableCredential(JSON.stringify(credential, null, "  "));
   };
 
-  const handleRevoke = async (e) => {
+  const handleRevoke = async (e, provider: string) => {
     // This prevents the default behaviour of the button, i.e. to resubmit, which reloads the page.
     e.preventDefault();
     if (typeof verifiableCredential !== "string") {
@@ -200,7 +202,7 @@ export default function VerifiableCredential({
     }
 
     await revokeVerifiableCredential(
-      `${env.vcProvider}/status`,
+      `${provider}/status`,
       session.info.webId || "n/a",
       {
         fetch: session.fetch,
@@ -213,6 +215,15 @@ export default function VerifiableCredential({
   return (
     <>
       <div>
+        <input
+          data-testid={"vcProvider"}
+          type="text"
+          value={vcProvider}
+          onChange={(e) => {
+            setVcProvider(e.target.value);
+          }}
+        />
+        <br />
         <button
           onClick={async (e) => handleCreate(e)}
           data-testid="create-resource"
@@ -231,10 +242,16 @@ export default function VerifiableCredential({
         <span data-testid="resource-iri">{sharedResourceIri}</span>
       </p>
       <div>
-        <button onClick={async (e) => handleIssue(e)} data-testid="issue-vc">
+        <button
+          onClick={async (e) => handleIssue(e, vcProvider)}
+          data-testid="issue-vc"
+        >
           Issue access via VC
         </button>
-        <button onClick={async (e) => handleRevoke(e)} data-testid="revoke-vc">
+        <button
+          onClick={async (e) => handleRevoke(e, vcProvider)}
+          data-testid="revoke-vc"
+        >
           Revoke access via VC
         </button>
         <button
