@@ -87,6 +87,8 @@ test("Try issuing an invalid credential, get an error", async ({
     page.click("button[data-testid=create-resource]"),
     page.waitForRequest((request) => request.method() === "POST"),
     page.waitForResponse((response) => response.status() === 201),
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    page.fill("input[data-testid=vcProvider]", vcProvider || ""),
   ]);
   await expect(
     page.innerText("span[data-testid=resource-iri]")
