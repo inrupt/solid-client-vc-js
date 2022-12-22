@@ -255,7 +255,7 @@ export default function VerifiableCredential({
           Revoke access via VC
         </button>
         <button
-          onClick={async (e) => handleIssue(e, false)}
+          onClick={async (e) => handleIssue(e, vcProvider, false)}
           data-testid="issue-invalid-vc"
         >
           Issue invalid access via VC
