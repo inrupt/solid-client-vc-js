@@ -77,7 +77,8 @@ export default function Home() {
         clientName: APP_NAME,
       });
     } catch (err) {
-      console.error(err);
+      // eslint-disable-next-line no-console
+      console.log(err);
     }
   };
 
