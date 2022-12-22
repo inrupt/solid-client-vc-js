@@ -19,8 +19,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { useSession } from "@inrupt/solid-ui-react";
-
 import {
   login,
   logout,
@@ -35,7 +33,7 @@ import {
   TESTID_SESSION_STATUS,
 } from "@inrupt/internal-playwright-testids";
 import { useState, useEffect } from "react";
-import AccessGrants from "../verifableCredentials";
+import VerifiableCredential from "../verifiableCredentials";
 
 // This is the content of the file uploaded manually at SHARED_FILE_IRI.
 const DEFAULT_ISSUER = "https://login.inrupt.com/";
@@ -49,7 +47,7 @@ const AccessGrantContainer = ({
   setErrorMessage: (msg: string) => void;
 }) => {
   if (sessionInfo?.isLoggedIn) {
-    return <AccessGrants setErrorMessage={setErrorMessage} />;
+    return <VerifiableCredential setErrorMessage={setErrorMessage} />;
   }
   return <></>;
 };
