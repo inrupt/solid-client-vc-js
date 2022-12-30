@@ -45,6 +45,8 @@ async function internal_issueVerifiableCredential(
   credentialClaims?: JsonLd,
   options?: OptionsType
 ): Promise<VerifiableCredential> {
+  // eslint-disable-next-line no-console
+  console.log("What does issuerEndpoint look like? : ", issuerEndpoint);
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;

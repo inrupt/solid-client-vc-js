@@ -29,6 +29,7 @@ import {
   saveFileInContainer,
   getSourceUrl,
   deleteFile,
+  Iri,
 } from "@inrupt/solid-client";
 
 import React, { useState } from "react";
@@ -181,9 +182,10 @@ export default function VerifiableCredential({
       // If the resource does not exist, do nothing.
       return;
     }
-
+    // eslint-disable-next-line no-console
+    console.log("What does this string look like? : ", `${provider}/issue`);
     const credential = await issueVerifiableCredential(
-      `${provider}/issue`,
+      `${provider}/issue` as unknown as Iri,
       issueInvalid ? validCredentialClaims : invalidCredentialClaims,
       undefined,
       {
