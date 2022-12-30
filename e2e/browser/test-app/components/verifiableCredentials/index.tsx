@@ -29,7 +29,6 @@ import {
   saveFileInContainer,
   getSourceUrl,
   deleteFile,
-  Iri,
 } from "@inrupt/solid-client";
 
 import React, { useState } from "react";
@@ -183,7 +182,7 @@ export default function VerifiableCredential({
       return;
     }
     const credential = await issueVerifiableCredential(
-      `${provider}/issue`,
+      `${vcProvider}issue`,
       issueInvalid ? validCredentialClaims : invalidCredentialClaims,
       undefined,
       {
