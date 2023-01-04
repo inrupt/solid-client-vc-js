@@ -73,6 +73,9 @@
     "typedoc-plugin-markdown": "^3.13.2",
     "typescript": "^4.9.4"
   },
+  "optionalDependencies": {
+    "fsevents": "^2.3.2"
+  },
   "dependencies": {
     "@inrupt/solid-client": "^1.23.1",
     "cross-fetch": "^3.1.4"
