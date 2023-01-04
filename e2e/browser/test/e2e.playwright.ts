@@ -20,13 +20,12 @@
 //
 
 import { test, expect } from "@inrupt/internal-playwright-helpers";
-import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
+import { getBrowserTestingEnvironment } from "@inrupt/internal-test-env";
 
 // TODO: Add "vcProvider" to TestingEnvironmentBase instead of TestingEnvironmentNode since it is used by both instances.
-const { vcProvider } = getNodeTestingEnvironment({
+const { vcProvider } = getBrowserTestingEnvironment({
   vcProvider: "",
 });
-
 test("Issue credential to a resource, then revoking it", async ({
   page,
   auth,
