@@ -182,7 +182,7 @@ export default function VerifiableCredential({
       return;
     }
     const credential = await issueVerifiableCredential(
-      `${vcProvider}issue`,
+      new URL("issue", env.vcProvider).href,
       issueInvalid ? validCredentialClaims : invalidCredentialClaims,
       undefined,
       {

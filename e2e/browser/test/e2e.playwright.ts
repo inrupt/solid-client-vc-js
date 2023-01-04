@@ -36,9 +36,9 @@ test("Issue credential to a resource, then revoking it", async ({
   await page.fill("input[data-testid=vcProvider]", vcProvider || "");
   // Create the resource
   await Promise.all([
+    page.click("button[data-testid=create-resource]"),
     page.waitForRequest((request) => request.method() === "POST"),
     page.waitForResponse((response) => response.status() === 201),
-    page.click("button[data-testid=create-resource]"),
   ]);
   await expect(
     page.innerText("span[data-testid=resource-iri]")
