@@ -33,5 +33,5 @@ export type {
   QueryByExample,
   VerifiablePresentationRequest,
 } from "./lookup/query";
-export { default as revokeVerifiableCredential } from "./revoke/revoke";
+export { revokeVerifiableCredential } from "./revoke/revoke";
 export { isValidVc, isValidVerifiablePresentation } from "./verify/verify";

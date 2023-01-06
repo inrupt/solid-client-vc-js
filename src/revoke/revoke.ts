@@ -40,7 +40,7 @@ import fallbackFetch from "../fetcher";
  * is picked up.
  * @since 0.1.0
  */
-export default async function revokeVerifiableCredential(
+export async function revokeVerifiableCredential(
   issuerEndpoint: Iri,
   credentialId: Iri,
   options?: {
@@ -72,3 +72,5 @@ export default async function revokeVerifiableCredential(
     );
   }
 }
+
+export default revokeVerifiableCredential;

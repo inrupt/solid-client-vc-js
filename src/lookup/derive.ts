@@ -96,7 +96,7 @@ function buildQueryByExample(
  * the holder does not hold any matching VC.
  * @since 0.1.0
  */
-export default async function getVerifiableCredentialAllFromShape(
+export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredential>,
   options?: Partial<{
@@ -125,3 +125,5 @@ export default async function getVerifiableCredentialAllFromShape(
   });
   return vp.verifiableCredential ?? [];
 }
+
+export default getVerifiableCredentialAllFromShape;
