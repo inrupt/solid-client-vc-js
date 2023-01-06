@@ -3,13 +3,13 @@ coverage
 dist
 umd
 .eslintcache
-whitesource/
 LICENSE_DEPENDENCIES
 LICENSE_DEPENDENCIES_ALL
 docs/api/build/
 docs/api/source/api/
+docs/api/docs-assets/
 docs/dist/
-docs/.DS_Store
-.env*.local
+**/.DS_Store
+**/.env*.local
 .cache
 test-results

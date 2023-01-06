@@ -19,6 +19,10 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+/**
+ * @module revoke
+ */
+
 import { Iri } from "../common/common";
 import fallbackFetch from "../fetcher";
 
