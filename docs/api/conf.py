@@ -80,7 +80,7 @@ html_favicon= "https://docs.inrupt.com/inrupt_stickers_v2-03.png"
 html_theme_options = {
     'project_title': '@inrupt/{0} API'.format(name),
     'banner': True,
-    'banner_msg': 'This is an Alpha release of the API.',
+    'banner_msg': 'This is an Alpha release of this package, it is only intended to be used by <code>@inrupt/solid-client-access-grants</code> for now.',
     'robots_index': True,
     'github_editable': False,
     'github_org': 'inrupt',
