@@ -53,7 +53,14 @@ test("Issue credential to a resource, then revoking it", async ({
     page.innerText("pre[data-testid=verifiable-credential]")
   ).resolves.not.toBe("");
 
-  // TODO add extra validation of claims here?
+  // Extra validation of claims
+
+  const vcData = JSON.parse(
+    await page.innerText("pre[data-testid=verifiable-credential]")
+  );
+
+  expect(vcData.type).toContain("VerifiableCredential");
+  expect(vcData["@context"]).not.toBe("");
 
   // Revoke VC for resource
   await Promise.all([
