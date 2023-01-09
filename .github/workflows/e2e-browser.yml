@@ -23,6 +23,7 @@ jobs:
         include:
           - environment-name: "ESS Dev-Next"
             experimental: true
+    steps:
       - uses: actions/checkout@v3
       - name: Use Node.js 16.x
         uses: actions/setup-node@v3
