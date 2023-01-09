@@ -45,7 +45,6 @@ export default function VerifiableCredential({
   const [vcProvider, setVcProvider] = useState<string>(DEFAULT_VC_PROVIDER);
 
   const [verifiableCredential, setVerifiableCredential] = useState<string>();
-  const [sharedResourceIri, setSharedResourceIri] = useState<string>();
 
   const validCredentialClaims = {
     "@context": {
@@ -129,58 +128,9 @@ export default function VerifiableCredential({
       },
     },
   };
-
-  const handleCreate = async (e): Promise<void> => {
-    // This prevents the default behaviour of the button, i.e. to resubmit, which reloads the page.
-    e.preventDefault();
-    if (typeof sharedResourceIri === "string") {
-      // If a resource already exist, do nothing
-      return;
-    }
-
-    if (typeof session.info.webId !== "string") {
-      setErrorMessage("You must be authenticated to create a resource.");
-      return;
-    }
-    // Create a file in the resource owner's Pod
-    const resourceOwnerPodAll = await getPodUrlAll(session.info.webId);
-    if (resourceOwnerPodAll.length === 0) {
-      setErrorMessage(
-        "The Resource Owner WebID Profile is missing a link to at least one Pod root."
-      );
-    }
-    const savedFile = await saveFileInContainer(
-      resourceOwnerPodAll[0],
-      new Blob([SHARED_FILE_CONTENT], { type: "text/plain" }),
-      {
-        // The session ID is a random string, used here as a unique slug.
-        slug: `${session.info.sessionId}.txt`,
-        fetch: session.fetch,
-      }
-    );
-    setSharedResourceIri(getSourceUrl(savedFile));
-  };
-
-  const handleDelete = async (e) => {
-    // This prevents the default behaviour of the button, i.e. to resubmit, which reloads the page.
-    e.preventDefault();
-    if (typeof sharedResourceIri !== "string") {
-      // If no resource exist, do nothing
-      return;
-    }
-    await deleteFile(sharedResourceIri, {
-      fetch: session.fetch,
-    });
-    setSharedResourceIri(undefined);
-  };
-
   const handleIssue = async (e, provider: string, issueInvalid = true) => {
     // This prevents the default behaviour of the button, i.e. to resubmit, which reloads the page.
     e.preventDefault();
-    if (typeof sharedResourceIri !== "string") {
-      // If the resource does not exist, do nothing.
-      return;
-    }
     const credential = await issueVerifiableCredential(
       new URL("issue", vcProvider).href,
       issueInvalid ? validCredentialClaims : invalidCredentialClaims,
@@ -213,33 +163,16 @@ export default function VerifiableCredential({
 
   return (
     <>
-      <div>
-        <input
-          data-testid={"vcProvider"}
-          type="text"
-          value={vcProvider}
-          onChange={(e) => {
-            setVcProvider(e.target.value);
-          }}
-        />
-        <br />
-        <button
-          onClick={async (e) => handleCreate(e)}
-          data-testid="create-resource"
-        >
-          Create resource
-        </button>
-        <button
-          onClick={async (e) => handleDelete(e)}
-          data-testid="delete-resource"
-        >
-          Delete resource
-        </button>
-      </div>
-      <p>
-        Created resource:{" "}
-        <span data-testid="resource-iri">{sharedResourceIri}</span>
-      </p>
+      <input
+        data-testid={"vcProvider"}
+        type="text"
+        value={vcProvider}
+        onChange={(e) => {
+          setVcProvider(e.target.value);
+        }}
+      />
+      <br />
+
       <div>
         <button
           onClick={async (e) => handleIssue(e, vcProvider)}

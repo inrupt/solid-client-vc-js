@@ -22,10 +22,10 @@
 import { test, expect } from "@inrupt/internal-playwright-helpers";
 import { getBrowserTestingEnvironment } from "@inrupt/internal-test-env";
 
-// TODO: Add "vcProvider" to TestingEnvironmentBase instead of TestingEnvironmentNode since it is used by both instances.
 const { vcProvider } = getBrowserTestingEnvironment({
   vcProvider: "",
 });
+
 test("Issue credential to a resource, then revoking it", async ({
   page,
   auth,
@@ -33,17 +33,8 @@ test("Issue credential to a resource, then revoking it", async ({
   await auth.login({ allow: true });
   // eslint-disable-next-line playwright/no-conditional-in-test
   await page.fill("input[data-testid=vcProvider]", vcProvider || "");
-  // Create the resource
-  await Promise.all([
-    page.click("button[data-testid=create-resource]"),
-    page.waitForRequest((request) => request.method() === "POST"),
-    page.waitForResponse((response) => response.status() === 201),
-  ]);
-  await expect(
-    page.innerText("span[data-testid=resource-iri]")
-  ).resolves.toMatch(/https:\/\/.*\.txt/);
 
-  // Issue VC for resource
+  // Issue VC
   await Promise.all([
     page.click("button[data-testid=issue-vc]"),
     page.waitForRequest((request) => request.method() === "POST"),
@@ -53,7 +44,7 @@ test("Issue credential to a resource, then revoking it", async ({
     page.innerText("pre[data-testid=verifiable-credential]")
   ).resolves.not.toBe("");
 
-  // Extra validation of claims
+  // Validation of type claims
 
   const vcData = JSON.parse(
     await page.innerText("pre[data-testid=verifiable-credential]")
@@ -62,7 +53,7 @@ test("Issue credential to a resource, then revoking it", async ({
   expect(vcData.type).toContain("VerifiableCredential");
   expect(vcData["@context"]).not.toBe("");
 
-  // Revoke VC for resource
+  // Revoke VC
   await Promise.all([
     page.click("button[data-testid=issue-vc]"),
     page.waitForRequest((request) => request.method() === "POST"),
@@ -71,16 +62,6 @@ test("Issue credential to a resource, then revoking it", async ({
   await expect(
     page.innerText("pre[data-testid=verifiable-credential]")
   ).resolves.not.toBe("");
-
-  // Cleanup the resource
-  await Promise.all([
-    page.click("button[data-testid=delete-resource]"),
-    page.waitForRequest((request) => request.method() === "DELETE"),
-    page.waitForResponse((response) => response.status() === 204),
-  ]);
-  await expect(
-    page.innerText("span[data-testid=resource-iri]")
-  ).resolves.toMatch("");
 });
 
 test("Try issuing an invalid credential, get an error", async ({
@@ -88,19 +69,8 @@ test("Try issuing an invalid credential, get an error", async ({
   auth,
 }) => {
   await auth.login({ allow: true });
-  // Create the resource
-  await Promise.all([
-    page.click("button[data-testid=create-resource]"),
-    page.waitForRequest((request) => request.method() === "POST"),
-    page.waitForResponse((response) => response.status() === 201),
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    page.fill("input[data-testid=vcProvider]", vcProvider || ""),
-  ]);
-  await expect(
-    page.innerText("span[data-testid=resource-iri]")
-  ).resolves.toMatch(/https:\/\/.*\.txt/);
 
-  // Try to issue VC for resource
+  // Try to issue VC with invalid credentials
   await Promise.all([
     page.click("button[data-testid=issue-invalid-vc]"),
     page.click("button[data-nextjs-errors-dialog-left-right-close-button]"),
@@ -111,14 +81,4 @@ test("Try issuing an invalid credential, get an error", async ({
   await expect(
     page.innerText("pre[data-testid=verifiable-credential]")
   ).resolves.toBe("");
-
-  // Cleanup the resource
-  await Promise.all([
-    page.click("button[data-testid=delete-resource]"),
-    page.waitForRequest((request) => request.method() === "DELETE"),
-    page.waitForResponse((response) => response.status() === 204),
-  ]);
-  await expect(
-    page.innerText("span[data-testid=resource-iri]")
-  ).resolves.toMatch("");
 });
