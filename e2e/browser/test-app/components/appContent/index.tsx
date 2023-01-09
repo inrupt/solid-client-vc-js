@@ -39,7 +39,7 @@ import VerifiableCredential from "../verifiableCredentials";
 const DEFAULT_ISSUER = "https://login.inrupt.com/";
 const REDIRECT_URL = window.location.href;
 const APP_NAME = "Verifiable Credentials browser-based tests app";
-const AccessGrantContainer = ({
+const VerifiableCredentialContainer = ({
   sessionInfo,
   setErrorMessage,
 }: {
@@ -127,7 +127,7 @@ export default function Home() {
       <p data-testid={TESTID_ERROR_MESSAGE}>
         <strong>{errorMessage}</strong>
       </p>
-      <AccessGrantContainer
+      <VerifiableCredentialContainer
         sessionInfo={sessionInfo}
         setErrorMessage={setErrorMessage}
       />
