@@ -38,7 +38,7 @@ import VerifiableCredential from "../verifiableCredentials";
 // This is the content of the file uploaded manually at SHARED_FILE_IRI.
 const DEFAULT_ISSUER = "https://login.inrupt.com/";
 const REDIRECT_URL = window.location.href;
-const APP_NAME = "Access Grants browser-based tests app";
+const APP_NAME = "Verifiable Credentials browser-based tests app";
 const AccessGrantContainer = ({
   sessionInfo,
   setErrorMessage,
