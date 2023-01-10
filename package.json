@@ -5,8 +5,10 @@
   "license": "MIT",
   "scripts": {
     "build": "rollup --config rollup.config.mjs",
-    "build-api-docs": "typedoc",
-    "build-docs-preview-site": "npm run build-api-docs; cd docs/api; rm source/api/index.md; make html; cd ../; rm -r dist || true; mkdir -p dist/api; cp -r api/build/html/. dist/;",
+    "docs:clean": "cd docs/api; make clean-all",
+    "docs:install": "cd docs/api; pip install -r requirements.txt",
+    "docs:build": "typedoc && cd docs/api && make html dist",
+    "docs:preview": "python3 -m http.server --bind 127.0.0.1 --directory docs/dist",
     "lint": "npm run lint:check",
     "lint:fix": "npm run lint:eslint -- --fix && npm run lint:prettier -- --write",
     "lint:check": "npm run lint:eslint && npm run lint:prettier -- --check",
@@ -14,7 +16,8 @@
     "lint:prettier": "prettier \"{src,e2e}/**/*.{ts,tsx,js,jsx,css}\" \"**/*.{md,mdx,yml}\"",
     "test": "jest --selectProjects browser",
     "test:e2e:node": "jest --selectProjects e2e-node --collectCoverage false",
-    "test:e2e:browser": "echo \"This project has no e2e browser tests\"",
+    "test:e2e:browser": "playwright test",
+    "test:e2e:browser:setup": "cd e2e/browser/test-app && npm ci",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -52,11 +55,16 @@
   },
   "devDependencies": {
     "@inrupt/eslint-config-lib": "^1.3.1",
-    "@inrupt/internal-test-env": "^1.4.2",
+    "@inrupt/internal-playwright-helpers": "^1.5.3",
+    "@inrupt/internal-test-env": "^1.5.3",
+    "@playwright/test": "^1.28.1",
+    "@rdfjs/dataset": "1.1.0",
+    "@rdfjs/types": "^1.1.0",
     "@rushstack/eslint-patch": "^1.1.4",
     "@types/dotenv-flow": "^3.1.1",
     "@types/jest": "^29.2.2",
     "@types/node": "^18.0.6",
+    "@types/rdfjs__dataset": "1.0.4",
     "dotenv-flow": "^3.2.0",
     "eslint": "^8.18.0",
     "jest": "^29.3.0",
@@ -66,9 +74,12 @@
     "rollup-plugin-typescript2": "^0.34.0",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
-    "typedoc": "^0.23.8",
-    "typedoc-plugin-markdown": "^3.13.2",
+    "typedoc": "0.23.23",
+    "typedoc-plugin-markdown": "3.14.0",
     "typescript": "^4.9.4"
+  },
+  "optionalDependencies": {
+    "fsevents": "^2.3.2"
   },
   "dependencies": {
     "@inrupt/solid-client": "^1.23.1",

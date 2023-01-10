@@ -18,20 +18,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
+};
 
-export { default as issueVerifiableCredential } from "./issue/issue";
-export type { Iri, JsonLd, VerifiableCredential } from "./common/common";
-export {
-  isVerifiableCredential,
-  isVerifiablePresentation,
-  getVerifiableCredential,
-  getVerifiableCredentialApiConfiguration,
-} from "./common/common";
-export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
-export { query } from "./lookup/query";
-export type {
-  QueryByExample,
-  VerifiablePresentationRequest,
-} from "./lookup/query";
-export { revokeVerifiableCredential } from "./revoke/revoke";
-export { isValidVc, isValidVerifiablePresentation } from "./verify/verify";
+module.exports = nextConfig;

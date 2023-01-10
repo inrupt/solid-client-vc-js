@@ -19,6 +19,10 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+/**
+ * @module issue
+ */
+
 import fallbackFetch from "../fetcher";
 
 import {

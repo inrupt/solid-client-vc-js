@@ -22,7 +22,9 @@
 import { jest, describe, it, expect } from "@jest/globals";
 import { Response } from "cross-fetch";
 import { mockDefaultPresentation } from "../common/common.mock";
-import getVerifiableCredentialAllFromShape from "./derive";
+import defaultGetVerifilableCredentialAllFromShape, {
+  getVerifiableCredentialAllFromShape,
+} from "./derive";
 import type * as QueryModule from "./query";
 
 jest.mock("../fetcher");
@@ -43,6 +45,11 @@ const mockDeriveEndpointDefaultResponse = () =>
 
 describe("getVerifiableCredentialAllFromShape", () => {
   describe("legacy derive endpoint", () => {
+    it("exposes a default export", async () => {
+      expect(defaultGetVerifilableCredentialAllFromShape).toBe(
+        getVerifiableCredentialAllFromShape
+      );
+    });
     it("uses the provided fetch if any", async () => {
       const mockedFetch = jest.fn() as typeof fetch;
       try {

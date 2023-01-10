@@ -12,7 +12,12 @@ const baseConfig: ArrayElement<NonNullable<Config["projects"]>> = {
   // deliberately set to an empty array to allow including node_modules when transforming code:
   transformIgnorePatterns: [],
   modulePathIgnorePatterns: ["dist/"],
-  coveragePathIgnorePatterns: [".*.spec.ts", "dist/", "node_modules/", ".*\.mock\..*"],
+  coveragePathIgnorePatterns: [
+    ".*.spec.ts",
+    "dist/",
+    "node_modules/",
+    ".*.mock..*",
+  ],
   clearMocks: true,
   injectGlobals: false,
 };
@@ -21,8 +26,6 @@ export default {
   reporters: ["default", "github-actions"],
   collectCoverage: true,
   coverageReporters: process.env.CI ? ["text", "lcov"] : ["text"],
-  // NOTE: Coverage thresholds here have been adjusted due to current coverage levels
-  //    levels should be adjust back to 100 as soon as full coverage is achieved again.
   coverageThreshold: {
     global: {
       branches: 100,

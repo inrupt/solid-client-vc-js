@@ -19,19 +19,13 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-export { default as issueVerifiableCredential } from "./issue/issue";
-export type { Iri, JsonLd, VerifiableCredential } from "./common/common";
-export {
-  isVerifiableCredential,
-  isVerifiablePresentation,
-  getVerifiableCredential,
-  getVerifiableCredentialApiConfiguration,
-} from "./common/common";
-export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
-export { query } from "./lookup/query";
-export type {
-  QueryByExample,
-  VerifiablePresentationRequest,
-} from "./lookup/query";
-export { revokeVerifiableCredential } from "./revoke/revoke";
-export { isValidVc, isValidVerifiablePresentation } from "./verify/verify";
+import dynamic from "next/dynamic";
+import React from "react";
+
+const BrowserSideApp = dynamic(() => import("../components/appContent"), {
+  ssr: false,
+});
+
+export default function Home() {
+  return <BrowserSideApp />;
+}

@@ -19,6 +19,10 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+/**
+ * @module revoke
+ */
+
 import { Iri } from "../common/common";
 import fallbackFetch from "../fetcher";
 
@@ -36,7 +40,7 @@ import fallbackFetch from "../fetcher";
  * is picked up.
  * @since 0.1.0
  */
-export default async function revokeVerifiableCredential(
+export async function revokeVerifiableCredential(
   issuerEndpoint: Iri,
   credentialId: Iri,
   options?: {
@@ -68,3 +72,5 @@ export default async function revokeVerifiableCredential(
     );
   }
 }
+
+export default revokeVerifiableCredential;

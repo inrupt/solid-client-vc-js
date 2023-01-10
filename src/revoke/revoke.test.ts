@@ -21,11 +21,16 @@
 
 import { jest, it, describe, expect } from "@jest/globals";
 import { Response } from "cross-fetch";
-import revokeVerifiableCredential from "./revoke";
+import defaultRevokeVerifiableCredential, {
+  revokeVerifiableCredential,
+} from "./revoke";
 
 jest.mock("../fetcher");
 
 describe("revokeVerifiableCredential", () => {
+  it("exposes a default export", async () => {
+    expect(defaultRevokeVerifiableCredential).toBe(revokeVerifiableCredential);
+  });
   it("uses the provided fetch if any", async () => {
     const mockedFetch = jest.fn() as typeof fetch;
     try {

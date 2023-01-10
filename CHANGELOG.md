@@ -13,6 +13,11 @@ The following changes have been implemented but not released yet:
   specification-compliant endpoints, as well as the legacy endpoints.
 - A `query` function is added from the top-level export and the `@inrupt/solid-client-vc/query` submodule. It implements the Verifiable Presentation Request mechanism as described in https://w3c-ccg.github.io/vp-request-spec/. An important note is that we make the assumption that an endpoint supporting Verifiable Presentation Request is available at a /query path, which is outside of the VC API specification scope. This assumption is used to distinguish new endpoints vs legacy endpoints. Currently, only Query by Example VPRs are supported, which is similar to the legacy behavior in a lot of ways. The existing `getVerifiableCredentialAllFromShape` function now supports both legacy and VPR-compliant endpoints.
 
+### Other changes
+
+- Upgraded documentation tooling and improved documentation output.
+- Added named exports to revoke, verify, and derive (these were previously default exports but they format poorly in the documentation)
+
 ## 0.5.0 - 2022-03-07
 
 ### New features

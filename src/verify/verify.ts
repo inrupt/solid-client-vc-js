@@ -19,6 +19,10 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+/**
+ * @module verify
+ */
+
 import { UrlString } from "@inrupt/solid-client";
 import {
   VerifiableCredential,

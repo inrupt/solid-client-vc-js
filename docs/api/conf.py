@@ -16,6 +16,7 @@
 
 # -- Project information -----------------------------------------------------
 
+from sphinx.highlighting import lexers
 import datetime
 
 copyright = u'{0} Inrupt Inc.'.format(datetime.date.today().year)
@@ -26,7 +27,7 @@ copyright = u'{0} Inrupt Inc.'.format(datetime.date.today().year)
 # -- product name -----
 # -- Separately update code samples and toc links and docs-navbar since not using substitutions--
 
-name = 'solid-client-access-grants'
+name = 'solid-client-vc-js'
 repo_name = '{0}-js'.format(name)
 
 pygments_style = 'sphinx'
@@ -38,7 +39,6 @@ source_suffix = {
 }
 
 # -- Add lexers
-from sphinx.highlighting import lexers
 
 highlight_language = 'javascript'
 
@@ -52,12 +52,12 @@ extensions = [
 
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['./build/docs-assets/_templates']
+templates_path = ['./docs-assets/_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [ 'index.md' ]
+exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -67,19 +67,20 @@ exclude_patterns = [ 'index.md' ]
 #html_theme = 'alabaster'
 
 html_theme = 'inrupt'
-html_theme_path = ['./build/docs-assets/themes']
+html_theme_path = ['./docs-assets/themes']
 
 html_copy_source = False
 
-html_title = 'Inrupt {0} API Documentation'.format(name)
+html_title = 'Inrupt {0} Documentation'.format(name)
+html_favicon= "https://docs.inrupt.com/inrupt_stickers_v2-03.png"
 
 # These theme options are declared in ./themes/inrupt/theme.conf
 # as well as some for pydata_sphinx_theme
 
 html_theme_options = {
-    'project_title': 'Inrupt {0} API'.format(name),
+    'project_title': '@inrupt/{0} API'.format(name),
     'banner': True,
-    'banner_msg': 'This is an Alpha release of the API.',
+    'banner_msg': 'This is an Alpha release of this package, it is only intended to be used by <code>@inrupt/solid-client-access-grants</code> for now.',
     'robots_index': True,
     'github_editable': False,
     'github_org': 'inrupt',
@@ -89,30 +90,30 @@ html_theme_options = {
     'show_api_menu': True,
 
     # below are pydata_sphinx_theme
-    "footer_items": [ "copyright.html"],
+    "footer_items": ["copyright.html"],
     "navbar_align": "left",
     "icon_links": [
         {
-            "name": "Inrupt on Twitter",
-            "url": "https://twitter.com/inrupt",
-            "icon": "fab fa-twitter-square",
-        },
-        {
-            "name": "Inrupt on LinkedIn",
-            "url": "https://www.linkedin.com/company/inrupt/",
-            "icon": "fab fa-linkedin",
+            "name": "Support Desk",
+            "url": "https://inrupt.atlassian.net/servicedesk",
+            "icon": "fas fa-tools",
         },
         {
             "name": "Solid forum",
             "url": "https://forum.solidproject.org/",
             "icon": "fas fa-users",
         },
+        {
+            "name": "Inrupt Blog",
+            "url": "https://inrupt.com/blog",
+            "icon": "fas fa-blog",
+        },
     ],
     "favicons": [
         {
-         "rel": "icon",
-         "sizes": "16x16",
-         "href": "https://docs.inrupt.com/inrupt_stickers_v2-03.png",
+            "rel": "icon",
+            "sizes": "16x16",
+            "href": "https://docs.inrupt.com/inrupt_stickers_v2-03.png",
         },
     ],
 }
@@ -120,11 +121,22 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['./build/docs-assets/_static']
+html_static_path = ['./docs-assets/_static']
+html_css_files = [
+    'css/inrupt.css',
+]
 
 html_sidebars = {
-    '**': [  'search-field.html',  'docs-sidebar.html'],
+    '**': ['search-field.html',  'docs-sidebar.html'],
+}
+
+html_context = {
+   "default_mode": "auto"
 }
 
 locale_dirs = ['locale/']   # path is example but recommended.
 gettext_compact = False     # optional.
+
+myst_heading_anchors = 6
+myst_url_schemes = ('https', 'http')
+myst_enable_extensions = ['colon_fence']
