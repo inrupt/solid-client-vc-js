@@ -13,6 +13,29 @@ the [W3C VC HTTP APIs](https://w3c-ccg.github.io/vc-api/).
 
 More documentation will be added when the library matures.
 
+## Supported environment
+
+Our JavaScript Client Libraries use relatively modern JavaScript, aligned with
+the [ES2018](https://262.ecma-international.org/9.0/) Specification features, we
+ship both [ESM](https://nodejs.org/docs/latest-v16.x/api/esm.html) and
+[CommonJS](https://nodejs.org/docs/latest-v16.x/api/modules.html), with type
+definitions for TypeScript alongside.
+
+This mean that we only support environments (browsers or runtimes) that were
+released after mid-2018 out of the box, if you wish to target these
+environments, then you will need to cross-compile our SDKs via the use of
+[Babel](https://babeljs.io), [webpack](https://webpack.js.org/),
+[SWC](https://swc.rs/), or similar.
+
+If you need support for Internet Explorer, it is recommended to pass them
+through a tool like [Babel](https://babeljs.io), and to add polyfills for e.g.
+`Map`, `Set`, `Promise`, `Headers`, `Array.prototype.includes`, `Object.entries`
+and `String.prototype.endsWith`.
+
+Additionally, when using this package in an environment other than Node.js, you
+will need [a polyfill for Node's `buffer`
+module](https://www.npmjs.com/package/buffer).
+
 ## Changelog
 
 See [the release notes](https://github.com/inrupt/template-ts/blob/main/CHANGELOG.md).
