@@ -38,9 +38,9 @@ jest.mock("@inrupt/solid-client", () => {
     "@inrupt/solid-client"
   ) as jest.Mocked<typeof SolidClient>;
   solidClientModule.getSolidDataset =
-    jest.fn<typeof SolidClient["getSolidDataset"]>();
+    jest.fn<(typeof SolidClient)["getSolidDataset"]>();
   solidClientModule.getWellKnownSolid =
-    jest.fn<typeof SolidClient["getWellKnownSolid"]>();
+    jest.fn<(typeof SolidClient)["getWellKnownSolid"]>();
   return solidClientModule;
 });
 
