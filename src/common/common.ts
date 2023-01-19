@@ -30,10 +30,11 @@ import {
   UrlString,
   getJsonLdParser,
 } from "@inrupt/solid-client";
+import { DataFactory as DF, Store } from "n3";
+// eslint-disable-next-line import/no-unresolved
+import * as RDF_TYPES from "@rdfjs/types";
 import defaultFetch from "../fetcher";
 import { jsonLdResponseToStore } from "../parser/jsonld";
-import { DataFactory as DF, Store } from "n3";
-import * as RDF_TYPES from '@rdfjs/types';
 
 export type Iri = string;
 /**
@@ -343,9 +344,9 @@ export async function getVerifiableCredentialApiConfiguration(
 
 const VC = "https://www.w3.org/2018/credentials#";
 const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-const XSD = "http://www.w3.org/2001/XMLSchema#"
-const SEC = "https://w3id.org/security#"
-const CRED = "https://www.w3.org/2018/credentials#"
+const XSD = "http://www.w3.org/2001/XMLSchema#";
+const SEC = "https://w3id.org/security#";
+const CRED = "https://www.w3.org/2018/credentials#";
 
 /**
  * Dereference a VC URL, and verify that the resulting content is valid.
@@ -380,50 +381,77 @@ export async function getVerifiableCredential(
     );
   }
 
-  const vcs = vcStore.getSubjects(`${RDF}type`, `${VC}VerifiableCredential`, DF.defaultGraph());
+  const vcs = vcStore.getSubjects(
+    `${RDF}type`,
+    `${VC}VerifiableCredential`,
+    DF.defaultGraph()
+  );
   if (vcs.length !== 1) {
-    throw new Error(`Expected exactly one Verifiable Credential in [${vcUrl}], received: ${vcs.length}`);
+    throw new Error(
+      `Expected exactly one Verifiable Credential in [${vcUrl}], received: ${vcs.length}`
+    );
   }
 
   const vc = vcs[0];
-  if (vc.termType !== 'NamedNode') {
-    throw new Error(`Expected the Verifiable Credential in [${vcUrl}] to be a Named Node, received: ${vc.termType}`);
+  if (vc.termType !== "NamedNode") {
+    throw new Error(
+      `Expected the Verifiable Credential in [${vcUrl}] to be a Named Node, received: ${vc.termType}`
+    );
   }
 
-  function getSingleObject(fullProperty: string, subject?: RDF_TYPES.Term, graph?: RDF_TYPES.Term): RDF_TYPES.Term {
-    const objects = vcStore.getObjects(subject ?? vc, fullProperty, graph ?? DF.defaultGraph());
+  function getSingleObject(
+    fullProperty: string,
+    subject?: RDF_TYPES.Term,
+    graph?: RDF_TYPES.Term
+  ): RDF_TYPES.Term {
+    const objects = vcStore.getObjects(
+      subject ?? vc,
+      fullProperty,
+      graph ?? DF.defaultGraph()
+    );
 
     if (objects.length !== 1) {
-      // @ts-ignore
-      console.log(subject ?? vc, fullProperty, vcStore.getQuads())
-      throw new Error(`Expected exactly one [${fullProperty}] for the Verifiable Credential ${vc.value}, received: ${
-        objects.length}`)
+      throw new Error(
+        `Expected exactly one [${fullProperty}] for the Verifiable Credential ${vc.value}, received: ${objects.length}`
+      );
     }
 
-    return objects[0]
+    return objects[0];
   }
 
-  function getSingleObjectOfTermType(fullProperty: string, subject?: RDF_TYPES.Term, graph?: RDF_TYPES.Term, termType = 'NamedNode') {
+  function getSingleObjectOfTermType(
+    fullProperty: string,
+    subject?: RDF_TYPES.Term,
+    graph?: RDF_TYPES.Term,
+    termType = "NamedNode"
+  ) {
     const object = getSingleObject(fullProperty, subject, graph);
 
     if (object.termType !== termType) {
       throw new Error(
-        `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a ${termType}, received: ${
-        object.termType
-      }`)
+        `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a ${termType}, received: ${object.termType}`
+      );
     }
 
     return object.value;
   }
 
-  function getSingleDateTime(fullProperty: string, subject?: RDF_TYPES.Term, graph?: RDF_TYPES.Term) {
+  function getSingleDateTime(
+    fullProperty: string,
+    subject?: RDF_TYPES.Term,
+    graph?: RDF_TYPES.Term
+  ) {
     const object = getSingleObject(fullProperty, subject, graph);
 
-    if (object.termType !== 'Literal') {
-      throw new Error(`Expected issuanceDate to be a Literal, received: ${object.termType}`);
+    if (object.termType !== "Literal") {
+      throw new Error(
+        `Expected issuanceDate to be a Literal, received: ${object.termType}`
+      );
     }
     if (!object.datatype.equals(DF.namedNode(`${XSD}dateTime`))) {
-      throw new Error(`Expected issuanceDate to have dataType [${XSD}dateTime], received: [${object.datatype.value}]`);
+      throw new Error(
+        `Expected issuanceDate to have dataType [${XSD}dateTime], received: [${object.datatype.value}]`
+      );
     }
 
     return object.value;
@@ -432,18 +460,24 @@ export async function getVerifiableCredential(
   const type = vcStore.getObjects(vc, `${RDF}type`, DF.defaultGraph());
 
   for (const t of type) {
-    if (t.termType !== 'NamedNode') {
-      throw new Error(`Expected all VC types to be Named Nodes but received [${t.value}] of termType [${t.termType}]`)
+    if (t.termType !== "NamedNode") {
+      throw new Error(
+        `Expected all VC types to be Named Nodes but received [${t.value}] of termType [${t.termType}]`
+      );
     }
   }
 
-  const credentialSubject = getSingleObjectOfTermType(`${CRED}credentialSubject`);
+  const credentialSubject = getSingleObjectOfTermType(
+    `${CRED}credentialSubject`
+  );
   // The proof lives within a named graph
   const proofGraph = getSingleObject(`${SEC}proof`);
   const proofs = vcStore.getSubjects(null, null, proofGraph);
 
   if (proofs.length !== 1) {
-    throw new Error(`Expected exactly one proof to live in the proofs graph, received ${proofs.length}`);
+    throw new Error(
+      `Expected exactly one proof to live in the proofs graph, received ${proofs.length}`
+    );
   }
 
   const proof = proofs[0];
@@ -451,17 +485,34 @@ export async function getVerifiableCredential(
   return {
     id: vc.value,
     credentialSubject: {
-      id: credentialSubject
+      id: credentialSubject,
     },
     issuer: getSingleObjectOfTermType(`${CRED}issuer`),
     issuanceDate: getSingleDateTime(`${CRED}issuanceDate`),
-    type: type.map(term => term.value),
+    type: type.map((term) => term.value),
     proof: {
-      created: getSingleDateTime("http://purl.org/dc/terms/created", proof, proofGraph),
-      proofPurpose: getSingleObjectOfTermType(`${SEC}proofPurpose`, proof, proofGraph),
+      created: getSingleDateTime(
+        "http://purl.org/dc/terms/created",
+        proof,
+        proofGraph
+      ),
+      proofPurpose: getSingleObjectOfTermType(
+        `${SEC}proofPurpose`,
+        proof,
+        proofGraph
+      ),
       type: getSingleObjectOfTermType(`${RDF}type`, proof, proofGraph),
-      verificationMethod: getSingleObjectOfTermType(`${SEC}verificationMethod`, proof, proofGraph),
-      proofValue: getSingleObjectOfTermType(`${SEC}proofValue`, proof, proofGraph, 'Literal'),
-    }
-  }
+      verificationMethod: getSingleObjectOfTermType(
+        `${SEC}verificationMethod`,
+        proof,
+        proofGraph
+      ),
+      proofValue: getSingleObjectOfTermType(
+        `${SEC}proofValue`,
+        proof,
+        proofGraph,
+        "Literal"
+      ),
+    },
+  };
 }
