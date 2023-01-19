@@ -31,6 +31,9 @@ import {
   getJsonLdParser,
 } from "@inrupt/solid-client";
 import defaultFetch from "../fetcher";
+import { jsonLdResponseToStore } from "../parser/jsonld";
+import { DataFactory as DF, Store } from "n3";
+import * as RDF_TYPES from '@rdfjs/types';
 
 export type Iri = string;
 /**
@@ -56,7 +59,7 @@ type Proof = {
 /**
  * A Verifiable Credential JSON-LD document, as specified by the W3C VC HTTP API.
  */
-export type VerifiableCredential = JsonLd & {
+export type VerifiableCredential = Partial<JsonLd> & {
   id: Iri;
   type: Iri[];
   issuer: Iri;
@@ -90,6 +93,7 @@ export type VerifiablePresentation = JsonLd & {
  * schema we expect.
  * @param data The JSON-LD payload
  * @returns true is the payload matches our expectation.
+ * @deprecated
  */
 export function isVerifiableCredential(
   data: unknown | VerifiableCredential
@@ -337,6 +341,12 @@ export async function getVerifiableCredentialApiConfiguration(
   };
 }
 
+const VC = "https://www.w3.org/2018/credentials#";
+const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+const XSD = "http://www.w3.org/2001/XMLSchema#"
+const SEC = "https://w3id.org/security#"
+const CRED = "https://www.w3.org/2018/credentials#"
+
 /**
  * Dereference a VC URL, and verify that the resulting content is valid.
  *
@@ -353,27 +363,101 @@ export async function getVerifiableCredential(
   }>
 ): Promise<VerifiableCredential> {
   const authFetch = options?.fetch ?? defaultFetch;
-  return authFetch(vcUrl as string)
-    .then(async (response) => {
-      if (!response.ok) {
-        throw new Error(
-          `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`
-        );
-      }
-      try {
-        return await response.json();
-      } catch (e) {
-        throw new Error(
-          `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`
-        );
-      }
-    })
-    .then((vc) => {
-      if (!isVerifiableCredential(vc)) {
-        throw new Error(
-          `The value received from [${vcUrl}] is not a Verifiable Credential`
-        );
-      }
-      return vc;
-    });
+  const response = await authFetch(vcUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  let vcStore: Store;
+  try {
+    vcStore = await jsonLdResponseToStore(response, { fetch: authFetch });
+  } catch (e) {
+    throw new Error(
+      `Parsing the Verifiable Credential [${vcUrl}] as JSON-LD failed: ${e}`
+    );
+  }
+
+  const vcs = vcStore.getSubjects(`${RDF}type`, `${VC}VerifiableCredential`, DF.defaultGraph());
+  if (vcs.length !== 1) {
+    throw new Error(`Expected exactly one Verifiable Credential in [${vcUrl}], received: ${vcs.length}`);
+  }
+
+  const vc = vcs[0];
+  if (vc.termType !== 'NamedNode') {
+    throw new Error(`Expected the Verifiable Credential in [${vcUrl}] to be a Named Node, received: ${vc.termType}`);
+  }
+
+  function getSingleObject(fullProperty: string, subject?: RDF_TYPES.Term, graph?: RDF_TYPES.Term): RDF_TYPES.Term {
+    const objects = vcStore.getObjects(subject ?? vc, fullProperty, graph ?? DF.defaultGraph());
+
+    if (objects.length !== 1) {
+      // @ts-ignore
+      console.log(subject ?? vc, fullProperty, vcStore.getQuads())
+      throw new Error(`Expected exactly one [${fullProperty}] for the Verifiable Credential ${vc.value}, received: ${
+        objects.length}`)
+    }
+
+    return objects[0]
+  }
+
+  function getSingleNamedObject(fullProperty: string, subject?: RDF_TYPES.Term, graph?: RDF_TYPES.Term) {
+    const object = getSingleObject(fullProperty, subject, graph);
+
+    if (object.termType !== 'NamedNode') {
+      throw new Error(
+        `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a Named Node, received: ${
+        object.termType
+      }`)
+    }
+
+    return object.value;
+  }
+
+  function getSingleDateTime(fullProperty: string, subject?: RDF_TYPES.Term, graph?: RDF_TYPES.Term) {
+    const object = getSingleObject(fullProperty, subject, graph);
+
+    if (object.termType !== 'Literal') {
+      throw new Error(`Expected issuanceDate to be a Literal, received: ${object.termType}`);
+    }
+    if (!object.datatype.equals(DF.namedNode(`${XSD}dateTime`))) {
+      throw new Error(`Expected issuanceDate to have dataType [${XSD}dateTime], received: [${object.datatype.value}]`);
+    }
+
+    return object.value;
+  }
+
+  const type = vcStore.getObjects(vc, `${RDF}type`, DF.defaultGraph());
+
+  const credentialSubject = getSingleNamedObject(`${CRED}credentialSubject`);
+  // The proof lives within a named graph
+  const proofGraph = getSingleObject(`${SEC}proof`);
+  const proofs = vcStore.getSubjects(null, null, proofGraph);
+
+  if (proofs.length !== 1) {
+    throw new Error(`Expected exactly one proof to live in the proofs graph, received ${proofs.length}`);
+  }
+
+  const proof = proofs[0];
+
+  return {
+    id: vc.value,
+    credentialSubject: {
+      id: credentialSubject
+    },
+    issuer: getSingleNamedObject(`${CRED}issuer`),
+    issuanceDate: getSingleDateTime(`${CRED}issuanceDate`),
+    // TODO
+    type: [],
+    proof: {
+      created: getSingleDateTime("http://purl.org/dc/terms/created", proof, proofGraph),
+      proofPurpose: getSingleNamedObject(`${SEC}proofPurpose`, proof, proofGraph),
+      type: getSingleNamedObject(`${RDF}type`, proof),
+      verificationMethod: getSingleNamedObject(`${SEC}verificationMethod`, proof, proofGraph),
+      // I dont think this will be a namde node
+      proofValue: getSingleNamedObject(`${SEC}proofValue`, proof, proofGraph),
+    }
+  }
 }

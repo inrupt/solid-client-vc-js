@@ -97,7 +97,10 @@ export const mockCredential = (
 };
 
 export const mockDefaultCredential = (): VerifiableCredential => {
-  return mockPartialCredential(defaultCredentialClaims) as VerifiableCredential;
+  return {
+    "@context": 'https://www.w3.org/2018/credentials/v1',
+    ...mockPartialCredential(defaultCredentialClaims) 
+  } as VerifiableCredential;
 };
 
 export const mockPartialPresentation = (
