@@ -403,12 +403,12 @@ export async function getVerifiableCredential(
     return objects[0]
   }
 
-  function getSingleNamedObject(fullProperty: string, subject?: RDF_TYPES.Term, graph?: RDF_TYPES.Term) {
+  function getSingleObjectOfTermType(fullProperty: string, subject?: RDF_TYPES.Term, graph?: RDF_TYPES.Term, termType = 'NamedNode') {
     const object = getSingleObject(fullProperty, subject, graph);
 
-    if (object.termType !== 'NamedNode') {
+    if (object.termType !== termType) {
       throw new Error(
-        `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a Named Node, received: ${
+        `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a ${termType}, received: ${
         object.termType
       }`)
     }
@@ -431,7 +431,13 @@ export async function getVerifiableCredential(
 
   const type = vcStore.getObjects(vc, `${RDF}type`, DF.defaultGraph());
 
-  const credentialSubject = getSingleNamedObject(`${CRED}credentialSubject`);
+  for (const t of type) {
+    if (t.termType !== 'NamedNode') {
+      throw new Error(`Expected all VC types to be Named Nodes but received [${t.value}] of termType [${t.termType}]`)
+    }
+  }
+
+  const credentialSubject = getSingleObjectOfTermType(`${CRED}credentialSubject`);
   // The proof lives within a named graph
   const proofGraph = getSingleObject(`${SEC}proof`);
   const proofs = vcStore.getSubjects(null, null, proofGraph);
@@ -447,17 +453,15 @@ export async function getVerifiableCredential(
     credentialSubject: {
       id: credentialSubject
     },
-    issuer: getSingleNamedObject(`${CRED}issuer`),
+    issuer: getSingleObjectOfTermType(`${CRED}issuer`),
     issuanceDate: getSingleDateTime(`${CRED}issuanceDate`),
-    // TODO
-    type: [],
+    type: type.map(term => term.value),
     proof: {
       created: getSingleDateTime("http://purl.org/dc/terms/created", proof, proofGraph),
-      proofPurpose: getSingleNamedObject(`${SEC}proofPurpose`, proof, proofGraph),
-      type: getSingleNamedObject(`${RDF}type`, proof),
-      verificationMethod: getSingleNamedObject(`${SEC}verificationMethod`, proof, proofGraph),
-      // I dont think this will be a namde node
-      proofValue: getSingleNamedObject(`${SEC}proofValue`, proof, proofGraph),
+      proofPurpose: getSingleObjectOfTermType(`${SEC}proofPurpose`, proof, proofGraph),
+      type: getSingleObjectOfTermType(`${RDF}type`, proof, proofGraph),
+      verificationMethod: getSingleObjectOfTermType(`${SEC}verificationMethod`, proof, proofGraph),
+      proofValue: getSingleObjectOfTermType(`${SEC}proofValue`, proof, proofGraph, 'Literal'),
     }
   }
 }

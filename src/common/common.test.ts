@@ -323,7 +323,7 @@ describe("getVerifiableCredential", () => {
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow(/https:\/\/some.vc.*Verifiable Credential/);
+    ).rejects.toThrow(/Verifiable Credential.*https:\/\/some.vc/);
   });
 
   it("returns the fetched VC and the redirect URL", async () => {
