@@ -38,7 +38,7 @@ const MOCK_VC = {
   ],
   id: "https://example.com/id",
   issuer: "https://example.com/issuer",
-  type: ["VerifiableCredential", "SolidCredential", "SolidAccessGrant"],
+  type: ["VerifiableCredential", "SolidAccessGrant"],
   issuanceDate: "2021-05-26T16:40:03",
   expirationDate: "2021-06-09T16:40:03",
   credentialSubject: {
