@@ -175,6 +175,8 @@ describe("End-to-end verifiable credentials tests for environment", () => {
             fetch: session.fetch,
           }
         );
+        // Jest is confused by the conditional test block.
+        // eslint-disable-next-line jest/no-standalone-expect
         expect(result).not.toHaveLength(0);
       }
     );
