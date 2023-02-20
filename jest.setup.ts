@@ -19,20 +19,18 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, it, expect } from "@jest/globals";
+import "@inrupt/jest-jsdom-polyfills";
+import { Request, Response, Headers, fetch as undiFetch } from "undici";
 
-import authFetch from "./fetcher";
-
-jest.mock("@inrupt/universal-fetch");
-
-it("should fallback to @inrupt/universal-fetch if no Solid-specific fetcher is available", async () => {
-  const universalFetch = jest.requireMock("@inrupt/universal-fetch") as {
-    fetch: jest.Mocked<typeof fetch>;
-  };
-
-  await authFetch("https://some.url");
-
-  expect(universalFetch.fetch.mock.calls).toEqual([
-    ["https://some.url", undefined],
-  ]);
-});
+if (
+  typeof globalThis.Response === "undefined" ||
+  typeof globalThis.Request === "undefined" ||
+  typeof globalThis.Headers === "undefined" ||
+  typeof globalThis.fetch === "undefined"
+) {
+  // eslint-disable @typescript-eslint/no-explicit-any
+  globalThis.Response = Response as any;
+  globalThis.Request = Request as any;
+  globalThis.Headers = Headers as any;
+  globalThis.fetch = undiFetch as any;
+}

@@ -20,6 +20,7 @@ const baseConfig: ArrayElement<NonNullable<Config["projects"]>> = {
   ],
   clearMocks: true,
   injectGlobals: false,
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 };
 
 export default {

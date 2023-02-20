@@ -20,7 +20,7 @@
 //
 
 import { jest, it, describe, expect } from "@jest/globals";
-import { Response } from "cross-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import defaultRevokeVerifiableCredential, {
   revokeVerifiableCredential,
 } from "./revoke";
