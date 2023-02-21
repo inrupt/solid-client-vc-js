@@ -191,10 +191,7 @@ export function concatenateContexts(...contexts: unknown[]): unknown {
  */
 export const defaultContext = ["https://www.w3.org/2018/credentials/v1"];
 
-export const defaultCredentialTypes = [
-  "VerifiableCredential",
-  "SolidCredential",
-];
+export const defaultCredentialTypes = ["VerifiableCredential"];
 
 /**
  * A Verifiable Credential API configuration details.
