@@ -85,6 +85,69 @@ export type VerifiablePresentation = JsonLd & {
   proof?: Proof;
 };
 
+function isUnknownObject(x: unknown): x is {
+  [key in PropertyKey]: unknown;
+} {
+  return x !== null && typeof x === "object";
+}
+
+function hasProof(x: { [key in PropertyKey]: unknown }): x is {
+  proof: { [key in PropertyKey]: unknown };
+} {
+  return typeof x.proof !== null && typeof x.proof === "object";
+}
+
+/**
+ * This function is a temporary stopgap until we implement proper JSON-LD parsing.
+ * It refactors know misalignments between the JSON-LD object we receive and the
+ * JSON frame we expect.
+ *
+ * @param vcJson A JSON-LD VC.
+ * @returns an equivalent JSON-LD VC, fitted to a specific frame.
+ */
+export function normalizeVc<T>(vcJson: T): T {
+  if (!isUnknownObject(vcJson) || !hasProof(vcJson)) {
+    // The received JSON doesn't have the shape we want to refactor
+    return vcJson;
+  }
+  const normalized = { ...vcJson };
+  if (
+    typeof vcJson.proof["https://w3id.org/security#proofValue"] === "string"
+  ) {
+    normalized.proof.proofValue =
+      vcJson.proof["https://w3id.org/security#proofValue"];
+    delete normalized.proof["https://w3id.org/security#proofValue"];
+  }
+  return normalized;
+}
+
+function hasCredentials(x: { [key in PropertyKey]: unknown }): x is {
+  verifiableCredential: unknown[];
+} {
+  return (
+    typeof x.verifiableCredential !== null &&
+    Array.isArray(x.verifiableCredential)
+  );
+}
+
+/**
+ * Normalizes all VCs wrapped in a VP.
+ *
+ * @param vpJson A JSON-LD VP.
+ * @returns An equivalent JSON-LD VP, with its contained VCs fitted to a specific frame.
+ */
+export function normalizeVp<T>(vpJson: T): T {
+  if (!isUnknownObject(vpJson) || !hasCredentials(vpJson)) {
+    // The received JSON doesn't have the shape we want to refactor
+    return vpJson;
+  }
+  const normalizedVp = { ...vpJson };
+  normalizedVp.verifiableCredential =
+    normalizedVp.verifiableCredential.map(normalizeVc);
+
+  return normalizedVp;
+}
+
 /**
  * Verifies that a given JSON-LD payload conforms to the Verifiable Credential
  * schema we expect.
@@ -358,7 +421,7 @@ export async function getVerifiableCredential(
         );
       }
       try {
-        return await response.json();
+        return normalizeVc(await response.json());
       } catch (e) {
         throw new Error(
           `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`

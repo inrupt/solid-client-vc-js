@@ -22,7 +22,10 @@
 import { jest, it, describe, expect } from "@jest/globals";
 import { query, QueryByExample } from "./query";
 import type * as Fetcher from "../fetcher";
-import { mockDefaultPresentation } from "../common/common.mock";
+import {
+  mockDefaultCredential,
+  mockDefaultPresentation,
+} from "../common/common.mock";
 
 jest.mock("../fetcher");
 
@@ -147,6 +150,40 @@ describe("query", () => {
           { fetch: mockedFetch }
         )
       ).resolves.toStrictEqual(mockDefaultPresentation());
+    });
+
+    it("normalizes the VP sent by the endpoint", async () => {
+      const mockedVc = mockDefaultCredential();
+      // Force unexpected VC shapes to check normalization.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      mockedVc.proof["https://w3id.org/security#proofValue"] =
+        mockedVc.proof.proofValue;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      delete mockedVc.proof.proofValue;
+      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+        new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
+          status: 200,
+        })
+      );
+      const resultVp = await query(
+        "https://example.org/query",
+        { query: [mockRequest] },
+        { fetch: mockedFetch }
+      );
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      expect(resultVp.verifiableCredential![0].proof.proofValue).toBe(
+        mockDefaultCredential().proof.proofValue
+      );
+      expect(
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        resultVp.verifiableCredential![0].proof[
+          "https://w3id.org/security#proofValue"
+        ]
+      ).toBeUndefined();
     });
   });
 });

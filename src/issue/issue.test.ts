@@ -385,4 +385,40 @@ describe("issueVerifiableCredential", () => {
       })
     );
   });
+
+  it("normalizes the issued VC", async () => {
+    const mockedVc = mockDefaultCredential();
+    // Force unexpected VC shapes to check normalization.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    mockedVc.proof["https://w3id.org/security#proofValue"] =
+      mockedVc.proof.proofValue;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    delete mockedVc.proof.proofValue;
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(JSON.stringify(mockedVc), {
+        status: 201,
+      })
+    );
+    const resultVc = await issueVerifiableCredential(
+      "https://some.endpoint",
+      { "@context": ["https://some-subject.context"] },
+      {
+        "@context": ["https://some-credential.context"],
+        type: ["some-type", "some-other-type"],
+      },
+      {
+        fetch: mockedFetch,
+      }
+    );
+    expect(resultVc.proof.proofValue).toBe(
+      mockDefaultCredential().proof.proofValue
+    );
+    expect(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      resultVc.proof["https://w3id.org/security#proofValue"]
+    ).toBeUndefined();
+  });
 });

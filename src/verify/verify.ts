@@ -30,6 +30,7 @@ import {
   isVerifiableCredential,
   isVerifiablePresentation,
   VerifiablePresentation,
+  normalizeVc,
 } from "../common/common";
 import fallbackFetch from "../fetcher";
 
@@ -52,7 +53,7 @@ async function dereferenceVc(
     );
   }
   try {
-    return await vcResponse.json();
+    return normalizeVc(await vcResponse.json());
   } catch (e) {
     throw new Error(
       `Parsing the value obtained when dereferencing [${vc.toString()}] as JSON failed: ${
