@@ -128,10 +128,9 @@ export async function query(
   }
   if (!isVerifiablePresentation(data)) {
     throw new Error(
-      `The holder [${queryEndpoint}] did not return a Verifiable Presentation: `
-      // ${JSON.stringify(
-      //   data
-      // )}`
+      `The holder [${queryEndpoint}] did not return a Verifiable Presentation: ${JSON.stringify(
+        data
+      )}`
     );
   }
   return data;

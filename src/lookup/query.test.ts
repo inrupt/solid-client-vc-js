@@ -25,7 +25,6 @@ import type * as Fetcher from "../fetcher";
 import {
   mockDefaultCredential,
   mockDefaultPresentation,
-  mockPartialPresentation,
 } from "../common/common.mock";
 
 jest.mock("../fetcher");
