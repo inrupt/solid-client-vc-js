@@ -20,6 +20,7 @@
 //
 
 import { jest, it, describe, expect } from "@jest/globals";
+import { Response } from "@inrupt/universal-fetch";
 import { query, QueryByExample } from "./query";
 import type * as Fetcher from "../fetcher";
 import {
