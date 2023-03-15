@@ -21,6 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import { mocked } from "jest-mock";
+import { Response } from "@inrupt/universal-fetch";
 import {
   getVerifiableCredentialApiConfiguration,
   isVerifiableCredential,
