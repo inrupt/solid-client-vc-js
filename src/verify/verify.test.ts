@@ -90,6 +90,36 @@ describe("isValidVc", () => {
     expect(mockedFetch.fetch).toHaveBeenCalled();
   });
 
+  it("discovers the verification endpoint if none is provided", async () => {
+    // Use the fetch fallback on purpose to check that no option may be passed
+    // to the function.
+    const mockedFetch = jest.requireMock(
+      "@inrupt/universal-fetch"
+    ) as jest.Mocked<typeof UniversalFetch>;
+    // First, the VC is fetche
+    mockedFetch.fetch
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(MOCK_VC), { status: 200 })
+      )
+      // Then, the verification endpoint is called
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+          status: 200,
+        })
+      );
+    const mockedDiscovery = mocked(
+      getVerifiableCredentialApiConfiguration
+    ).mockResolvedValueOnce({
+      verifierService: "https://some.vc.verifier",
+      legacy: {},
+      specCompliant: {},
+    });
+    mocked(isVerifiableCredential).mockReturnValueOnce(true);
+
+    await isValidVc(MOCK_VC);
+    expect(mockedDiscovery).toHaveBeenCalledWith(MOCK_VC.issuer);
+  });
+
   it("uses the provided fetch if any", async () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
@@ -215,33 +245,6 @@ describe("isValidVc", () => {
     expect(getVerifiableCredentialApiConfiguration).not.toHaveBeenCalled();
   });
 
-  it("discovers the verification endpoint if none is provided", async () => {
-    const mockedDiscovery = mocked(
-      getVerifiableCredentialApiConfiguration
-    ).mockResolvedValueOnce({
-      verifierService: "https://some.vc.verifier",
-      legacy: {},
-      specCompliant: {},
-    });
-    mocked(isVerifiableCredential).mockReturnValueOnce(true);
-
-    // First, the VC is fetched
-    const mockedFetch = jest
-      .fn<typeof uniFetch>()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(MOCK_VC), { status: 200 })
-      )
-      // Then, the verification endpoint is called
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
-          status: 200,
-        })
-      );
-
-    await isValidVc(MOCK_VC, { fetch: mockedFetch });
-    expect(mockedDiscovery).toHaveBeenCalledWith(MOCK_VC.issuer);
-  });
-
   it("throws if no verification endpoint is discovered", async () => {
     mocked(getVerifiableCredentialApiConfiguration).mockResolvedValueOnce({
       legacy: {},
@@ -337,10 +340,7 @@ describe("isValidVerifiable Presentation", () => {
         status: 200,
       })
     );
-    await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-      domain: "domain",
-      challenge: "challenge",
-    });
+    await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP);
 
     expect(mockedFetch.fetch).toHaveBeenCalled();
   });
