@@ -475,7 +475,7 @@ describe("isValidVerifiable Presentation", () => {
         fetch: mockedFetch as typeof fetch,
       })
     ).rejects.toThrow(
-      `Parsing the response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] as JSON failed: ${`SyntaxError: Unexpected token s in JSON at position 0`}`
+      `Parsing the response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] as JSON failed:`
     );
   });
 

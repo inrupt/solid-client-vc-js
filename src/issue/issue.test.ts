@@ -20,6 +20,7 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { Response } from "@inrupt/universal-fetch";
 import { defaultContext, defaultCredentialTypes } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
 import defaultIssueVerifiableCredential, {

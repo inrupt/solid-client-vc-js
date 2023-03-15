@@ -20,6 +20,7 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { Response } from "@inrupt/universal-fetch";
 import {
   concatenateContexts,
   getVerifiableCredential,
