@@ -30,7 +30,7 @@ import {
   UrlString,
   getJsonLdParser,
 } from "@inrupt/solid-client";
-import defaultFetch from "../fetcher";
+import { fetch as uniFetch } from "@inrupt/universal-fetch";
 
 export type Iri = string;
 /**
@@ -412,7 +412,7 @@ export async function getVerifiableCredential(
     fetch: typeof fetch;
   }>
 ): Promise<VerifiableCredential> {
-  const authFetch = options?.fetch ?? defaultFetch;
+  const authFetch = options?.fetch ?? uniFetch;
   return authFetch(vcUrl as string)
     .then(async (response) => {
       if (!response.ok) {
