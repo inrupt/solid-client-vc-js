@@ -284,7 +284,7 @@ describe("getVerifiableCredential", () => {
 
   it("uses the provided fetch if any", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()))
       );
@@ -297,7 +297,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the VC ID cannot be dereferenced", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(
         new Response(undefined, { status: 401, statusText: "Unauthenticated" })
       );
@@ -311,7 +311,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the dereferenced data is invalid JSON", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(new Response("Not JSON."));
 
     await expect(
@@ -323,7 +323,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the dereferenced data is not a VC", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ something: "but not a VC" }))
       );
@@ -337,7 +337,7 @@ describe("getVerifiableCredential", () => {
 
   it("returns the fetched VC and the redirect URL", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()))
       );
