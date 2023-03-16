@@ -19,13 +19,13 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 import {
   concatenateContexts,
   defaultContext,
   Iri,
   VerifiableCredential,
 } from "../common/common";
-import fallbackFetch from "../fetcher";
 import { query, VerifiablePresentationRequest } from "./query";
 
 const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;

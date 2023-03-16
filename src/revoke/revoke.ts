@@ -22,9 +22,8 @@
 /**
  * @module revoke
  */
-
+import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 import { Iri } from "../common/common";
-import fallbackFetch from "../fetcher";
 
 /**
  * Revoke a given VC from a given issuer. This changes the status of the VC so that

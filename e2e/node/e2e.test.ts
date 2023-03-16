@@ -72,9 +72,9 @@ const invalidCredentialClaims = {
 };
 
 const env = getNodeTestingEnvironment({
-  vcProvider: "",
+  vcProvider: true,
   clientCredentials: {
-    owner: { id: "", secret: "" },
+    owner: { id: true, secret: true },
   },
 });
 describe("End-to-end verifiable credentials tests for environment", () => {

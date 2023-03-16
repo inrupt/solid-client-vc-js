@@ -24,6 +24,8 @@
  */
 
 import { UrlString } from "@inrupt/solid-client";
+import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
+
 import {
   VerifiableCredential,
   getVerifiableCredentialApiConfiguration,
@@ -32,11 +34,10 @@ import {
   VerifiablePresentation,
   normalizeVc,
 } from "../common/common";
-import fallbackFetch from "../fetcher";
 
 async function dereferenceVc(
   vc: VerifiableCredential | URL | UrlString,
-  fetcher: typeof fetch
+  fetcher: typeof fallbackFetch
 ): Promise<VerifiableCredential> {
   // This test passes for both URL and UrlString
   if (!vc.toString().startsWith("http")) {

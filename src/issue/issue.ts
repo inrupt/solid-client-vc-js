@@ -23,7 +23,7 @@
  * @module issue
  */
 
-import fallbackFetch from "../fetcher";
+import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
 import {
   isVerifiableCredential,

@@ -20,14 +20,23 @@
 //
 
 import { jest, it, describe, expect } from "@jest/globals";
+import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
+import type * as UniversalFetch from "@inrupt/universal-fetch";
 import { query, QueryByExample } from "./query";
-import type * as Fetcher from "../fetcher";
 import {
   mockDefaultCredential,
   mockDefaultPresentation,
 } from "../common/common.mock";
 
-jest.mock("../fetcher");
+jest.mock("@inrupt/universal-fetch", () => {
+  const fetchModule = jest.requireActual(
+    "@inrupt/universal-fetch"
+  ) as typeof UniversalFetch;
+  return {
+    ...fetchModule,
+    fetch: jest.fn<typeof uniFetch>(),
+  };
+});
 
 const mockRequest: QueryByExample = {
   type: "QueryByExample",
@@ -44,7 +53,7 @@ const mockRequest: QueryByExample = {
 describe("query", () => {
   describe("by example", () => {
     it("uses the provided fetch if any", async () => {
-      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultPresentation()), {
           status: 200,
         })
@@ -57,21 +66,21 @@ describe("query", () => {
       expect(mockedFetch).toHaveBeenCalled();
     });
 
-    it("defaults to the embedded fetcher if no fetch is provided", async () => {
-      const mockedFetch = jest.requireMock("../fetcher") as jest.Mocked<
-        typeof Fetcher
-      >;
-      mockedFetch.default.mockResolvedValueOnce(
+    it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
+      const mockedFetch = jest.requireMock(
+        "@inrupt/universal-fetch"
+      ) as jest.Mocked<typeof UniversalFetch>;
+      mockedFetch.fetch.mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultPresentation()), {
           status: 200,
         })
       );
       await query("https://some.endpoint/query", { query: [mockRequest] });
-      expect(mockedFetch.default).toHaveBeenCalled();
+      expect(mockedFetch.fetch).toHaveBeenCalled();
     });
 
     it("throws if the given endpoint returns an error", async () => {
-      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
         new Response(undefined, {
           status: 404,
         })
@@ -86,7 +95,7 @@ describe("query", () => {
     });
 
     it("throws if the endpoint responds with a non-JSON payload", async () => {
-      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
         new Response("Not JSON", {
           status: 200,
         })
@@ -101,7 +110,7 @@ describe("query", () => {
     });
 
     it("throws if the endpoint responds with a non-VP payload", async () => {
-      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
         new Response(JSON.stringify({ json: "but not a VP" }), {
           status: 200,
         })
@@ -116,7 +125,7 @@ describe("query", () => {
     });
 
     it("posts a request with the appropriate media type", async () => {
-      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultPresentation()), {
           status: 200,
         })
@@ -138,7 +147,7 @@ describe("query", () => {
     });
 
     it("returns the VP sent by the endpoint", async () => {
-      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultPresentation()), {
           status: 200,
         })
@@ -162,7 +171,7 @@ describe("query", () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       delete mockedVc.proof.proofValue;
-      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
           status: 200,
         })
