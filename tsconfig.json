@@ -76,7 +76,7 @@
       // The source files of everything listed under `exports` in our package.json
       // (i.e. public API's that should be documented) should be listed here:
       "src/issue/issue.ts",
-      "src/common/common.ts",
+      "src/common/common.ts"
       "src/lookup/derive.ts",
       "src/lookup/query.ts",
       "src/revoke/revoke.ts",
@@ -109,6 +109,7 @@
     // as the root directory for compilation (instead of /src),
     // meaning that files that would otherwise be included in /dist directly
     // (e.g. dist/index.d.ts) will then be built to /dist/src.
-    "e2e"
+    "e2e",
+    "**/*.test.ts"
   ]
 }
