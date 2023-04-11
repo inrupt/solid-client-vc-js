@@ -30,7 +30,7 @@ jobs:
       - run: git fetch --unshallow
         if: ${{ matrix.node-version == '16.x' && runner.os == 'Linux' && github.actor != 'dependabot[bot]' }}
       # Run Sonar Scan
-      - uses: SonarSource/sonarcloud-github-action@v1.8
+      - uses: SonarSource/sonarcloud-github-action@v1.9
         if: ${{ matrix.node-version == '16.x' && runner.os == 'Linux' && github.actor != 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
