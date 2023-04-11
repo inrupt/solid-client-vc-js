@@ -47,6 +47,9 @@ prepare: clean
 # Note: remove the typedoc generated `index.md` since we use a custom index.rst instead
 	rm $(SOURCECOPYDIR)/*/index.md $(SOURCECOPYDIR)/index.md
 
+# Use our custom index.rst
+	cp -R $(SOURCEDIR)/index.rst $(SOURCECOPYDIR)
+
 html: Makefile check prepare
 	@$(SPHINXBUILD) -M $@ "$(SOURCECOPYDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) -c . --keep-going
 
