@@ -42,8 +42,9 @@ prepare: clean
 # in case someone forgets to backslash after build/
 # Copying source/api/* to BUILDDIR.
 	mkdir -p $(SOURCECOPYDIR)
-	cp -R $(SOURCEDIR)/index.rst $(SOURCECOPYDIR)
 	cp -R $(SOURCEDIR)/api/* $(SOURCECOPYDIR)
+# Note: remove the typedoc generated `index.rst` (see tsconfig.json) since we use a custom index.rst instead
+	rm $(SOURCECOPYDIR)/index.rst
 
 # Use our custom index.rst
 	cp -R $(SOURCEDIR)/index.rst $(SOURCECOPYDIR)

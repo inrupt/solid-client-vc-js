@@ -90,7 +90,7 @@ html_theme_options = {
     'show_api_menu': True,
 
     # below are pydata_sphinx_theme
-    "footer_items": ["copyright.html"],
+    "footer_start": ["copyright.html"],
     "footer_end": [ ],
     "navbar_align": "left",
     "icon_links": [
