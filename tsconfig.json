@@ -76,7 +76,7 @@
       // The source files of everything listed under `exports` in our package.json
       // (i.e. public API's that should be documented) should be listed here:
       "src/issue/issue.ts",
-      "src/common/common.ts"
+      "src/common/common.ts",
       "src/lookup/derive.ts",
       "src/lookup/query.ts",
       "src/revoke/revoke.ts",
