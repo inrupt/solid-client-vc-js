@@ -44,8 +44,6 @@ prepare: clean
 	mkdir -p $(SOURCECOPYDIR)
 	cp -R $(SOURCEDIR)/index.rst $(SOURCECOPYDIR)
 	cp -R $(SOURCEDIR)/api/* $(SOURCECOPYDIR)
-# Note: remove the typedoc generated `index.md` since we use a custom index.rst instead
-	rm $(SOURCECOPYDIR)/*/index.md $(SOURCECOPYDIR)/index.md
 
 # Use our custom index.rst
 	cp -R $(SOURCEDIR)/index.rst $(SOURCECOPYDIR)
