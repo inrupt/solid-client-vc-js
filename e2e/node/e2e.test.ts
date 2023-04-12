@@ -72,9 +72,9 @@ const invalidCredentialClaims = {
 };
 
 const env = getNodeTestingEnvironment({
-  vcProvider: "",
+  vcProvider: true,
   clientCredentials: {
-    owner: { id: "", secret: "" },
+    owner: { id: true, secret: true },
   },
 });
 describe("End-to-end verifiable credentials tests for environment", () => {
@@ -148,38 +148,31 @@ describe("End-to-end verifiable credentials tests for environment", () => {
   });
 
   describe("lookup VCs", () => {
-    const testIf = (condition: boolean) => (condition ? it : it.skip);
-    // This test currently runs into issues with dev-next. These are being investigated,
-    // but in the meantime this test will be skipped so that we have tests in a clean
-    // state.
-    testIf(env.environment !== "ESS Dev-Next")(
-      "returns all VC issued matching a given shape",
-      async () => {
-        const result = await getVerifiableCredentialAllFromShape(
-          new URL("derive", env.vcProvider).href,
-          {
-            "@context": [
-              "https://www.w3.org/2018/credentials/v1",
-              "https://schema.inrupt.com/credentials/v1.jsonld",
-            ],
-            type: ["VerifiableCredential", "SolidAccessGrant"],
-            credentialSubject: {
-              id: vcSubject,
-              providedConsent: {
-                hasStatus:
-                  "https://w3id.org/GConsent#ConsentStatusExplicitlyGiven",
-              },
+    it("returns all VC issued matching a given shape", async () => {
+      const result = await getVerifiableCredentialAllFromShape(
+        new URL("derive", env.vcProvider).href,
+        {
+          "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://schema.inrupt.com/credentials/v1.jsonld",
+          ],
+          type: ["VerifiableCredential", "SolidAccessGrant"],
+          credentialSubject: {
+            id: vcSubject,
+            providedConsent: {
+              hasStatus:
+                "https://w3id.org/GConsent#ConsentStatusExplicitlyGiven",
             },
           },
-          {
-            fetch: session.fetch,
-          }
-        );
-        // Jest is confused by the conditional test block.
-        // eslint-disable-next-line jest/no-standalone-expect
-        expect(result).not.toHaveLength(0);
-      }
-    );
+        },
+        {
+          fetch: session.fetch,
+        }
+      );
+      // Jest is confused by the conditional test block.
+      // eslint-disable-next-line jest/no-standalone-expect
+      expect(result).not.toHaveLength(0);
+    });
   });
 
   describe("revoke VCs", () => {

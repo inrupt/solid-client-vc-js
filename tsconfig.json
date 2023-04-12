@@ -75,7 +75,6 @@
     "entryPoints": [
       // The source files of everything listed under `exports` in our package.json
       // (i.e. public API's that should be documented) should be listed here:
-      "src/index.ts",
       "src/issue/issue.ts",
       "src/common/common.ts",
       "src/lookup/derive.ts",
@@ -88,14 +87,18 @@
       "**/*.test.ts",
       // Internal helpers:
       "**/*.internal.ts",
+      "**/*.mock.ts",
       // Re-exported functions are already documented in their own modules:
       "src/index.ts",
       // Constants are only used internally:
-      "src/constants.ts"
+      "src/constants.ts",
+      // End-to-end tests aren't required in the API docs.
+      "e2e/**"
     ],
     "theme": "markdown",
     "readme": "none",
-    "entryDocument": "index.md"
+    "entryDocument": "index.rst",
+    "plugin": ["typedoc-plugin-markdown"]
   },
   "include": ["src/**/*.ts"],
   "exclude": [
@@ -106,6 +109,7 @@
     // as the root directory for compilation (instead of /src),
     // meaning that files that would otherwise be included in /dist directly
     // (e.g. dist/index.d.ts) will then be built to /dist/src.
-    "e2e"
+    "e2e",
+    "**/*.test.ts"
   ]
 }

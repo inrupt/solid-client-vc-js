@@ -20,6 +20,8 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
+import type * as UniversalFetch from "@inrupt/universal-fetch";
 import {
   concatenateContexts,
   getVerifiableCredential,
@@ -35,9 +37,16 @@ import {
   mockPartialPresentation,
   defaultVerifiableClaims,
 } from "./common.mock";
-import defaultFetch from "../fetcher";
 
-jest.mock("../fetcher");
+jest.mock("@inrupt/universal-fetch", () => {
+  const fetchModule = jest.requireActual(
+    "@inrupt/universal-fetch"
+  ) as typeof UniversalFetch;
+  return {
+    ...fetchModule,
+    fetch: jest.fn<typeof uniFetch>(),
+  };
+});
 
 describe("isVerifiableCredential", () => {
   it("returns true if all the expected fields are present in the credential", () => {
@@ -251,11 +260,11 @@ describe("concatenateContexts", () => {
 });
 
 describe("getVerifiableCredential", () => {
-  it("defaults to the embedded fetch", async () => {
-    const embeddedFetch = jest.requireMock("../fetcher") as jest.Mocked<{
-      default: typeof defaultFetch;
-    }>;
-    embeddedFetch.default.mockResolvedValueOnce(
+  it("defaults to an unauthenticated fetch", async () => {
+    const mockedFetchModule = jest.requireMock(
+      "@inrupt/universal-fetch"
+    ) as jest.Mocked<typeof UniversalFetch>;
+    mockedFetchModule.fetch.mockResolvedValueOnce(
       new Response(JSON.stringify(mockDefaultCredential()))
     );
 
@@ -270,12 +279,12 @@ describe("getVerifiableCredential", () => {
     );
 
     await getVerifiableCredential("https://some.vc");
-    expect(embeddedFetch.default).toHaveBeenCalledWith("https://some.vc");
+    expect(mockedFetchModule.fetch).toHaveBeenCalledWith("https://some.vc");
   });
 
   it("uses the provided fetch if any", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()))
       );
@@ -288,7 +297,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the VC ID cannot be dereferenced", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(
         new Response(undefined, { status: 401, statusText: "Unauthenticated" })
       );
@@ -302,7 +311,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the dereferenced data is invalid JSON", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(new Response("Not JSON."));
 
     await expect(
@@ -314,7 +323,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the dereferenced data is not a VC", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ something: "but not a VC" }))
       );
@@ -328,7 +337,7 @@ describe("getVerifiableCredential", () => {
 
   it("returns the fetched VC and the redirect URL", async () => {
     const mockedFetch = jest
-      .fn(fetch)
+      .fn<typeof uniFetch>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()))
       );

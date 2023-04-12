@@ -23,7 +23,7 @@
  * @module issue
  */
 
-import fallbackFetch from "../fetcher";
+import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
 import {
   isVerifiableCredential,
@@ -33,6 +33,7 @@ import {
   concatenateContexts,
   defaultContext,
   defaultCredentialTypes,
+  normalizeVc,
 } from "../common/common";
 
 type OptionsType = {
@@ -102,7 +103,7 @@ async function internal_issueVerifiableCredential(
       `The VC issuing endpoint [${issuerEndpoint}] could not successfully issue a VC: ${response.status} ${response.statusText}`
     );
   }
-  const jsonData = await response.json();
+  const jsonData = normalizeVc(await response.json());
   if (isVerifiableCredential(jsonData)) {
     return jsonData;
   }

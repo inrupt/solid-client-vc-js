@@ -19,18 +19,4 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, it, expect } from "@jest/globals";
-
-import authFetch from "./fetcher";
-
-jest.mock("cross-fetch");
-
-it("should fallback to cross-fetch if no Solid-specific fetcher is available", async () => {
-  const crossFetch = jest.requireMock("cross-fetch") as jest.Mocked<
-    typeof fetch
-  >;
-
-  await authFetch("https://some.url");
-
-  expect(crossFetch.mock.calls).toEqual([["https://some.url", undefined]]);
-});
+import "@inrupt/jest-jsdom-polyfills";

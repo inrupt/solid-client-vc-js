@@ -19,13 +19,14 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 import {
   Iri,
   isVerifiablePresentation,
+  normalizeVp,
   VerifiableCredential,
   VerifiablePresentation,
 } from "../common/common";
-import fallbackFetch from "../fetcher";
 
 /**
  * Based on https://w3c-ccg.github.io/vp-request-spec/#query-by-example.
@@ -119,7 +120,7 @@ export async function query(
 
   let data;
   try {
-    data = await response.json();
+    data = normalizeVp(await response.json());
   } catch (e) {
     throw new Error(
       `The holder [${queryEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`
