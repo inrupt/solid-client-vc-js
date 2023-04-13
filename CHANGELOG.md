@@ -8,6 +8,7 @@ The following changes have been implemented but not released yet:
 
 ### New features
 
+- Node 18 is now supported
 - A new function `isValidVerifiablePresentation` has been added to the `verify` module, which verifies the validity of a VP using a verification service.
 - `getVerifiableCredentialApiConfiguration` now discovers the future-compatible
   specification-compliant endpoints, as well as the legacy endpoints.
