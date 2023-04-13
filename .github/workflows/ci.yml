@@ -9,9 +9,11 @@ jobs:
     uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-lint.yml@v1.6.1
 
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+        os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: [18.x, 16.x, 14.x]
     steps:
       - uses: actions/checkout@v3
