@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## [Unreleased]
 
+## 0.6.0 - 2022-04-14
+
 ### New features
 
 - Node 18 is now supported
