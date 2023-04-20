@@ -14,11 +14,11 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest]
-        node-version: ["14.x", "16.x", "18.x"]
+        node-version: ["14.x", "16.x", "18.x", "20.x"]
         environment-name: ["ESS PodSpaces"]
         experimental: [false]
         include:
-          - node-version: "18.x"
+          - node-version: "20.x"
             experimental: true
             environment-name: "ESS Dev-Next"
             os: ubuntu-latest
