@@ -8,6 +8,8 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+## 0.7.0 - 2022-05-09
+
 ### New features
 
 - Node 20 is now supported
