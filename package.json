@@ -64,7 +64,7 @@
     "@rushstack/eslint-patch": "^1.1.4",
     "@types/dotenv-flow": "^3.1.1",
     "@types/jest": "^29.2.2",
-    "@types/node": "^18.0.6",
+    "@types/node": "^20.1.2",
     "@types/rdfjs__dataset": "1.0.4",
     "dotenv-flow": "^3.2.0",
     "eslint": "^8.18.0",
