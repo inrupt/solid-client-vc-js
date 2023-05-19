@@ -23,3 +23,8 @@ import { setupEnv } from "@inrupt/internal-test-env";
 
 // Fail fast on dotenv:
 setupEnv();
+
+if (process.env.CI === "true") {
+  // Tests running in the CI runners tend to be more flaky.
+  jest.retryTimes(5, { logErrorsBeforeRetry: true });
+}
