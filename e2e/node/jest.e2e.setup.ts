@@ -20,6 +20,7 @@
 //
 
 import { setupEnv } from "@inrupt/internal-test-env";
+import { jest } from "@jest/globals";
 
 // Fail fast on dotenv:
 setupEnv();
