@@ -24,7 +24,10 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import { Session } from "@inrupt/solid-client-authn-node";
-import { getNodeTestingEnvironment } from "@inrupt/internal-test-env";
+import {
+  getNodeTestingEnvironment,
+  getAuthenticatedSession,
+} from "@inrupt/internal-test-env";
 import {
   getVerifiableCredentialAllFromShape,
   issueVerifiableCredential,
@@ -79,13 +82,9 @@ const env = getNodeTestingEnvironment({
 });
 describe("End-to-end verifiable credentials tests for environment", () => {
   let vcSubject: string;
-  const session = new Session();
+  let session: Session;
   beforeEach(async () => {
-    await session.login({
-      oidcIssuer: env.idp,
-      clientId: env.clientCredentials.owner.id,
-      clientSecret: env.clientCredentials.owner.secret,
-    });
+    session = await getAuthenticatedSession(env);
 
     if (!session.info.webId) {
       throw new Error("Client session missing critical data: webId");
