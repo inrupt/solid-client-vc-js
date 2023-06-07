@@ -64,6 +64,7 @@
     "@rushstack/eslint-patch": "^1.1.4",
     "@types/dotenv-flow": "^3.1.1",
     "@types/jest": "^29.2.2",
+    "@types/n3": "^1.10.4",
     "@types/node": "^20.1.2",
     "@types/rdfjs__dataset": "1.0.4",
     "dotenv-flow": "^3.2.0",
@@ -84,7 +85,11 @@
   },
   "dependencies": {
     "@inrupt/solid-client": "^1.25.2",
-    "@inrupt/universal-fetch": "^1.0.1"
+    "@inrupt/universal-fetch": "^1.0.1",
+    "event-emitter-promisify": "^1.1.0",
+    "jsonld-streaming-parser": "^3.2.0",
+    "n3": "^1.16.4",
+    "readable-web-to-node-stream": "^3.0.2"
   },
   "publishConfig": {
     "access": "public"
