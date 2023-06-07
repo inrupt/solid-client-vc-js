@@ -6,18 +6,18 @@ updates:
     directory: "/"
     # Check the npm registry for updates every day (weekdays)
     schedule:
-      interval: "daily"
+      interval: "weekly"
   # Enable version updates for the website tooling
   - package-ecosystem: "pip"
     # Look for `package.json` and `lock` files in the `root` directory
     directory: "/docs"
     # Check the npm registry for updates every day (weekdays)
     schedule:
-      interval: "daily"
+      interval: "weekly"
   # Enable version updates for our CI tooling
   - package-ecosystem: "github-actions"
     # Look for `package.json` and `lock` files in the `root` directory
     directory: "/"
     # Check the npm registry for updates every day (weekdays)
     schedule:
-      interval: "daily"
+      interval: "weekly"
