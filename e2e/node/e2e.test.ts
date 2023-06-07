@@ -24,7 +24,10 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import { Session } from "@inrupt/solid-client-authn-node";
-import { getNodeTestingEnvironment, getAuthenticatedSession } from "@inrupt/internal-test-env";
+import {
+  getNodeTestingEnvironment,
+  getAuthenticatedSession,
+} from "@inrupt/internal-test-env";
 import {
   getVerifiableCredentialAllFromShape,
   issueVerifiableCredential,
