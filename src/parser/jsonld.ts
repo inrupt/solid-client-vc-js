@@ -21,25 +21,45 @@
 /* eslint-disable max-classes-per-file */
 import defaultFetch from "@inrupt/universal-fetch";
 import { promisifyEventEmitter } from "event-emitter-promisify";
-import { FetchDocumentLoader, IJsonLdContext } from "jsonld-context-parser";
+import {
+  ContextParser,
+  FetchDocumentLoader,
+  IJsonLdContext,
+  JsonLdContextNormalized,
+} from "jsonld-context-parser";
 import { JsonLdParser } from "jsonld-streaming-parser";
 import { Store } from "n3";
-import { ReadableWebToNodeStream } from 'readable-web-to-node-stream';
-import { DatasetCore } from "@rdfjs/types";
-import VC_CONTEXT from "./context";
+import { ReadableWebToNodeStream } from "readable-web-to-node-stream";
+import CONTEXTS from "./contexts";
 
-// A JSON-LD document loader with the standard context for VCs pre-loaded
+/**
+ * Creates a context for use with the VC library
+ */
+// FIXME: See if our access grants specific context should be passed
+// through as a parameter instead
+export function getVcContext(): Promise<JsonLdContextNormalized> {
+  const myParser = new ContextParser({
+    documentLoader: new FetchDocumentLoader()
+  });
+  return myParser.parse(Object.values(CONTEXTS));
+}
+
+/**
+ * A JSON-LD document loader with the standard context for VCs pre-loaded
+ */
 class CachedFetchDocumentLoader extends FetchDocumentLoader {
   public async load(url: string): Promise<IJsonLdContext> {
-    if (url === "https://www.w3.org/2018/credentials/v1") {
-      return VC_CONTEXT;
+    if (Object.keys(CONTEXTS).includes(url)) {
+      return CONTEXTS[url as keyof typeof CONTEXTS];
     }
     // FIXME: See if we want to error on other contexts
     return super.load(url);
   }
 }
 
-// Our internal JsonLd Parser with a cached VC context
+/**
+ * Our internal JsonLd Parser with a cached VC context
+ */
 export class IJsonLdParser extends JsonLdParser {
   constructor(options?: { fetch?: typeof globalThis.fetch }) {
     super({
@@ -50,25 +70,38 @@ export class IJsonLdParser extends JsonLdParser {
   }
 }
 
-function toNodeStream(body: ReadableStream<Uint8Array>): ReadableWebToNodeStream {
-  if (typeof (body as unknown as ReadableWebToNodeStream).pipe === 'function')
+/**
+ * Converts any HTTP response body into a readable stream
+ * @param body The body of the HTTP response
+ * @returns The body as a readable stream
+ */
+function toNodeStream(
+  body: ReadableStream<Uint8Array>
+): ReadableWebToNodeStream {
+  if (typeof (body as unknown as ReadableWebToNodeStream).pipe === "function")
     return body as unknown as ReadableWebToNodeStream;
   return new ReadableWebToNodeStream(body);
 }
 
-// This is what we should be doing but our tests complain
-export function jsonLdResponseToStore(response: globalThis.Response, options?: { fetch?: typeof globalThis.fetch }): Promise<DatasetCore> | DatasetCore {
+/**
+ * Gets an N3 store from a JSON-LD response to a fetch request
+ * @param response A JSON-LD response
+ * @param options An optional fetch function for dereferencing remote contexts
+ * @returns A store containing the Quads in the JSON-LD response
+ */
+export function jsonLdResponseToStore(
+  response: globalThis.Response,
+  options?: { fetch?: typeof globalThis.fetch }
+): Promise<Store> {
+  if (response.body === null) 
+    throw new Error("Empty response body. Expected JSON-LD.");
+  
   const store = new Store();
-
-  const { body } = response;
-
-  // If the body is null then there are no quads
-  // FIXME: See if we should error here
-  if (body === null)
-    return store;
-
+  // Resolve on the `end` event of the stream and return store, reject if the
+  // error event occurs
   return promisifyEventEmitter(
-    store.import(toNodeStream(body).pipe(new IJsonLdParser(options))),
+    // Convert the response body to Quads and import them into a store
+    store.import(toNodeStream(response.body).pipe(new IJsonLdParser(options))),
     store
   );
 }
