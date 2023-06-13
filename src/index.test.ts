@@ -22,8 +22,6 @@ import { describe, it, expect } from "@jest/globals";
 import * as packageExports from "./index";
 import issueVerifiableCredential from "./issue/issue";
 import {
-  isVerifiableCredential,
-  isVerifiablePresentation,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
 } from "./common/common";
@@ -48,10 +46,6 @@ describe("exports", () => {
     ]);
     expect(packageExports.issueVerifiableCredential).toBe(
       issueVerifiableCredential
-    );
-    expect(packageExports.isVerifiableCredential).toBe(isVerifiableCredential);
-    expect(packageExports.isVerifiablePresentation).toBe(
-      isVerifiablePresentation
     );
     expect(packageExports.getVerifiableCredential).toBe(
       getVerifiableCredential

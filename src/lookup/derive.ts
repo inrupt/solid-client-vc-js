@@ -42,6 +42,7 @@ function buildLegacyQuery(
   vcShape: Partial<VerifiableCredential>,
   includeExpiredVc: boolean
 ) {
+  // TODO: Catch up with Nick AS
   // credentialClaims should contain all the claims, but not the context.
   const { "@context": claimsContext, ...credentialClaims } = vcShape;
   return {
@@ -104,10 +105,6 @@ export async function getVerifiableCredentialAllFromShape(
     includeExpiredVc: boolean;
   }>
 ): Promise<VerifiableCredential[]> {
-  const internalOptions = { ...options };
-  if (internalOptions.fetch === undefined) {
-    internalOptions.fetch = fallbackFetch;
-  }
   // The request payload depends on the target endpoint.
   const vpRequest = holderEndpoint.endsWith("/query")
     ? // The target endpoint is spec-compliant, and uses a standard VP request.

@@ -26,14 +26,12 @@
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
 import {
-  isVerifiableCredential,
   Iri,
-  JsonLd,
   VerifiableCredential,
-  concatenateContexts,
   defaultContext,
   defaultCredentialTypes,
-  normalizeVc,
+  getVerifiableCredentialFromResponse,
+  
 } from "../common/common";
 
 type OptionsType = {
@@ -97,23 +95,7 @@ async function internal_issueVerifiableCredential(
       body: JSON.stringify(credentialIssueBody),
     }
   );
-  if (!response.ok) {
-    // TODO: use the error library when available.
-    throw new Error(
-      `The VC issuing endpoint [${issuerEndpoint}] could not successfully issue a VC: ${response.status} ${response.statusText}`
-    );
-  }
-  const jsonData = normalizeVc(await response.json());
-  if (isVerifiableCredential(jsonData)) {
-    return jsonData;
-  }
-  throw new Error(
-    `The VC issuing endpoint [${issuerEndpoint}] returned an unexpected object: ${JSON.stringify(
-      jsonData,
-      null,
-      "  "
-    )}`
-  );
+  return getVerifiableCredentialFromResponse(response, response.url, internalOptions);
 }
 
 /**

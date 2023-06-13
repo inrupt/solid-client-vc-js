@@ -265,18 +265,15 @@ function validateVcResponse(response: globalThis.Response, vcUrl: string): globa
   return response;
 }
 
-async function fetchVcStore(
+async function responseToVcStore(
+  response: globalThis.Response,
   vcUrl: UrlString,
   options?: Partial<{
     fetch: typeof fetch;
   }>
 ): Promise<Store> {
-  const authFetch = options?.fetch ?? uniFetch;
-  // FIXME: See if we need content negotiation here
-  const response = validateVcResponse(await authFetch(vcUrl), vcUrl);
-
   try {
-    return await jsonLdResponseToStore(response, { fetch: authFetch });
+    return await jsonLdResponseToStore(validateVcResponse(response, vcUrl), options);
   } catch (e) {
     throw new Error(
       `Parsing the Verifiable Credential [${vcUrl}] as JSON-LD failed: ${e}`
@@ -299,7 +296,28 @@ export async function getVerifiableCredential(
     fetch: typeof fetch;
   }>
 ): Promise<VerifiableCredential & DatasetCore> {
-  const vcStore = await fetchVcStore(vcUrl, options);
+  // TODO: See if we should have conneg here
+  const response = await (options?.fetch ?? uniFetch)(vcUrl);
+  return getVerifiableCredentialFromResponse(response, vcUrl, options);
+}
+
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
+ */
+export async function getVerifiableCredentialFromResponse(
+  response: Response,
+  vcUrl: UrlString,
+  options?: Partial<{
+    fetch: typeof fetch;
+  }>
+): Promise<VerifiableCredential & DatasetCore> {
+  const vcStore = await responseToVcStore(response, vcUrl, options);
   const context = await getVcContext();
 
   const vcs = vcStore.getSubjects(
@@ -501,10 +519,10 @@ export async function getVerifiableCredential(
       // @ts-ignore
       return vcStore.match(subject, predicate, object, graph);
     },
-    add(quad) {
+    add() {
       throw new Error("Cannot mutate this dataset");
     },
-    delete(quad) {
+    delete() {
       throw new Error("Cannot mutate this dataset");
     },
     get size() {

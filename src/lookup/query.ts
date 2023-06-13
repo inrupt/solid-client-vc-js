@@ -21,9 +21,8 @@
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 import {
+  getVerifiableCredentialFromResponse,
   Iri,
-  isVerifiablePresentation,
-  normalizeVp,
   VerifiableCredential,
   VerifiablePresentation,
 } from "../common/common";
@@ -101,37 +100,10 @@ export async function query(
     fetch: typeof fallbackFetch;
   }>
 ): Promise<VerifiablePresentation> {
-  const internalOptions = { ...options };
-  if (internalOptions.fetch === undefined) {
-    internalOptions.fetch = fallbackFetch;
-  }
-  const response = await internalOptions.fetch(queryEndpoint, {
-    headers: {
-      "Content-Type": "application/json",
-    },
+  const response = await (options?.fetch ?? fallbackFetch)(queryEndpoint, {
+    headers: { "Content-Type": "application/json" },
     method: "POST",
     body: JSON.stringify(vpRequest),
   });
-  if (!response.ok) {
-    throw new Error(
-      `The query endpoint [${queryEndpoint}] returned an error: ${response.status} ${response.statusText}`
-    );
-  }
-
-  let data;
-  try {
-    data = normalizeVp(await response.json());
-  } catch (e) {
-    throw new Error(
-      `The holder [${queryEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`
-    );
-  }
-  if (!isVerifiablePresentation(data)) {
-    throw new Error(
-      `The holder [${queryEndpoint}] did not return a Verifiable Presentation: ${JSON.stringify(
-        data
-      )}`
-    );
-  }
-  return data;
+  return getVerifiableCredentialFromResponse(response, response.url, options);
 }

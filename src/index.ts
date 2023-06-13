@@ -20,10 +20,8 @@
 //
 
 export { default as issueVerifiableCredential } from "./issue/issue";
-export type { Iri, JsonLd, VerifiableCredential } from "./common/common";
+export type { Iri, VerifiableCredential } from "./common/common";
 export {
-  isVerifiableCredential,
-  isVerifiablePresentation,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
 } from "./common/common";

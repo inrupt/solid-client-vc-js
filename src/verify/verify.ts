@@ -33,6 +33,7 @@ import {
   isVerifiablePresentation,
   VerifiablePresentation,
   normalizeVc,
+  getVerifiableCredentialFromResponse,
 } from "../common/common";
 
 async function dereferenceVc(
@@ -46,15 +47,8 @@ async function dereferenceVc(
   // vc is either an IRI-shaped string or a URL object. In both
   // cases, vc.toString() is an IRI.
   const vcResponse = await fetcher(vc.toString());
-  if (!vcResponse.ok) {
-    throw new Error(
-      `Dereferencing [${vc.toString()}] failed: ${vcResponse.status} ${
-        vcResponse.statusText
-      }`
-    );
-  }
   try {
-    return normalizeVc(await vcResponse.json());
+    return getVerifiableCredentialFromResponse(vcResponse, vcResponse.url, { fetch: fetcher });
   } catch (e) {
     throw new Error(
       `Parsing the value obtained when dereferencing [${vc.toString()}] as JSON failed: ${
@@ -93,16 +87,6 @@ export async function isValidVc(
   const fetcher = options.fetch ?? fallbackFetch;
 
   const vcObject = await dereferenceVc(vc, fetcher);
-
-  if (!isVerifiableCredential(vcObject)) {
-    throw new Error(
-      `The request to [${vc}] returned an unexpected response: ${JSON.stringify(
-        vcObject,
-        null,
-        "  "
-      )}`
-    );
-  }
 
   // Discover the consent endpoint from the resource part of the Access Grant.
   const verifierEndpoint =
@@ -159,6 +143,7 @@ export async function isValidVc(
  * @returns a JSON-shaped validation report structured accoring to the [VP Verifier API](https://w3c-ccg.github.io/vc-api/verifier.html#operation/verifyPresentation).
  * @since
  */
+// TODO: See if this can be deprecated
 export async function isValidVerifiablePresentation(
   verificationEndpoint: string | null,
   verifiablePresentation: VerifiablePresentation,
