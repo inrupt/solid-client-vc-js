@@ -94,7 +94,7 @@ function isUnknownObject(x: unknown): x is {
 function hasProof(x: { [key in PropertyKey]: unknown }): x is {
   proof: { [key in PropertyKey]: unknown };
 } {
-  return typeof x.proof !== null && typeof x.proof === "object";
+  return x.proof !== null && typeof x.proof === "object";
 }
 
 /**
@@ -125,7 +125,7 @@ function hasCredentials(x: { [key in PropertyKey]: unknown }): x is {
   verifiableCredential: unknown[];
 } {
   return (
-    typeof x.verifiableCredential !== null &&
+    x.verifiableCredential !== null &&
     Array.isArray(x.verifiableCredential)
   );
 }
