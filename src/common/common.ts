@@ -125,8 +125,7 @@ function hasCredentials(x: { [key in PropertyKey]: unknown }): x is {
   verifiableCredential: unknown[];
 } {
   return (
-    x.verifiableCredential !== null &&
-    Array.isArray(x.verifiableCredential)
+    x.verifiableCredential !== null && Array.isArray(x.verifiableCredential)
   );
 }
 
