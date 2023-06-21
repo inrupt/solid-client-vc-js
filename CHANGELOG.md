@@ -8,6 +8,10 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+## 0.7.1 - 2023-06-10
+
+- Fix broken checks for `null` fields
+
 ## 0.7.0 - 2023-05-09
 
 ### New features
