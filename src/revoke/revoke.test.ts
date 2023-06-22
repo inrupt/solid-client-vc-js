@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +20,7 @@
 //
 
 import { jest, it, describe, expect } from "@jest/globals";
-import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
 import defaultRevokeVerifiableCredential, {
   revokeVerifiableCredential,
@@ -32,7 +32,7 @@ jest.mock("@inrupt/universal-fetch", () => {
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
-    fetch: jest.fn<typeof uniFetch>(),
+    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
   };
 });
 
@@ -70,12 +70,14 @@ describe("revokeVerifiableCredential", () => {
   });
 
   it("throws if the issuer returns an error", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValue(
-      new Response(undefined, {
-        status: 400,
-        statusText: "Bad request",
-      })
-    );
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValue(
+        new Response(undefined, {
+          status: 400,
+          statusText: "Bad request",
+        })
+      );
     await expect(
       revokeVerifiableCredential(
         "https://some.endpoint",
@@ -86,12 +88,14 @@ describe("revokeVerifiableCredential", () => {
   });
 
   it("sends an appropriate revocation request to the issuer", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValue(
-      new Response(undefined, {
-        status: 200,
-        statusText: "OK",
-      })
-    );
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValue(
+        new Response(undefined, {
+          status: 200,
+          statusText: "OK",
+        })
+      );
     await revokeVerifiableCredential(
       "https://some.endpoint",
       "https://some.example#credential",

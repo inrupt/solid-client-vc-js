@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,13 +20,10 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
-import {
-  concatenateContexts,
-  defaultContext,
-  Iri,
-  VerifiableCredential,
-} from "../common/common";
-import { query, VerifiablePresentationRequest } from "./query";
+import type { Iri, VerifiableCredential } from "../common/common";
+import { concatenateContexts, defaultContext } from "../common/common";
+import type { VerifiablePresentationRequest } from "./query";
+import { query } from "./query";
 
 const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;
 

@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +20,7 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
 import { defaultContext, defaultCredentialTypes } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
@@ -34,13 +34,13 @@ jest.mock("@inrupt/universal-fetch", () => {
   ) as jest.Mocked<typeof UniversalFetch>;
   return {
     ...fetchModule,
-    fetch: jest.fn<typeof uniFetch>(),
+    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
   };
 });
 
 describe("issueVerifiableCredential", () => {
   it("uses the provided fetch if any", async () => {
-    const mockedFetch = jest.fn() as typeof uniFetch;
+    const mockedFetch = jest.fn() as (typeof UniversalFetch)["fetch"];
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -71,12 +71,14 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("throws if the issuer returns an error", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
-      new Response(undefined, {
-        status: 400,
-        statusText: "Bad request",
-      })
-    );
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(undefined, {
+          status: 400,
+          statusText: "Bad request",
+        })
+      );
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
@@ -90,11 +92,13 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("throws if the returned value does not conform to the shape we expect", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
-      new Response(JSON.stringify({ someField: "Not a credential" }), {
-        status: 201,
-      })
-    );
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ someField: "Not a credential" }), {
+          status: 201,
+        })
+      );
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
@@ -107,7 +111,7 @@ describe("issueVerifiableCredential", () => {
 
   it("returns the VC issued by the target issuer", async () => {
     const mockedFetch = jest
-      .fn<typeof uniFetch>()
+      .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()), { status: 201 })
       );
@@ -122,7 +126,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("sends a request to the specified issuer", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>();
+    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -139,7 +143,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("sends a POST request with the appropriate headers", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>();
+    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -161,7 +165,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("includes the subject and subject claims in the request body", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>();
+    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -218,7 +222,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("includes the credential type in the request body", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>();
+    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -247,7 +251,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("supports credentials with multiple types", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>();
+    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -281,7 +285,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("handles inline contexts for the claims", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>();
+    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -320,7 +324,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("doesn't include the subject ID when using the deprecated signature", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>();
+    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -351,7 +355,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("doesn't include the subject ID when using the deprecated default signature", async () => {
-    const mockedFetch = jest.fn<typeof uniFetch>();
+    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
     try {
       await defaultIssueVerifiableCredential(
         "https://some.endpoint",

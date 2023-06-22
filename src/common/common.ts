@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -23,11 +23,11 @@
  * @module common
  */
 
+import type { UrlString } from "@inrupt/solid-client";
 import {
   getIri,
   getSolidDataset,
   getThingAll,
-  UrlString,
   getJsonLdParser,
 } from "@inrupt/solid-client";
 import { fetch as uniFetch } from "@inrupt/universal-fetch";

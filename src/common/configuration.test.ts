@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -23,8 +23,6 @@ import { jest, describe, it, expect } from "@jest/globals";
 import {
   mockSolidDatasetFrom,
   getSolidDataset,
-  SolidDataset,
-  WithServerResourceInfo,
   buildThing,
   setThing,
 } from "@inrupt/solid-client";
@@ -34,9 +32,9 @@ import { getVerifiableCredentialApiConfiguration } from "./common";
 jest.mock("@inrupt/universal-fetch");
 
 jest.mock("@inrupt/solid-client", () => {
-  const solidClientModule = jest.requireActual(
+  const solidClientModule = jest.requireActual<typeof SolidClient>(
     "@inrupt/solid-client"
-  ) as jest.Mocked<typeof SolidClient>;
+  );
   solidClientModule.getSolidDataset =
     jest.fn<(typeof SolidClient)["getSolidDataset"]>();
   solidClientModule.getWellKnownSolid =
@@ -51,7 +49,7 @@ const mockVcWellKnown = (options: {
   statusPresent?: boolean;
   verifierPresent?: boolean;
   derivationPresent?: boolean;
-}): SolidDataset & WithServerResourceInfo => {
+}): SolidClient.SolidDataset & SolidClient.WithServerResourceInfo => {
   const wellKnown = buildThing();
   if (options.issuerPresent) {
     wellKnown.addIri(

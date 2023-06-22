@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import { mocked } from "jest-mock";
-import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
 import {
   getVerifiableCredentialApiConfiguration,
@@ -37,7 +37,7 @@ jest.mock("@inrupt/universal-fetch", () => {
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
-    fetch: jest.fn<typeof uniFetch>(),
+    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
   };
 });
 
@@ -418,11 +418,13 @@ describe("isValidVerifiable Presentation", () => {
     });
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
 
-    const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValueOnce(
-      new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
-        status: 200,
-      })
-    );
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+          status: 200,
+        })
+      );
 
     await isValidVerifiablePresentation(null, MOCK_VP, { fetch: mockedFetch });
     expect(mockedDiscovery).toHaveBeenCalledWith(MOCK_VP.holder);
