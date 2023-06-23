@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,13 +20,12 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
-import {
+import type {
   Iri,
-  isVerifiablePresentation,
-  normalizeVp,
   VerifiableCredential,
   VerifiablePresentation,
 } from "../common/common";
+import { isVerifiablePresentation, normalizeVp } from "../common/common";
 
 /**
  * Based on https://w3c-ccg.github.io/vp-request-spec/#query-by-example.

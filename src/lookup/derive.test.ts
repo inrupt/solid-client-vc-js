@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +20,7 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
+import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
 import { mockDefaultPresentation } from "../common/common.mock";
 import defaultGetVerifilableCredentialAllFromShape, {
@@ -34,7 +34,7 @@ jest.mock("@inrupt/universal-fetch", () => {
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
-    fetch: jest.fn<typeof uniFetch>(),
+    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
   };
 });
 
@@ -83,7 +83,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
 
     it("includes the expired VC options if requested", async () => {
       const mockedFetch = jest
-        .fn<typeof uniFetch>()
+        .fn<(typeof UniversalFetch)["fetch"]>()
         .mockResolvedValue(mockDeriveEndpointDefaultResponse());
       await getVerifiableCredentialAllFromShape(
         "https://some.endpoint",
@@ -106,7 +106,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
 
     it("builds a legacy VP request from the provided VC shape", async () => {
       const mockedFetch = jest
-        .fn<typeof uniFetch>()
+        .fn<(typeof UniversalFetch)["fetch"]>()
         .mockResolvedValue(mockDeriveEndpointDefaultResponse());
       const queryModule = jest.requireActual("./query") as typeof QueryModule;
       const spiedQuery = jest.spyOn(queryModule, "query");
@@ -135,7 +135,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
 
     it("returns the VCs from the obtained VP on a successful response", async () => {
       const mockedFetch = jest
-        .fn<typeof uniFetch>()
+        .fn<(typeof UniversalFetch)["fetch"]>()
         .mockResolvedValue(mockDeriveEndpointDefaultResponse());
       await expect(
         getVerifiableCredentialAllFromShape(
@@ -150,18 +150,20 @@ describe("getVerifiableCredentialAllFromShape", () => {
     });
 
     it("returns an empty array if the VP contains no VCs", async () => {
-      const mockedFetch = jest.fn<typeof uniFetch>().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            ...mockDefaultPresentation(),
-            verifiableCredential: undefined,
-          }),
-          {
-            status: 200,
-            statusText: "OK",
-          }
-        )
-      );
+      const mockedFetch = jest
+        .fn<(typeof UniversalFetch)["fetch"]>()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              ...mockDefaultPresentation(),
+              verifiableCredential: undefined,
+            }),
+            {
+              status: 200,
+              statusText: "OK",
+            }
+          )
+        );
       await expect(
         getVerifiableCredentialAllFromShape(
           "https://some.endpoint",
@@ -178,7 +180,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
   describe("standard query endpoint", () => {
     it("builds a standard VP request by example from the provided VC shape", async () => {
       const mockedFetch = jest
-        .fn<typeof uniFetch>()
+        .fn<(typeof UniversalFetch)["fetch"]>()
         .mockResolvedValue(mockDeriveEndpointDefaultResponse());
       const queryModule = jest.requireActual("./query") as typeof QueryModule;
       const spiedQuery = jest.spyOn(queryModule, "query");
