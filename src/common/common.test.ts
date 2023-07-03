@@ -36,7 +36,10 @@ import {
   mockDefaultPresentation,
   mockPartialPresentation,
   defaultVerifiableClaims,
+  mockDefaultCredential2Proofs,
 } from "./common.mock";
+import { jsonLdStringToStore } from '../parser/jsonld'
+import { isomorphic } from "rdf-isomorphic";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -265,7 +268,9 @@ describe("getVerifiableCredential", () => {
       "@inrupt/universal-fetch"
     ) as jest.Mocked<typeof UniversalFetch>;
     mockedFetchModule.fetch.mockResolvedValueOnce(
-      new Response(JSON.stringify(mockDefaultCredential()))
+      new Response(JSON.stringify(mockDefaultCredential()), {
+        headers: new Headers([['content-type', 'application/json']])
+      })
     );
 
     const redirectUrl = new URL("https://redirect.url");
@@ -286,7 +291,9 @@ describe("getVerifiableCredential", () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()))
+        new Response(JSON.stringify(mockDefaultCredential()), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
       );
 
     await getVerifiableCredential("https://some.vc", {
@@ -335,16 +342,153 @@ describe("getVerifiableCredential", () => {
     ).rejects.toThrow(/https:\/\/some.vc.*Verifiable Credential/);
   });
 
-  it("returns the fetched VC and the redirect URL", async () => {
+  it("throws if the dereferenced data has an unsupported content type", async () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()))
       );
 
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/unsupported Content\-Type/);
+  });
+
+  it("throws if the dereferenced data is empty", async () => {
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({}), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/Expected exactly one Verifiable Credential.* received: 0/);
+  });
+
+  it("throws if the vc is a blank node", async () => {
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({
+          "@type": "https://www.w3.org/2018/credentials#VerifiableCredential"
+        }), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow("Expected the Verifiable Credential in [https://some.vc] to be a Named Node, received: BlankNode");
+  });
+
+  it("throws if the vc has a type that is a literal", async () => {
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({
+          "@context": "https://www.w3.org/2018/credentials/v1",
+          "@id": "http://example.org/my/vc",
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": [
+            { "@id": "https://www.w3.org/2018/credentials#VerifiableCredential" },
+            "str"
+          ]
+        }), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow("Expected all VC types to be Named Nodes but received [str] of termType [Literal]");
+  });
+
+
+  it("throws if the dereferenced data has 2 vcs", async () => {
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify([
+          mockDefaultCredential(),
+          mockDefaultCredential('http://example.org/mockVC2')
+        ]), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/Expected exactly one Verifiable Credential.* received: 2/);
+  });
+
+  it("throws if the dereferenced data has 2 proofs", async () => {
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(
+          mockDefaultCredential2Proofs()
+        ), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/Expected exactly one \[https\:\/\/w3id.org\/security\#proof\].* received: 2/);
+  });
+
+  it("returns the fetched VC and the redirect URL", async () => {
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockDefaultCredential()), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
+      );
+
     const vc = await getVerifiableCredential("https://some.vc", {
       fetch: mockedFetch,
     });
-    expect(vc).toStrictEqual(mockDefaultCredential());
+
+    const res = await jsonLdStringToStore(JSON.stringify(mockDefaultCredential()))
+    expect(vc).toMatchObject(Object.assign(mockDefaultCredential(), {
+      size: 13,
+      // We always re-frame w.r.t to this context
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://schema.inrupt.com/credentials/v1.jsonld"
+      ],
+      // The credentials subject is re-framed to make the fact that the
+      // objects are literals explicit
+      credentialSubject: {
+        "ex:passengerOf": {
+          "@value": "https://example.org/ns/Korabl-Sputnik2",
+        },
+        "ex:status": {
+          "@value": "https://example.org/ns/GoodDog",
+        },
+        "id": "https://some.webid.provider/strelka",
+      },
+      // Any types outside of those in our VC and Inrupt context are removed
+      type: [
+        'VerifiableCredential'
+      ],
+    }));
+
+    expect(isomorphic([...vc], [...res]))
   });
 });

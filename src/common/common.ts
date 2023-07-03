@@ -31,6 +31,12 @@ import {
   getJsonLdParser,
 } from "@inrupt/solid-client";
 import { fetch as uniFetch } from "@inrupt/universal-fetch";
+import { Util } from "jsonld-streaming-serializer";
+import { DatasetCore } from "@rdfjs/types";
+import { Store, Term, DataFactory as DF } from "n3";
+import VC_Context from '../parser/contexts/vc';
+import { getVcContext, jsonLdResponseToStore } from "../parser/jsonld";
+import parse from "content-type";
 
 export type Iri = string;
 /**
@@ -410,29 +416,333 @@ export async function getVerifiableCredential(
   options?: Partial<{
     fetch: typeof fetch;
   }>
-): Promise<VerifiableCredential> {
+): Promise<VerifiableCredential & DatasetCore> {
   const authFetch = options?.fetch ?? uniFetch;
-  return authFetch(vcUrl as string)
-    .then(async (response) => {
-      if (!response.ok) {
-        throw new Error(
-          `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`
-        );
+  const response = await authFetch(vcUrl);
+  return getVerifiableCredentialFromResponse(response, vcUrl, options);
+  // return authFetch(vcUrl as string)
+  //   .then(async (response) => {
+  //     if (!response.ok) {
+  //       throw new Error(
+  //         `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`
+  //       );
+  //     }
+  //     try {
+  //       return normalizeVc(await response.json());
+  //     } catch (e) {
+  //       throw new Error(
+  //         `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`
+  //       );
+  //     }
+  //   })
+  //   .then((vc) => {
+  //     if (!isVerifiableCredential(vc)) {
+  //       throw new Error(
+  //         `The value received from [${vcUrl}] is not a Verifiable Credential`
+  //       );
+  //     }
+  //     return vc;
+  //   });
+}
+
+/**
+ * @param response Takes a response from a VC service and checks that it has the correct status and content type
+ * @param vcUrl The URL of the VC
+ * @returns The input response
+ */
+function validateVcResponse(response: globalThis.Response, vcUrl: string): globalThis.Response {
+  if (!response.ok) {
+    throw new Error(
+      `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const contentType = response.headers.get("Content-Type");
+
+  // Ignoring since the test suite always adds a content type
+  /* istanbul ignore if */
+  if (!contentType) {
+    throw new Error(`Fetching the Verifiable Credential [${vcUrl}] failed: Response does not have a Content-Type header; expected application/ld+json`)
+  }
+
+  const parsedContentType = parse.parse(contentType);
+  const [mediaType, subtypesString] = parsedContentType.type.split("/");
+  const subtypes = subtypesString.split('+');
+
+  if (
+    mediaType !== "application"
+    // TODO: See if the response is expected to include the ld
+    // || !subtypes.includes('ld')
+    || !subtypes.includes('json')) {
+    throw new Error(`Fetching the Verifiable Credential [${vcUrl}] failed: Response has an unsupported Content-Type [${contentType}]; expected application/ld+json`)
+  }
+
+  return response;
+}
+
+async function responseToVcStore(
+  response: globalThis.Response,
+  vcUrl: UrlString,
+  options?: Partial<{
+    fetch: typeof fetch;
+  }>
+): Promise<Store> {
+  try {
+    return await jsonLdResponseToStore(validateVcResponse(response, vcUrl), { fetch: options?.fetch, baseIRI: vcUrl });
+  } catch (e) {
+    throw new Error(
+      `Parsing the Verifiable Credential [${vcUrl}] as JSON-LD failed: ${e}`
+    );
+  }
+}
+
+const VC = "https://www.w3.org/2018/credentials#";
+const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+const XSD = "http://www.w3.org/2001/XMLSchema#";
+const SEC = "https://w3id.org/security#";
+const CRED = "https://www.w3.org/2018/credentials#";
+
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
+ */
+export async function getVerifiableCredentialFromResponse(
+  response: Response,
+  vcUrl: UrlString,
+  options?: Partial<{
+    fetch: typeof fetch;
+  }>
+): Promise<VerifiableCredential & DatasetCore> {
+  const vcStore = await responseToVcStore(response, vcUrl, options);
+  const context = await getVcContext();
+
+  const vcs = vcStore.getSubjects(
+    `${RDF}type`,
+    `${VC}VerifiableCredential`,
+    DF.defaultGraph()
+  );
+  if (vcs.length !== 1) {
+    throw new Error(
+      `Expected exactly one Verifiable Credential in [${vcUrl}], received: ${vcs.length}`
+    );
+  }
+
+  const [vc] = vcs;
+  if (vc.termType !== "NamedNode") {
+    throw new Error(
+      `Expected the Verifiable Credential in [${vcUrl}] to be a Named Node, received: ${vc.termType}`
+    );
+  }
+
+  const type: string[] = [];
+  for (const t of vcStore.getObjects(vc, `${RDF}type`, DF.defaultGraph())) {
+    if (t.termType !== "NamedNode") {
+      throw new Error(
+        `Expected all VC types to be Named Nodes but received [${t.value}] of termType [${t.termType}]`
+      );
+    }
+
+    const compact = context.compactIri(t.value, true);
+
+    if (/^[a-z]+$/i.test(compact))
+      type.push(compact);
+  }
+
+  function getSingleObject(
+    fullProperty: string,
+    subject?: Term,
+    graph: Term = DF.defaultGraph()
+  ): Term {
+    const objects = vcStore.getObjects(subject ?? vc, fullProperty, graph);
+
+    if (objects.length !== 1) {
+      throw new Error(
+        `Expected exactly one [${fullProperty}] for the Verifiable Credential ${vc.value}, received: ${objects.length}`
+      );
+    }
+
+    return objects[0];
+  }
+
+  function getSingleObjectOfTermType(
+    fullProperty: string,
+    subject?: Term,
+    graph?: Term,
+    termType = "NamedNode",
+    customContext = context
+  ) {
+    const object = getSingleObject(fullProperty, subject, graph);
+
+    if (object.termType !== termType) {
+      throw new Error(
+        `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a ${termType}, received: ${object.termType}`
+      );
+    }
+
+    // TODO: Make sure that Literals with URIs are correclty handled here
+    return object.termType === 'NamedNode' ? customContext.compactIri(object.value, true) : object.value;
+  }
+
+  function getSingleDateTime(
+    fullProperty: string,
+    subject?: Term,
+    graph?: Term
+  ) {
+    const object = getSingleObject(fullProperty, subject, graph);
+
+    if (object.termType !== "Literal") {
+      throw new Error(
+        `Expected issuanceDate to be a Literal, received: ${object.termType}`
+      );
+    }
+    if (!object.datatype.equals(DF.namedNode(`${XSD}dateTime`))) {
+      throw new Error(
+        `Expected issuanceDate to have dataType [${XSD}dateTime], received: [${object.datatype.value}]`
+      );
+    }
+
+    return object.value;
+  }
+
+  // The proof lives within a named graph
+  const proofGraph = getSingleObject(`${SEC}proof`);
+  const proofs = vcStore.getSubjects(null, null, proofGraph);
+
+  if (proofs.length !== 1) {
+    throw new Error(
+      `Expected exactly one proof to live in the proofs graph, received ${proofs.length}`
+    );
+  }
+
+  const [proof] = proofs;
+  const proofType = getSingleObjectOfTermType(`${RDF}type`, proof, proofGraph);
+
+  const proposedContext = (VC_Context['@context'] as any)[proofType]?.['@context']
+
+  const proofContext = typeof proposedContext === 'object' ? await getVcContext(proposedContext) : context;
+  const proofPurposeContext = typeof proposedContext === 'object' && typeof proposedContext?.proofPurpose?.['@context'] === 'object'
+    ? await getVcContext(proposedContext, proposedContext.proofPurpose['@context']) : proofContext;
+
+  function getProperties(subject: Term, writtenTerms: string[] = []) {
+    const object: Record<string, unknown> = {};
+
+    for (const predicate of vcStore.getPredicates(
+      subject,
+      null,
+      DF.defaultGraph()
+    )) {
+      if (predicate.termType !== "NamedNode") {
+        throw new Error("Predicate must be a named node")
       }
-      try {
-        return normalizeVc(await response.json());
-      } catch (e) {
-        throw new Error(
-          `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`
-        );
+
+      const compact = context.compactIri(predicate.value, true);
+      const objects: any[] = vcStore.getObjects(
+        subject,
+        predicate,
+        DF.defaultGraph()
+      ).map(object => writeObject(object, writtenTerms))
+        .filter(object => typeof object !== "object" || Object.keys(object).length >= 1)
+
+      if (objects.length === 1) {
+        object[compact] = objects[0]
+      } else if (objects.length > 1) {
+        object[compact] = objects
       }
-    })
-    .then((vc) => {
-      if (!isVerifiableCredential(vc)) {
-        throw new Error(
-          `The value received from [${vcUrl}] is not a Verifiable Credential`
-        );
-      }
-      return vc;
-    });
+    }
+
+    return object;
+  }
+
+  function writeObject(object: Term, writtenTerms: string[] = []) {
+    switch (object.termType) {
+      case "BlankNode":
+        return writtenTerms.includes(object.value)
+          ? {}
+          : getProperties(object, [...writtenTerms, object.value]);
+      case "NamedNode":
+        // TODO: See if we actually want to do compacting here
+        // given how ConsentStatusExplicitlyGiven as the full
+        // URI in e2e tests, and this may make it look like a
+        // literal
+        return context.compactIri(object.value, true);
+      case "Literal":
+        return Util.termToValue(object, context);
+      default:
+        throw new Error("Unexpected term type")
+    }
+  }
+
+  const credentialSubject = getSingleObjectOfTermType(`${CRED}credentialSubject`);
+  return {
+    '@context': [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://schema.inrupt.com/credentials/v1.jsonld",
+    ],
+    id: vc.value,
+    // It is possible to have multiple claims in a credential subject
+    // we do not support this
+    // https://www.w3.org/TR/vc-data-model/#example-specifying-multiple-subjects-in-a-verifiable-credential
+    credentialSubject: {
+      ...getProperties(DF.namedNode(credentialSubject)),
+      id: credentialSubject
+    },
+    issuer: getSingleObjectOfTermType(`${CRED}issuer`),
+    issuanceDate: getSingleDateTime(`${CRED}issuanceDate`),
+    type,
+    proof: {
+      created: getSingleDateTime(
+        "http://purl.org/dc/terms/created",
+        proof,
+        proofGraph
+      ),
+      proofPurpose: getSingleObjectOfTermType(
+        `${SEC}proofPurpose`,
+        proof,
+        proofGraph,
+        "NamedNode",
+        proofPurposeContext
+      ),
+      type: proofType,
+      verificationMethod: getSingleObjectOfTermType(
+        `${SEC}verificationMethod`,
+        proof,
+        proofGraph,
+        "NamedNode",
+        proofContext
+      ),
+      proofValue: getSingleObjectOfTermType(
+        `${SEC}proofValue`,
+        proof,
+        proofGraph,
+        "Literal"
+      ),
+    },
+
+    // Make this a DatasetCore without polluting the object with
+    // all of the properties present in the N3.Store
+    [Symbol.iterator]() {
+      return vcStore[Symbol.iterator]();
+    },
+    has(quad) {
+      return vcStore.has(quad);
+    },
+    match(subject, predicate, object, graph) {
+      // @ts-ignore
+      return vcStore.match(subject, predicate, object, graph);
+    },
+    add() {
+      throw new Error("Cannot mutate this dataset");
+    },
+    delete() {
+      throw new Error("Cannot mutate this dataset");
+    },
+    get size() {
+      return vcStore.size;
+    }
+  };
 }

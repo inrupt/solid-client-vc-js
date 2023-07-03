@@ -45,7 +45,11 @@ export type CredentialClaims = VerifiableClaims & {
 };
 
 export const defaultVerifiableClaims: VerifiableClaims = {
-  "@context": { ex: "https://example.org/ns/" },
+  "@context": [
+    { ex: "https://example.org/ns/" },
+    "https://www.w3.org/2018/credentials/v1",
+    "https://schema.inrupt.com/credentials/v1.jsonld",
+  ],
   id: "ex:someCredentialInstance",
   type: [...defaultCredentialTypes, "ex:spaceDogCertificate"],
   proofType: "Ed25519Signature2018",
@@ -69,10 +73,12 @@ export const defaultCredentialClaims: CredentialClaims = {
 };
 
 export const mockPartialCredential = (
-  claims?: Partial<CredentialClaims>
+  claims?: Partial<CredentialClaims>,
+  id?: string,
 ): Record<string, unknown> => {
   return {
-    id: claims?.id,
+    '@context': claims?.['@context'],
+    id: id ?? claims?.id,
     type: claims?.type,
     issuer: claims?.issuer,
     issuanceDate: claims?.issuanceDate,
@@ -90,14 +96,32 @@ export const mockPartialCredential = (
   };
 };
 
+export const mockPartialCredential2Proofs = (
+  claims?: Partial<CredentialClaims>,
+  id?: string,
+): Record<string, unknown> => {
+  return {
+    ...mockPartialCredential(claims, id),
+    proof: [
+      mockPartialCredential(claims, id).proof,
+      mockPartialCredential(claims, id).proof,
+    ],
+  };
+};
+
+
 export const mockCredential = (
   claims: CredentialClaims
 ): VerifiableCredential => {
   return mockPartialCredential(claims) as VerifiableCredential;
 };
 
-export const mockDefaultCredential = (): VerifiableCredential => {
-  return mockPartialCredential(defaultCredentialClaims) as VerifiableCredential;
+export const mockDefaultCredential = (id?: string): VerifiableCredential => {
+  return mockPartialCredential(defaultCredentialClaims, id) as VerifiableCredential;
+};
+
+export const mockDefaultCredential2Proofs = (id?: string): VerifiableCredential => {
+  return mockPartialCredential2Proofs(defaultCredentialClaims, id) as VerifiableCredential;
 };
 
 export const mockPartialPresentation = (
