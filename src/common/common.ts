@@ -606,6 +606,10 @@ export async function getVerifiableCredentialFromResponse(
       );
     }
 
+    if (Number.isNaN(Date.parse(object.value))) {
+      throw new Error(`Invalid dateTime in VC [${object.value}]`)
+    }
+
     return object.value;
   }
 

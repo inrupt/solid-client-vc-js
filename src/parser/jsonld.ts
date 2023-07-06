@@ -68,9 +68,9 @@ interface Options {
 export class IJsonLdParser extends JsonLdParser {
   constructor(options?: Options) {
     super({
-      documentLoader: new CachedFetchDocumentLoader(
-        options?.fetch ?? defaultFetch
-      ),
+      // documentLoader: new CachedFetchDocumentLoader(
+      //   options?.fetch ?? defaultFetch
+      // ),
       baseIRI: options?.baseIRI,
     });
   }

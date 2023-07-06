@@ -40,6 +40,7 @@ import {
 } from "./common.mock";
 import { jsonLdStringToStore } from '../parser/jsonld'
 import { isomorphic } from "rdf-isomorphic";
+import { DataFactory } from "n3";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -451,7 +452,75 @@ describe("getVerifiableCredential", () => {
     ).rejects.toThrow(/Expected exactly one \[https\:\/\/w3id.org\/security\#proof\].* received: 2/);
   });
 
+  it("throws if the date field is not a valid xsd:dateTime", async () => {
+    const mocked = mockDefaultCredential();
+    mocked.issuanceDate = "http://example.org/not/a/date"
+
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(
+          mocked
+        ), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/Invalid dateTime in VC \[http:\/\/example.org\/not\/a\/date\]/);
+  });
+
+  it("throws if the date field is an IRI", async () => {
+    const mocked = mockDefaultCredential();
+    // @ts-ignore
+    delete mocked.issuanceDate;
+    mocked['https://www.w3.org/2018/credentials#issuanceDate'] = "http://example.org/not/a/date";
+
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(
+          mocked
+        ), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/Expected issuanceDate to have dataType \[http:\/\/www.w3.org\/2001\/XMLSchema#dateTime\], received: \[http:\/\/www.w3.org\/2001\/XMLSchema#string\]/);
+  });
+
+  it("throws if there are 2 proof values", async () => {
+    const mocked = mockDefaultCredential();
+    // @ts-ignore
+    mocked.proof.proofValue = [ mocked.proof.proofValue, 'abc']
+
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(
+          mocked
+        ), {
+          headers: new Headers([['content-type', 'application/json']])
+        })
+      );
+
+    await expect(
+      getVerifiableCredential("https://some.vc", {
+        fetch: mockedFetch,
+      })
+    ).rejects.toThrow(/Expected exactly one \[https:\/\/w3id.org\/security#proofValue\] for the Verifiable Credential ex:someCredentialInstance, received: 2/);
+  });
+
   it("returns the fetched VC and the redirect URL", async () => {
+    console.log(JSON.stringify(mockDefaultCredential()))
+
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
@@ -489,6 +558,25 @@ describe("getVerifiableCredential", () => {
       ],
     }));
 
-    expect(isomorphic([...vc], [...res]))
+    const meaninglessQuad = DataFactory.quad(
+      DataFactory.namedNode('http://example.org/a'),
+      DataFactory.namedNode('http://example.org/b'),
+      DataFactory.namedNode('http://example.org/c'),
+    );
+
+    const issuerQuad = DataFactory.quad(
+      DataFactory.namedNode("https://some.webid.provider/strelka"),
+      DataFactory.namedNode('https://www.w3.org/2018/credentials#issuer'),
+      DataFactory.namedNode("https://some.vc.issuer/in-ussr"),
+    );
+
+    console.log(...vc)
+
+    expect(isomorphic([...vc], [...res]));
+    expect(() => vc.add(meaninglessQuad)).toThrowError("Cannot mutate this dataset");
+    expect(() => vc.delete(meaninglessQuad)).toThrowError("Cannot mutate this dataset");
+    expect(vc.has(meaninglessQuad)).toEqual(false);
+    expect(vc.has(issuerQuad)).toEqual(true);
+    expect(vc.size).toEqual(13);
   });
 });

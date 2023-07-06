@@ -74,6 +74,18 @@ const dataExampleContext = {
   name: "Inrupt",
 };
 
+
+const dataWithPrefix = {
+  "@context": [
+    { ex: "https://some.example#" },
+    "https://www.w3.org/2018/credentials/v1"
+  ],
+  id: "ex:credential",
+  type: ["VerifiableCredential"],
+  issuer: "https://some.example",
+};
+
+
 const result = [
   DF.quad(
     DF.namedNode("https://some.example#credential"),
@@ -92,6 +104,15 @@ describe("jsonLdResponseToStore", () => {
     const response = new Response(JSON.stringify(data));
     expect(
       isomorphic([...(await jsonLdResponseToStore(response))], result)
+    ).toBe(true);
+  });
+
+  // This is currently broken - see https://github.com/rubensworks/jsonld-streaming-parser.js/issues/112
+  it("converting fetch response with custom prefix definition to a store", async () => {
+    const response = new Response(JSON.stringify(dataWithPrefix));
+    const quads = [...(await jsonLdResponseToStore(response))];
+    expect(
+      isomorphic(quads, result)
     ).toBe(true);
   });
 
