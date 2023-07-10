@@ -74,10 +74,10 @@ export const defaultCredentialClaims: CredentialClaims = {
 
 export const mockPartialCredential = (
   claims?: Partial<CredentialClaims>,
-  id?: string,
+  id?: string
 ): Record<string, unknown> => {
   return {
-    '@context': claims?.['@context'],
+    "@context": claims?.["@context"],
     id: id ?? claims?.id,
     type: claims?.type,
     issuer: claims?.issuer,
@@ -98,7 +98,7 @@ export const mockPartialCredential = (
 
 export const mockPartialCredential2Proofs = (
   claims?: Partial<CredentialClaims>,
-  id?: string,
+  id?: string
 ): Record<string, unknown> => {
   return {
     ...mockPartialCredential(claims, id),
@@ -109,7 +109,6 @@ export const mockPartialCredential2Proofs = (
   };
 };
 
-
 export const mockCredential = (
   claims: CredentialClaims
 ): VerifiableCredential => {
@@ -117,11 +116,19 @@ export const mockCredential = (
 };
 
 export const mockDefaultCredential = (id?: string): VerifiableCredential => {
-  return mockPartialCredential(defaultCredentialClaims, id) as VerifiableCredential;
+  return mockPartialCredential(
+    defaultCredentialClaims,
+    id
+  ) as VerifiableCredential;
 };
 
-export const mockDefaultCredential2Proofs = (id?: string): VerifiableCredential => {
-  return mockPartialCredential2Proofs(defaultCredentialClaims, id) as VerifiableCredential;
+export const mockDefaultCredential2Proofs = (
+  id?: string
+): VerifiableCredential => {
+  return mockPartialCredential2Proofs(
+    defaultCredentialClaims,
+    id
+  ) as VerifiableCredential;
 };
 
 export const mockPartialPresentation = (

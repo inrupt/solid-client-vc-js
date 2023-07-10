@@ -37,7 +37,9 @@ import type { JsonLd } from "../common/common";
  */
 // FIXME: See if our access grants specific context should be passed
 // through as a parameter instead
-export function getVcContext(...contexts: IJsonLdContext[]): Promise<JsonLdContextNormalized> {
+export function getVcContext(
+  ...contexts: IJsonLdContext[]
+): Promise<JsonLdContextNormalized> {
   const myParser = new ContextParser({
     documentLoader: new FetchDocumentLoader(),
   });
@@ -59,7 +61,7 @@ class CachedFetchDocumentLoader extends FetchDocumentLoader {
 
 interface Options {
   fetch?: typeof globalThis.fetch;
-  baseIRI?: string
+  baseIRI?: string;
 }
 
 /**
@@ -82,10 +84,7 @@ export class IJsonLdParser extends JsonLdParser {
  * @param options An optional fetch function for dereferencing remote contexts
  * @returns A store containing the Quads in the JSON-LD response
  */
-export async function jsonLdStringToStore(
-  data: string,
-  options?: Options
-) {
+export async function jsonLdStringToStore(data: string, options?: Options) {
   try {
     const parser = new IJsonLdParser(options);
     const store = new Store();
@@ -111,7 +110,7 @@ export async function jsonLdResponseToStore(
   if (response.body === null)
     throw new Error("Empty response body. Expected JSON-LD.");
 
-  return await jsonLdStringToStore(await response.text(), options);
+  return jsonLdStringToStore(await response.text(), options);
 
   // FIXME: Use this logic once node 16 is deprecated
   // This won't work with node-fetch (and hence versions of Node lower than 16.8) because
@@ -142,9 +141,6 @@ export async function jsonLdResponseToStore(
  * @param options An optional fetch function for dereferencing remote contexts
  * @returns A store containing the Quads in the JSON-LD response
  */
-export function jsonLdToStore(
-  data: JsonLd,
-  options?: Options
-) {
+export function jsonLdToStore(data: JsonLd, options?: Options) {
   return jsonLdStringToStore(JSON.stringify(data), options);
 }

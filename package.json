@@ -65,7 +65,7 @@
     "@types/content-type": "^1.1.5",
     "@types/dotenv-flow": "^3.1.1",
     "@types/jest": "^29.2.2",
-    "@types/n3": "^1.10.4",
+    "@types/n3": "^1.16.0",
     "@types/node": "^20.1.2",
     "@types/rdfjs__dataset": "1.0.4",
     "dotenv-flow": "^3.2.0",

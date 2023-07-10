@@ -22,6 +22,8 @@
 import { jest, describe, it, expect } from "@jest/globals";
 import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
+import { isomorphic } from "rdf-isomorphic";
+import { DataFactory } from "n3";
 import type { VerifiableCredential } from "./common";
 import {
   concatenateContexts,
@@ -38,9 +40,7 @@ import {
   defaultVerifiableClaims,
   mockDefaultCredential2Proofs,
 } from "./common.mock";
-import { jsonLdStringToStore } from '../parser/jsonld'
-import { isomorphic } from "rdf-isomorphic";
-import { DataFactory } from "n3";
+import { jsonLdStringToStore } from "../parser/jsonld";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -270,7 +270,7 @@ describe("getVerifiableCredential", () => {
     ) as jest.Mocked<typeof UniversalFetch>;
     mockedFetchModule.fetch.mockResolvedValueOnce(
       new Response(JSON.stringify(mockDefaultCredential()), {
-        headers: new Headers([['content-type', 'application/json']])
+        headers: new Headers([["content-type", "application/json"]]),
       })
     );
 
@@ -293,7 +293,7 @@ describe("getVerifiableCredential", () => {
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()), {
-          headers: new Headers([['content-type', 'application/json']])
+          headers: new Headers([["content-type", "application/json"]]),
         })
       );
 
@@ -354,7 +354,7 @@ describe("getVerifiableCredential", () => {
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow(/unsupported Content\-Type/);
+    ).rejects.toThrow(/unsupported Content-Type/);
   });
 
   it("throws if the dereferenced data is empty", async () => {
@@ -362,7 +362,7 @@ describe("getVerifiableCredential", () => {
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify({}), {
-          headers: new Headers([['content-type', 'application/json']])
+          headers: new Headers([["content-type", "application/json"]]),
         })
       );
 
@@ -370,78 +370,95 @@ describe("getVerifiableCredential", () => {
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow(/Expected exactly one Verifiable Credential.* received: 0/);
+    ).rejects.toThrow(
+      /Expected exactly one Verifiable Credential.* received: 0/
+    );
   });
 
   it("throws if the vc is a blank node", async () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          "@type": "https://www.w3.org/2018/credentials#VerifiableCredential"
-        }), {
-          headers: new Headers([['content-type', 'application/json']])
-        })
+        new Response(
+          JSON.stringify({
+            "@type": "https://www.w3.org/2018/credentials#VerifiableCredential",
+          }),
+          {
+            headers: new Headers([["content-type", "application/json"]]),
+          }
+        )
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow("Expected the Verifiable Credential in [https://some.vc] to be a Named Node, received: BlankNode");
+    ).rejects.toThrow(
+      "Expected the Verifiable Credential in [https://some.vc] to be a Named Node, received: BlankNode"
+    );
   });
 
   it("throws if the vc has a type that is a literal", async () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          "@context": "https://www.w3.org/2018/credentials/v1",
-          "@id": "http://example.org/my/vc",
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": [
-            { "@id": "https://www.w3.org/2018/credentials#VerifiableCredential" },
-            "str"
-          ]
-        }), {
-          headers: new Headers([['content-type', 'application/json']])
-        })
+        new Response(
+          JSON.stringify({
+            "@context": "https://www.w3.org/2018/credentials/v1",
+            "@id": "http://example.org/my/vc",
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": [
+              {
+                "@id":
+                  "https://www.w3.org/2018/credentials#VerifiableCredential",
+              },
+              "str",
+            ],
+          }),
+          {
+            headers: new Headers([["content-type", "application/json"]]),
+          }
+        )
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow("Expected all VC types to be Named Nodes but received [str] of termType [Literal]");
+    ).rejects.toThrow(
+      "Expected all VC types to be Named Nodes but received [str] of termType [Literal]"
+    );
   });
-
 
   it("throws if the dereferenced data has 2 vcs", async () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify([
-          mockDefaultCredential(),
-          mockDefaultCredential('http://example.org/mockVC2')
-        ]), {
-          headers: new Headers([['content-type', 'application/json']])
-        })
+        new Response(
+          JSON.stringify([
+            mockDefaultCredential(),
+            mockDefaultCredential("http://example.org/mockVC2"),
+          ]),
+          {
+            headers: new Headers([["content-type", "application/json"]]),
+          }
+        )
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow(/Expected exactly one Verifiable Credential.* received: 2/);
+    ).rejects.toThrow(
+      /Expected exactly one Verifiable Credential.* received: 2/
+    );
   });
 
   it("throws if the dereferenced data has 2 proofs", async () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(
-          mockDefaultCredential2Proofs()
-        ), {
-          headers: new Headers([['content-type', 'application/json']])
+        new Response(JSON.stringify(mockDefaultCredential2Proofs()), {
+          headers: new Headers([["content-type", "application/json"]]),
         })
       );
 
@@ -449,20 +466,20 @@ describe("getVerifiableCredential", () => {
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow(/Expected exactly one \[https\:\/\/w3id.org\/security\#proof\].* received: 2/);
+    ).rejects.toThrow(
+      /Expected exactly one \[https:\/\/w3id.org\/security#proof\].* received: 2/
+    );
   });
 
   it("throws if the date field is not a valid xsd:dateTime", async () => {
     const mocked = mockDefaultCredential();
-    mocked.issuanceDate = "http://example.org/not/a/date"
+    mocked.issuanceDate = "http://example.org/not/a/date";
 
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(
-          mocked
-        ), {
-          headers: new Headers([['content-type', 'application/json']])
+        new Response(JSON.stringify(mocked), {
+          headers: new Headers([["content-type", "application/json"]]),
         })
       );
 
@@ -470,22 +487,22 @@ describe("getVerifiableCredential", () => {
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow(/Invalid dateTime in VC \[http:\/\/example.org\/not\/a\/date\]/);
+    ).rejects.toThrow(
+      /Invalid dateTime in VC \[http:\/\/example.org\/not\/a\/date\]/
+    );
   });
 
   it("throws if the date field is an IRI", async () => {
     const mocked = mockDefaultCredential();
-    // @ts-ignore
-    delete mocked.issuanceDate;
-    mocked['https://www.w3.org/2018/credentials#issuanceDate'] = "http://example.org/not/a/date";
+    delete (mocked as any).issuanceDate;
+    mocked["https://www.w3.org/2018/credentials#issuanceDate"] =
+      "http://example.org/not/a/date";
 
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(
-          mocked
-        ), {
-          headers: new Headers([['content-type', 'application/json']])
+        new Response(JSON.stringify(mocked), {
+          headers: new Headers([["content-type", "application/json"]]),
         })
       );
 
@@ -493,21 +510,20 @@ describe("getVerifiableCredential", () => {
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow(/Expected issuanceDate to have dataType \[http:\/\/www.w3.org\/2001\/XMLSchema#dateTime\], received: \[http:\/\/www.w3.org\/2001\/XMLSchema#string\]/);
+    ).rejects.toThrow(
+      /Expected issuanceDate to have dataType \[http:\/\/www.w3.org\/2001\/XMLSchema#dateTime\], received: \[http:\/\/www.w3.org\/2001\/XMLSchema#string\]/
+    );
   });
 
   it("throws if there are 2 proof values", async () => {
     const mocked = mockDefaultCredential();
-    // @ts-ignore
-    mocked.proof.proofValue = [ mocked.proof.proofValue, 'abc']
+    (mocked.proof as any).proofValue = [mocked.proof.proofValue, "abc"];
 
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(
-          mocked
-        ), {
-          headers: new Headers([['content-type', 'application/json']])
+        new Response(JSON.stringify(mocked), {
+          headers: new Headers([["content-type", "application/json"]]),
         })
       );
 
@@ -515,17 +531,17 @@ describe("getVerifiableCredential", () => {
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
       })
-    ).rejects.toThrow(/Expected exactly one \[https:\/\/w3id.org\/security#proofValue\] for the Verifiable Credential ex:someCredentialInstance, received: 2/);
+    ).rejects.toThrow(
+      /Expected exactly one \[https:\/\/w3id.org\/security#proofValue\] for the Verifiable Credential ex:someCredentialInstance, received: 2/
+    );
   });
 
   it("returns the fetched VC and the redirect URL", async () => {
-    console.log(JSON.stringify(mockDefaultCredential()))
-
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()), {
-          headers: new Headers([['content-type', 'application/json']])
+          headers: new Headers([["content-type", "application/json"]]),
         })
       );
 
@@ -533,50 +549,52 @@ describe("getVerifiableCredential", () => {
       fetch: mockedFetch,
     });
 
-    const res = await jsonLdStringToStore(JSON.stringify(mockDefaultCredential()))
-    expect(vc).toMatchObject(Object.assign(mockDefaultCredential(), {
-      size: 13,
-      // We always re-frame w.r.t to this context
-      "@context": [
-        "https://www.w3.org/2018/credentials/v1",
-        "https://schema.inrupt.com/credentials/v1.jsonld"
-      ],
-      // The credentials subject is re-framed to make the fact that the
-      // objects are literals explicit
-      credentialSubject: {
-        "ex:passengerOf": {
-          "@value": "https://example.org/ns/Korabl-Sputnik2",
+    const res = await jsonLdStringToStore(
+      JSON.stringify(mockDefaultCredential())
+    );
+    expect(vc).toMatchObject(
+      Object.assign(mockDefaultCredential(), {
+        size: 13,
+        // We always re-frame w.r.t to this context
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://schema.inrupt.com/credentials/v1.jsonld",
+        ],
+        // The credentials subject is re-framed to make the fact that the
+        // objects are literals explicit
+        credentialSubject: {
+          "ex:passengerOf": {
+            "@value": "https://example.org/ns/Korabl-Sputnik2",
+          },
+          "ex:status": {
+            "@value": "https://example.org/ns/GoodDog",
+          },
+          id: "https://some.webid.provider/strelka",
         },
-        "ex:status": {
-          "@value": "https://example.org/ns/GoodDog",
-        },
-        "id": "https://some.webid.provider/strelka",
-      },
-      // Any types outside of those in our VC and Inrupt context are removed
-      type: [
-        'VerifiableCredential'
-      ],
-    }));
+        // Any types outside of those in our VC and Inrupt context are removed
+        type: ["VerifiableCredential"],
+      })
+    );
 
     const meaninglessQuad = DataFactory.quad(
-      DataFactory.namedNode('http://example.org/a'),
-      DataFactory.namedNode('http://example.org/b'),
-      DataFactory.namedNode('http://example.org/c'),
+      DataFactory.namedNode("http://example.org/a"),
+      DataFactory.namedNode("http://example.org/b"),
+      DataFactory.namedNode("http://example.org/c")
     );
 
     const issuerQuad = DataFactory.quad(
       DataFactory.namedNode("https://some.webid.provider/strelka"),
-      DataFactory.namedNode('https://www.w3.org/2018/credentials#issuer'),
-      DataFactory.namedNode("https://some.vc.issuer/in-ussr"),
+      DataFactory.namedNode("https://www.w3.org/2018/credentials#issuer"),
+      DataFactory.namedNode("https://some.vc.issuer/in-ussr")
     );
 
-    console.log(...vc)
-
-    expect(isomorphic([...vc], [...res]));
-    expect(() => vc.add(meaninglessQuad)).toThrowError("Cannot mutate this dataset");
-    expect(() => vc.delete(meaninglessQuad)).toThrowError("Cannot mutate this dataset");
-    expect(vc.has(meaninglessQuad)).toEqual(false);
-    expect(vc.has(issuerQuad)).toEqual(true);
-    expect(vc.size).toEqual(13);
+    expect(isomorphic([...vc], [...res])).toBe(true);
+    expect(() => vc.add(meaninglessQuad)).toThrow("Cannot mutate this dataset");
+    expect(() => vc.delete(meaninglessQuad)).toThrow(
+      "Cannot mutate this dataset"
+    );
+    expect(vc.has(meaninglessQuad)).toBe(false);
+    expect(vc.has(issuerQuad)).toBe(true);
+    expect(vc.size).toBe(13);
   });
 });
