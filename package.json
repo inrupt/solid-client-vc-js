@@ -72,7 +72,7 @@
     "jest-environment-jsdom": "^29.3.0",
     "prettier": "2.8.8",
     "rollup": "^3.1.0",
-    "rollup-plugin-typescript2": "^0.34.0",
+    "rollup-plugin-typescript2": "^0.35.0",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "typedoc": "^0.24.1",
