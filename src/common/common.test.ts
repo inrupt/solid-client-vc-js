@@ -48,7 +48,9 @@ jest.mock("@inrupt/universal-fetch", () => {
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
-    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
+    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(() => {
+      throw new Error("Fetch should not be called");
+    }),
   };
 });
 
