@@ -653,7 +653,8 @@ export async function getVerifiableCredentialFromStore(
           ? {}
           : getProperties(object, [...writtenTerms, object.value]);
 
-        obj["@id"] = `_:b${(data[object.value] ??= (i += 1))}`;
+        // eslint-disable-next-line no-multi-assign
+        obj["@id"] = `_:b${(data[object.value] ??= i += 1)}`;
         return obj;
       }
       // eslint-disable-next-line no-fallthrough

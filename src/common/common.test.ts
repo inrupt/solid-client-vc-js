@@ -1156,14 +1156,17 @@ describe("getVerifiableCredential", () => {
           "https://example.org/predicate": {
             "@id": "https://example.org/object",
           },
-          "https://example.org/predicateBnode": [{
-            "@id": "_:b1",
-            "https://example.org/predicate": {
+          "https://example.org/predicateBnode": [
+            {
               "@id": "_:b1",
+              "https://example.org/predicate": {
+                "@id": "_:b1",
+              },
             },
-          },{
-            "@id": "_:b2"
-          }],
+            {
+              "@id": "_:b2",
+            },
+          ],
         },
         // Any types outside of those in our VC and Inrupt context are removed
         type: ["VerifiableCredential"],
