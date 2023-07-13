@@ -739,8 +739,6 @@ describe("getVerifiableCredential", () => {
     );
   });
 
-  // TODO: String predicates for VC
-
   it("throws if there are 2 proof values", async () => {
     const mocked = mockDefaultCredential();
     (mocked.proof as any).proofValue = [mocked.proof.proofValue, "abc"];
@@ -993,7 +991,57 @@ describe("getVerifiableCredential", () => {
     store.add(
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
+        DataFactory.namedNode("https://example.org/predicateBnode"),
+        DataFactory.blankNode("b2")
+      )
+    );
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicate"),
+        DataFactory.namedNode("https://example.org/object")
+      )
+    );
+
+    expect(
+      await getVerifiableCredentialFromStore(store, "https://some.vc")
+    ).toMatchObject(
+      Object.assign(mockDefaultCredential(), {
+        size: 15,
+        // We always re-frame w.r.t to this context
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://schema.inrupt.com/credentials/v1.jsonld",
+        ],
+        // The credentials subject is re-framed to make the fact that the
+        // objects are literals explicit
+        credentialSubject: {
+          "https://example.org/ns/passengerOf": {
+            "@value": "https://example.org/ns/Korabl-Sputnik2",
+          },
+          "https://example.org/ns/status": {
+            "@value": "https://example.org/ns/GoodDog",
+          },
+          id: "https://some.webid.provider/strelka",
+          "https://example.org/predicate": {
+            "@id": "https://example.org/object",
+          },
+          "https://example.org/predicateBnode": {},
+        },
+        // Any types outside of those in our VC and Inrupt context are removed
+        type: ["VerifiableCredential"],
+      })
+    );
+  });
+
+  it("should handle credential subject with a self-referential blank node", async () => {
+    const store = await jsonLdToStore(mockDefaultCredential());
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.webid.provider/strelka"),
+        DataFactory.namedNode("https://example.org/predicateBnode"),
         DataFactory.blankNode("b2")
       )
     );
@@ -1034,10 +1082,88 @@ describe("getVerifiableCredential", () => {
             "@value": "https://example.org/ns/GoodDog",
           },
           id: "https://some.webid.provider/strelka",
-          // TODO: Work out why the blank node is not expanded
           "https://example.org/predicate": {
             "@id": "https://example.org/object",
           },
+          "https://example.org/predicateBnode": {
+            "@id": "_:b1",
+            "https://example.org/predicate": {
+              "@id": "_:b1",
+            },
+          },
+        },
+        // Any types outside of those in our VC and Inrupt context are removed
+        type: ["VerifiableCredential"],
+      })
+    );
+  });
+
+  it("should handle credential subject with a self-referential blank node and stand-alone blank node", async () => {
+    const store = await jsonLdToStore(mockDefaultCredential());
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.webid.provider/strelka"),
+        DataFactory.namedNode("https://example.org/predicateBnode"),
+        DataFactory.blankNode("b2")
+      )
+    );
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.webid.provider/strelka"),
+        DataFactory.namedNode("https://example.org/predicateBnode"),
+        DataFactory.blankNode("b3")
+      )
+    );
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.webid.provider/strelka"),
+        DataFactory.namedNode("https://example.org/predicate"),
+        DataFactory.namedNode("https://example.org/object")
+      )
+    );
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.blankNode("b2"),
+        DataFactory.namedNode("https://example.org/predicate"),
+        DataFactory.blankNode("b2")
+      )
+    );
+
+    expect(
+      await getVerifiableCredentialFromStore(store, "https://some.vc")
+    ).toMatchObject(
+      Object.assign(mockDefaultCredential(), {
+        size: 17,
+        // We always re-frame w.r.t to this context
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://schema.inrupt.com/credentials/v1.jsonld",
+        ],
+        // The credentials subject is re-framed to make the fact that the
+        // objects are literals explicit
+        credentialSubject: {
+          "https://example.org/ns/passengerOf": {
+            "@value": "https://example.org/ns/Korabl-Sputnik2",
+          },
+          "https://example.org/ns/status": {
+            "@value": "https://example.org/ns/GoodDog",
+          },
+          id: "https://some.webid.provider/strelka",
+          "https://example.org/predicate": {
+            "@id": "https://example.org/object",
+          },
+          "https://example.org/predicateBnode": [{
+            "@id": "_:b1",
+            "https://example.org/predicate": {
+              "@id": "_:b1",
+            },
+          },{
+            "@id": "_:b2"
+          }],
         },
         // Any types outside of those in our VC and Inrupt context are removed
         type: ["VerifiableCredential"],

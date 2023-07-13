@@ -643,12 +643,19 @@ export async function getVerifiableCredentialFromStore(
     return object;
   }
 
+  let i = 0;
+  const data: Record<string, number> = {};
+
   function writeObject(object: Term, writtenTerms: string[]) {
     switch (object.termType) {
-      case "BlankNode":
-        return writtenTerms.includes(object.value)
+      case "BlankNode": {
+        const obj = writtenTerms.includes(object.value)
           ? {}
           : getProperties(object, [...writtenTerms, object.value]);
+
+        obj["@id"] = `_:b${(data[object.value] ??= (i += 1))}`;
+        return obj;
+      }
       // eslint-disable-next-line no-fallthrough
       case "NamedNode":
       case "Literal":
