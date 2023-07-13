@@ -19,6 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { jest, describe, it, expect } from "@jest/globals";
 import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
@@ -882,6 +883,61 @@ describe("getVerifiableCredential", () => {
     );
   });
 
+  it("should apply the correct context for a given proof", async () => {
+    const store = await jsonLdToStore(mockDefaultCredential());
+
+    for (const quad of store.match(
+      null,
+      DataFactory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+      DataFactory.namedNode("https://w3id.org/security#Ed25519Signature2018")
+    )) {
+      store.removeQuad(quad);
+      store.add(
+        DataFactory.quad(
+          quad.subject,
+          quad.predicate,
+          DataFactory.namedNode(
+            "https://www.w3.org/2018/credentials#VerifiableCredential"
+          ),
+          quad.graph
+        )
+      );
+    }
+
+    expect(
+      await getVerifiableCredentialFromStore(store, "https://some.vc")
+    ).toMatchObject(
+      Object.assign(mockDefaultCredential(), {
+        size: 13,
+        // We always re-frame w.r.t to this context
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://schema.inrupt.com/credentials/v1.jsonld",
+        ],
+        // The credentials subject is re-framed to make the fact that the
+        // objects are literals explicit
+        credentialSubject: {
+          "https://example.org/ns/passengerOf": {
+            "@value": "https://example.org/ns/Korabl-Sputnik2",
+          },
+          "https://example.org/ns/status": {
+            "@value": "https://example.org/ns/GoodDog",
+          },
+          id: "https://some.webid.provider/strelka",
+        },
+        // Any types outside of those in our VC and Inrupt context are removed
+        type: ["VerifiableCredential"],
+        proof: {
+          ...mockDefaultCredential().proof,
+          // Proof purpose has a prefix because assertionMethod is not
+          // defined as a term in the VerifiableCredential subContext
+          proofPurpose: "sec:assertionMethod",
+          type: "VerifiableCredential",
+        },
+      })
+    );
+  });
+
   it("should handle multiple known types", async () => {
     const store = await jsonLdToStore(mockDefaultCredential());
 
@@ -962,7 +1018,7 @@ describe("getVerifiableCredential", () => {
       await getVerifiableCredentialFromStore(store, "https://some.vc")
     ).toMatchObject(
       Object.assign(mockDefaultCredential(), {
-        size: 15,
+        size: 16,
         // We always re-frame w.r.t to this context
         "@context": [
           "https://www.w3.org/2018/credentials/v1",
@@ -980,7 +1036,7 @@ describe("getVerifiableCredential", () => {
           id: "https://some.webid.provider/strelka",
           // TODO: Work out why the blank node is not expanded
           "https://example.org/predicate": {
-            "@id": "https://example.org/object"
+            "@id": "https://example.org/object",
           },
         },
         // Any types outside of those in our VC and Inrupt context are removed

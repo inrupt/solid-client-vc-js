@@ -33,6 +33,19 @@ import CONTEXTS from "./contexts";
 import type { JsonLd } from "../common/common";
 
 /**
+ * A JSON-LD document loader with the standard context for VCs pre-loaded
+ */
+class CachedFetchDocumentLoader extends FetchDocumentLoader {
+  public async load(url: string): Promise<IJsonLdContext> {
+    if (Object.keys(CONTEXTS).includes(url)) {
+      return CONTEXTS[url as keyof typeof CONTEXTS];
+    }
+    // FIXME: See if we want to error on other contexts
+    return super.load(url);
+  }
+}
+
+/**
  * Creates a context for use with the VC library
  */
 // FIXME: See if our access grants specific context should be passed
@@ -44,19 +57,6 @@ export function getVcContext(
     documentLoader: new CachedFetchDocumentLoader(),
   });
   return myParser.parse([...Object.values(CONTEXTS), ...contexts]);
-}
-
-/**
- * A JSON-LD document loader with the standard context for VCs pre-loaded
- */
-class CachedFetchDocumentLoader extends FetchDocumentLoader {
-  public async load(url: string): Promise<IJsonLdContext> {
-    if (Object.keys(CONTEXTS).includes(url)) {
-      return CONTEXTS[url as keyof typeof CONTEXTS];
-    }
-    // FIXME: See if we want to error on other contexts
-    return super.load(url);
-  }
 }
 
 interface Options {

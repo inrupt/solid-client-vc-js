@@ -404,26 +404,6 @@ export async function getVerifiableCredentialApiConfiguration(
 }
 
 /**
- * Dereference a VC URL, and verify that the resulting content is valid.
- *
- * @param vcUrl The URL of the VC.
- * @param options Options to customize the function behavior.
- * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
- * @returns The dereferenced VC if valid. Throws otherwise.
- * @since 0.4.0
- */
-export async function getVerifiableCredential(
-  vcUrl: UrlString,
-  options?: Partial<{
-    fetch: typeof fetch;
-  }>
-): Promise<VerifiableCredential & DatasetCore> {
-  const authFetch = options?.fetch ?? uniFetch;
-  const response = await authFetch(vcUrl);
-  return getVerifiableCredentialFromResponse(response, vcUrl, options);
-}
-
-/**
  * @param response Takes a response from a VC service and checks that it has the correct status and content type
  * @param vcUrl The URL of the VC
  * @returns The input response
@@ -492,25 +472,8 @@ const SEC = "https://w3id.org/security#";
 const CRED = "https://www.w3.org/2018/credentials#";
 
 /**
- * Dereference a VC URL, and verify that the resulting content is valid.
- *
- * @param vcUrl The URL of the VC.
- * @param options Options to customize the function behavior.
- * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
- * @returns The dereferenced VC if valid. Throws otherwise.
- * @since 0.4.0
+ * @hidden
  */
-export async function getVerifiableCredentialFromResponse(
-  response: Response,
-  vcUrl: UrlString,
-  options?: Partial<{
-    fetch: typeof fetch;
-  }>
-): Promise<VerifiableCredential & DatasetCore> {
-  const vcStore = await responseToVcStore(response, vcUrl, options);
-  return getVerifiableCredentialFromStore(vcStore, vcUrl);
-}
-
 export async function getVerifiableCredentialFromStore(
   vcStore: Store,
   vcUrl: UrlString
@@ -623,20 +586,28 @@ export async function getVerifiableCredentialFromStore(
   const [proof] = proofs;
   const proofType = getSingleObjectOfTermType(`${RDF}type`, proof, proofGraph);
 
-  const proposedContext = (VcContext["@context"] as any)[proofType]?.[
-    "@context"
-  ];
+  const proposedContextTemp =
+    VcContext["@context"][proofType as keyof (typeof VcContext)["@context"]];
+  const proposedContext =
+    typeof proposedContextTemp === "object" &&
+    "@context" in proposedContextTemp &&
+    proposedContextTemp["@context"];
 
   let proofContext = context;
   let proofPurposeContext = context;
 
   if (typeof proposedContext === "object") {
-    proofContext = proofPurposeContext = await getVcContext(proposedContext);
-    if (typeof proposedContext.proofPurpose?.["@context"] === "object") {
+    proofContext = await getVcContext(proposedContext);
+    if (
+      "proofPurpose" in proposedContext &&
+      typeof proposedContext.proofPurpose["@context"] === "object"
+    ) {
       proofPurposeContext = await getVcContext(
         proposedContext,
         proposedContext.proofPurpose["@context"]
       );
+    } else {
+      proofPurposeContext = proofContext;
     }
   }
 
@@ -653,8 +624,10 @@ export async function getVerifiableCredentialFromStore(
       }
 
       const compact = context.compactIri(predicate.value, true);
-      const objects: any[] = vcStore
+      const objects = vcStore
         .getObjects(subject, predicate, DF.defaultGraph())
+        // writeObject and getProperties depend on each other circularly
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         .map((obj) => writeObject(obj, writtenTerms))
         .filter(
           (obj) => typeof obj !== "object" || Object.keys(obj).length >= 1
@@ -676,12 +649,8 @@ export async function getVerifiableCredentialFromStore(
         return writtenTerms.includes(object.value)
           ? {}
           : getProperties(object, [...writtenTerms, object.value]);
+      // eslint-disable-next-line no-fallthrough
       case "NamedNode":
-      // TODO: See if we actually want to do compacting here
-      // given how ConsentStatusExplicitlyGiven as the full
-      // URI in e2e tests, and this may make it look like a
-      // literal
-      // return context.compactIri(object.value, true);
       case "Literal":
         return Util.termToValue(object, context);
       default:
@@ -760,4 +729,44 @@ export async function getVerifiableCredentialFromStore(
       return vcStore.size;
     },
   };
+}
+
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
+ */
+export async function getVerifiableCredentialFromResponse(
+  response: Response,
+  vcUrl: UrlString,
+  options?: Partial<{
+    fetch: typeof fetch;
+  }>
+): Promise<VerifiableCredential & DatasetCore> {
+  const vcStore = await responseToVcStore(response, vcUrl, options);
+  return getVerifiableCredentialFromStore(vcStore, vcUrl);
+}
+
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
+ */
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: Partial<{
+    fetch: typeof fetch;
+  }>
+): Promise<VerifiableCredential & DatasetCore> {
+  const authFetch = options?.fetch ?? uniFetch;
+  const response = await authFetch(vcUrl);
+  return getVerifiableCredentialFromResponse(response, vcUrl, options);
 }
