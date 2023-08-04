@@ -467,6 +467,13 @@ const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 const XSD = "http://www.w3.org/2001/XMLSchema#";
 const SEC = "https://w3id.org/security#";
 const CRED = "https://www.w3.org/2018/credentials#";
+const RDF_TYPE = `${RDF}type`;
+const VERIFIABLE_CREDENTIAL = `${VC}VerifiableCredential`;
+const DATE_TIME = `${XSD}dateTime`;
+const CREDENTIAL_SUBJECT = `${CRED}credentialSubject`;
+const ISSUER = `${CRED}issuer`;
+const ISSUANCE_DATE = `${CRED}issuanceDate`;
+const PROOF = `${SEC}proof`;
 
 /**
  * @hidden
@@ -478,8 +485,8 @@ export async function getVerifiableCredentialFromStore(
   const context = await getVcContext();
 
   const vcs = vcStore.getSubjects(
-    `${RDF}type`,
-    `${VC}VerifiableCredential`,
+    RDF_TYPE,
+    VERIFIABLE_CREDENTIAL,
     DF.defaultGraph()
   );
   if (vcs.length !== 1) {
@@ -496,7 +503,7 @@ export async function getVerifiableCredentialFromStore(
   }
 
   const type: string[] = [];
-  for (const t of vcStore.getObjects(vc, `${RDF}type`, DF.defaultGraph())) {
+  for (const t of vcStore.getObjects(vc, RDF_TYPE, DF.defaultGraph())) {
     if (t.termType !== "NamedNode") {
       throw new Error(
         `Expected all VC types to be Named Nodes but received [${t.value}] of termType [${t.termType}]`
@@ -557,9 +564,9 @@ export async function getVerifiableCredentialFromStore(
         `Expected issuanceDate to be a Literal, received: ${object.termType}`
       );
     }
-    if (!object.datatype.equals(DF.namedNode(`${XSD}dateTime`))) {
+    if (!object.datatype.equals(DF.namedNode(DATE_TIME))) {
       throw new Error(
-        `Expected issuanceDate to have dataType [${XSD}dateTime], received: [${object.datatype.value}]`
+        `Expected issuanceDate to have dataType [${DATE_TIME}], received: [${object.datatype.value}]`
       );
     }
 
@@ -571,7 +578,7 @@ export async function getVerifiableCredentialFromStore(
   }
 
   // The proof lives within a named graph
-  const proofGraph = getSingleObject(`${SEC}proof`);
+  const proofGraph = getSingleObject(PROOF);
   const proofs = vcStore.getSubjects(null, null, proofGraph);
 
   if (proofs.length !== 1) {
@@ -581,7 +588,7 @@ export async function getVerifiableCredentialFromStore(
   }
 
   const [proof] = proofs;
-  const proofType = getSingleObjectOfTermType(`${RDF}type`, proof, proofGraph);
+  const proofType = getSingleObjectOfTermType(RDF_TYPE, proof, proofGraph);
 
   const proposedContextTemp =
     VcContext["@context"][proofType as keyof (typeof VcContext)["@context"]];
@@ -663,9 +670,7 @@ export async function getVerifiableCredentialFromStore(
     }
   }
 
-  const credentialSubject = getSingleObjectOfTermType(
-    `${CRED}credentialSubject`
-  );
+  const credentialSubjectTerm = getSingleObjectOfTermType(CREDENTIAL_SUBJECT);
   return {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
@@ -676,11 +681,11 @@ export async function getVerifiableCredentialFromStore(
     // we do not support this
     // https://www.w3.org/TR/vc-data-model/#example-specifying-multiple-subjects-in-a-verifiable-credential
     credentialSubject: {
-      ...getProperties(DF.namedNode(credentialSubject)),
-      id: credentialSubject,
+      ...getProperties(DF.namedNode(credentialSubjectTerm)),
+      id: credentialSubjectTerm,
     },
-    issuer: getSingleObjectOfTermType(`${CRED}issuer`),
-    issuanceDate: getSingleDateTime(`${CRED}issuanceDate`),
+    issuer: getSingleObjectOfTermType(ISSUER),
+    issuanceDate: getSingleDateTime(ISSUANCE_DATE),
     type,
     proof: {
       created: getSingleDateTime(
