@@ -22,7 +22,7 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
 import { isomorphic } from "rdf-isomorphic";
-import { DataFactory, Quad_Object, Quad_Predicate, Quad_Subject, Store } from "n3";
+import { DataFactory, Store } from "n3";
 import type { VerifiableCredential } from "./common";
 import {
   concatenateContexts,
@@ -496,8 +496,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the date field is a string", async () => {
     const mocked = mockDefaultCredential();
-    // issuanceDate is required on the VC type
-    // @ts-expect-error
+    // @ts-expect-error issuanceDate is required on the VC type
     delete mocked.issuanceDate;
     mocked["https://www.w3.org/2018/credentials#issuanceDate"] =
       "http://example.org/not/a/date";
@@ -521,8 +520,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the date field is an IRI", async () => {
     const mocked = mockDefaultCredential();
-    // issuanceDate is required on the VC type
-    // @ts-expect-error
+    // @ts-expect-error issuanceDate is required on the VC type
     delete mocked.issuanceDate;
     mocked["https://www.w3.org/2018/credentials#issuanceDate"] = {
       "@id": "http://example.org/not/a/date",
@@ -547,8 +545,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the issuer is a string", async () => {
     const mocked = mockDefaultCredential();
-    // issuer is of type string on the VC type
-    // @ts-expect-error
+    // @ts-expect-error issuer is of type string on the VC type
     mocked.issuer = { "@value": "my string" };
 
     const mockedFetch = jest
@@ -586,7 +583,8 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicate"),
-        DataFactory.defaultGraph() as unknown as Quad_Object
+        // @ts-expect-error DefaultGraph is not allowed as an object
+        DataFactory.defaultGraph()
       )
     );
 
@@ -612,7 +610,8 @@ describe("getVerifiableCredential", () => {
     store.add(
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
-        DataFactory.literal("https://example.org/predicate") as unknown as Quad_Predicate,
+        // @ts-expect-error Literal is not allowed as a subject
+        DataFactory.literal("https://example.org/predicate"),
         DataFactory.namedNode("https://example.org/ns/object")
       )
     );
@@ -745,8 +744,7 @@ describe("getVerifiableCredential", () => {
 
   it("throws if there are 2 proof values", async () => {
     const mocked = mockDefaultCredential();
-    // Proof value is a string not string[] in VC type
-    // @ts-expect-error
+    // @ts-expect-error proofValue is a string not string[] in VC type
     mocked.proof.proofValue = [mocked.proof.proofValue, "abc"];
 
     const mockedFetch = jest
