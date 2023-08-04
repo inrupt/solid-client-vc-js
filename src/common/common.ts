@@ -417,9 +417,6 @@ function validateVcResponse(response: Response, vcUrl: string): Response {
   }
 
   const contentType = response.headers.get("Content-Type");
-
-  // Ignoring since the test suite always adds a content type
-  /* istanbul ignore if */
   if (!contentType) {
     throw new Error(
       `Fetching the Verifiable Credential [${vcUrl}] failed: Response does not have a Content-Type header; expected application/ld+json`

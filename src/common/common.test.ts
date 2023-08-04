@@ -27,6 +27,7 @@ import type { VerifiableCredential } from "./common";
 import {
   concatenateContexts,
   getVerifiableCredential,
+  getVerifiableCredentialFromResponse,
   getVerifiableCredentialFromStore,
   isVerifiableCredential,
   isVerifiablePresentation,
@@ -1176,5 +1177,13 @@ describe("getVerifiableCredential", () => {
         type: ["VerifiableCredential"],
       })
     );
+  });
+});
+
+describe("getVerifiableCredentialFromResponse", () => {
+  it("should error if the response has no content type", () => {
+    return expect(
+      getVerifiableCredentialFromResponse(new Response(), "https://example.org")
+    ).rejects.toThrow("Response does not have a Content-Type");
   });
 });
