@@ -21,7 +21,10 @@
 import VC from "./vc";
 import Inrupt from "./inrupt";
 
-export default {
+const contextDefinitions = {
   "https://www.w3.org/2018/credentials/v1": VC,
   "https://schema.inrupt.com/credentials/v1.jsonld": Inrupt,
 } as const;
+
+export const context = Object.keys(contextDefinitions);
+export default contextDefinitions;

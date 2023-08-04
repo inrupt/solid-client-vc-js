@@ -37,6 +37,7 @@ import type { Store, Term } from "n3";
 import { DataFactory as DF } from "n3";
 import contentTypeParser from "content-type";
 import VcContext from "../parser/contexts/vc";
+import { context } from "../parser/contexts";
 import { getVcContext, jsonLdResponseToStore } from "../parser/jsonld";
 
 export type Iri = string;
@@ -246,7 +247,7 @@ export function concatenateContexts(...contexts: unknown[]): unknown {
   contexts.forEach((additionalContext) => {
     // Case when the context is an array of IRIs and/or inline contexts
     if (Array.isArray(additionalContext)) {
-      additionalContext.forEach((context) => result.add(context));
+      additionalContext.forEach((contextEntry) => result.add(contextEntry));
     } else if (additionalContext !== null && additionalContext !== undefined) {
       // Case when the context is a single remote URI or a single inline context
       result.add(additionalContext);
@@ -482,7 +483,7 @@ export async function getVerifiableCredentialFromStore(
   vcStore: Store,
   vcUrl: UrlString
 ): Promise<VerifiableCredential & DatasetCore> {
-  const context = await getVcContext();
+  const vcContext = await getVcContext();
 
   const vcs = vcStore.getSubjects(
     RDF_TYPE,
@@ -510,7 +511,7 @@ export async function getVerifiableCredentialFromStore(
       );
     }
 
-    const compact = context.compactIri(t.value, true);
+    const compact = vcContext.compactIri(t.value, true);
 
     if (/^[a-z]+$/i.test(compact)) type.push(compact);
   }
@@ -536,7 +537,7 @@ export async function getVerifiableCredentialFromStore(
     subject?: Term,
     graph?: Term,
     termType = "NamedNode",
-    customContext = context
+    customContext = vcContext
   ) {
     const object = getSingleObject(fullProperty, subject, graph);
 
@@ -597,8 +598,8 @@ export async function getVerifiableCredentialFromStore(
     "@context" in proposedContextTemp &&
     proposedContextTemp["@context"];
 
-  let proofContext = context;
-  let proofPurposeContext = context;
+  let proofContext = vcContext;
+  let proofPurposeContext = vcContext;
 
   if (typeof proposedContext === "object") {
     proofContext = await getVcContext(proposedContext);
@@ -627,7 +628,7 @@ export async function getVerifiableCredentialFromStore(
         throw new Error("Predicate must be a namedNode");
       }
 
-      const compact = context.compactIri(predicate.value, true);
+      const compact = vcContext.compactIri(predicate.value, true);
       const objects = vcStore
         .getObjects(subject, predicate, DF.defaultGraph())
         // writeObject and getProperties depend on each other circularly
@@ -664,7 +665,7 @@ export async function getVerifiableCredentialFromStore(
       // eslint-disable-next-line no-fallthrough
       case "NamedNode":
       case "Literal":
-        return Util.termToValue(object, context);
+        return Util.termToValue(object, vcContext);
       default:
         throw new Error(`Unexpected term type: ${object.termType}`);
     }
@@ -672,10 +673,7 @@ export async function getVerifiableCredentialFromStore(
 
   const credentialSubjectTerm = getSingleObjectOfTermType(CREDENTIAL_SUBJECT);
   return {
-    "@context": [
-      "https://www.w3.org/2018/credentials/v1",
-      "https://schema.inrupt.com/credentials/v1.jsonld",
-    ],
+    "@context": context,
     id: vc.value,
     // It is possible to have multiple claims in a credential subject
     // we do not support this
