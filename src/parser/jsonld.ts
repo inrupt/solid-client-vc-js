@@ -67,7 +67,7 @@ interface Options {
 /**
  * Our internal JsonLd Parser with a cached VC context
  */
-export class IJsonLdParser extends JsonLdParser {
+export class CachedJsonLdParser extends JsonLdParser {
   constructor(options?: Options) {
     super({
       documentLoader: new CachedFetchDocumentLoader(
@@ -86,7 +86,7 @@ export class IJsonLdParser extends JsonLdParser {
  */
 export async function jsonLdStringToStore(data: string, options?: Options) {
   try {
-    const parser = new IJsonLdParser(options);
+    const parser = new CachedJsonLdParser(options);
     const store = new Store();
     const storePromise = promisifyEventEmitter(store.import(parser), store);
     parser.write(data);
