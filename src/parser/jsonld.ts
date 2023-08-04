@@ -104,7 +104,7 @@ export async function jsonLdStringToStore(data: string, options?: Options) {
  * @returns A store containing the Quads in the JSON-LD response
  */
 export async function jsonLdResponseToStore(
-  response: globalThis.Response,
+  response: Response,
   options?: Options
 ): Promise<Store> {
   if (response.body === null)
