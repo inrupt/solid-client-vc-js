@@ -408,10 +408,7 @@ export async function getVerifiableCredentialApiConfiguration(
  * @param vcUrl The URL of the VC
  * @returns The input response
  */
-function validateVcResponse(
-  response: Response,
-  vcUrl: string
-): Response {
+function validateVcResponse(response: Response, vcUrl: string): Response {
   if (!response.ok) {
     throw new Error(
       `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`
