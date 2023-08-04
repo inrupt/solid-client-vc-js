@@ -409,9 +409,9 @@ export async function getVerifiableCredentialApiConfiguration(
  * @returns The input response
  */
 function validateVcResponse(
-  response: globalThis.Response,
+  response: Response,
   vcUrl: string
-): globalThis.Response {
+): Response {
   if (!response.ok) {
     throw new Error(
       `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`
@@ -447,7 +447,7 @@ function validateVcResponse(
 }
 
 async function responseToVcStore(
-  response: globalThis.Response,
+  response: Response,
   vcUrl: UrlString,
   options?: Partial<{
     fetch: typeof fetch;
