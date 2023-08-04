@@ -35,7 +35,7 @@ import { Util } from "jsonld-streaming-serializer";
 import type { DatasetCore } from "@rdfjs/types";
 import type { Store, Term } from "n3";
 import { DataFactory as DF } from "n3";
-import parse from "content-type";
+import contentTypeParser from "content-type";
 import VcContext from "../parser/contexts/vc";
 import { getVcContext, jsonLdResponseToStore } from "../parser/jsonld";
 
@@ -428,7 +428,7 @@ function validateVcResponse(
     );
   }
 
-  const parsedContentType = parse.parse(contentType);
+  const parsedContentType = contentTypeParser.parse(contentType);
   const [mediaType, subtypesString] = parsedContentType.type.split("/");
   const subtypes = subtypesString.split("+");
 
