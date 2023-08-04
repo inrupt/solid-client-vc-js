@@ -475,6 +475,9 @@ const CREDENTIAL_SUBJECT = `${CRED}credentialSubject`;
 const ISSUER = `${CRED}issuer`;
 const ISSUANCE_DATE = `${CRED}issuanceDate`;
 const PROOF = `${SEC}proof`;
+const PROOF_PURPOSE = `${SEC}proofPurpose`;
+const VERIFICATION_METHOD = `${SEC}verificationMethod`;
+const PROOF_VALUE = `${SEC}proofValue`;
 
 /**
  * @hidden
@@ -692,7 +695,7 @@ export async function getVerifiableCredentialFromStore(
         proofGraph
       ),
       proofPurpose: getSingleObjectOfTermType(
-        `${SEC}proofPurpose`,
+        PROOF_PURPOSE,
         proof,
         proofGraph,
         "NamedNode",
@@ -700,14 +703,14 @@ export async function getVerifiableCredentialFromStore(
       ),
       type: proofType,
       verificationMethod: getSingleObjectOfTermType(
-        `${SEC}verificationMethod`,
+        VERIFICATION_METHOD,
         proof,
         proofGraph,
         "NamedNode",
         proofContext
       ),
       proofValue: getSingleObjectOfTermType(
-        `${SEC}proofValue`,
+        PROOF_VALUE,
         proof,
         proofGraph,
         "Literal"
