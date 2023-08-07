@@ -7,10 +7,6 @@ env:
   CI: true
 jobs:
   e2e-browser:
-    # Dependabot cannot access secrets, so it doesn't have a token to authenticate to ESS.
-    # Since all the other jobs of this workflow depend on this one, skipping it should
-    # skip the entire workflow.
-    if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     environment:
       name: ${{ matrix.environment-name }}
