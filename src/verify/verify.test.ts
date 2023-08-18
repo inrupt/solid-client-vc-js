@@ -33,7 +33,7 @@ import { isValidVc, isValidVerifiablePresentation } from "./verify";
 jest.mock("../common/common");
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
+    "@inrupt/universal-fetch",
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
@@ -75,13 +75,13 @@ describe("isValidVc", () => {
 
   it("falls back to an unauthenticated fetch if none is provided", async () => {
     const mockedFetch = jest.requireMock(
-      "@inrupt/universal-fetch"
+      "@inrupt/universal-fetch",
     ) as jest.Mocked<typeof UniversalFetch>;
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
     mockedFetch.fetch.mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
     await isValidVc(MOCK_VC, {
       verificationEndpoint: MOCK_VERIFY_ENDPOINT,
@@ -94,21 +94,21 @@ describe("isValidVc", () => {
     // Use the fetch fallback on purpose to check that no option may be passed
     // to the function.
     const mockedFetch = jest.requireMock(
-      "@inrupt/universal-fetch"
+      "@inrupt/universal-fetch",
     ) as jest.Mocked<typeof UniversalFetch>;
     // First, the VC is fetche
     mockedFetch.fetch
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(MOCK_VC), { status: 200 })
+        new Response(JSON.stringify(MOCK_VC), { status: 200 }),
       )
       // Then, the verification endpoint is called
       .mockResolvedValueOnce(
         new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
           status: 200,
-        })
+        }),
       );
     const mockedDiscovery = mocked(
-      getVerifiableCredentialApiConfiguration
+      getVerifiableCredentialApiConfiguration,
     ).mockResolvedValueOnce({
       verifierService: "https://some.vc.verifier",
       legacy: {},
@@ -124,7 +124,7 @@ describe("isValidVc", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
     await isValidVc(MOCK_VC, {
@@ -145,7 +145,7 @@ describe("isValidVc", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
 
     await isValidVc(MOCK_VC, {
@@ -156,7 +156,7 @@ describe("isValidVc", () => {
       expect.anything(),
       expect.objectContaining({
         body: JSON.stringify({ verifiableCredential: MOCK_VC }),
-      })
+      }),
     );
   });
 
@@ -165,13 +165,13 @@ describe("isValidVc", () => {
       .fn(global.fetch)
       // First, the VC is fetched
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(MOCK_VC), { status: 200 })
+        new Response(JSON.stringify(MOCK_VC), { status: 200 }),
       )
       // Then, the verification endpoint is called
       .mockResolvedValueOnce(
         new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
           status: 200,
-        })
+        }),
       );
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
     await isValidVc("https://example.com/someVc", {
@@ -186,13 +186,13 @@ describe("isValidVc", () => {
     const mockedFetch = jest
       .fn(global.fetch)
       .mockResolvedValueOnce(
-        new Response(undefined, { status: 400, statusText: "Failed" })
+        new Response(undefined, { status: 400, statusText: "Failed" }),
       );
     await expect(
       isValidVc("https://example.com/someVc", {
         fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
-      })
+      }),
     ).rejects.toThrow(/example.com\/someVc.*400 Failed/);
   });
 
@@ -204,7 +204,7 @@ describe("isValidVc", () => {
       isValidVc("https://example.com/someVc", {
         fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
-      })
+      }),
     ).rejects.toThrow(/Parsing.*example.com\/someVc/);
   });
 
@@ -212,7 +212,7 @@ describe("isValidVc", () => {
     const mockedFetch = jest
       .fn(global.fetch)
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ someField: "Not a credential" }))
+        new Response(JSON.stringify({ someField: "Not a credential" })),
       );
     mocked(isVerifiableCredential).mockReturnValueOnce(false);
 
@@ -220,9 +220,9 @@ describe("isValidVc", () => {
       isValidVc("https://example.com/someVc", {
         fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
-      })
+      }),
     ).rejects.toThrow(
-      "The request to [https://example.com/someVc] returned an unexpected response:"
+      "The request to [https://example.com/someVc] returned an unexpected response:",
     );
   });
 
@@ -230,7 +230,7 @@ describe("isValidVc", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
 
@@ -240,7 +240,7 @@ describe("isValidVc", () => {
     });
     expect(mockedFetch).toHaveBeenCalledWith(
       "https://some.verification.api",
-      expect.anything()
+      expect.anything(),
     );
     expect(getVerifiableCredentialApiConfiguration).not.toHaveBeenCalled();
   });
@@ -255,21 +255,21 @@ describe("isValidVc", () => {
       .fn(global.fetch)
       // First, the VC is fetched
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(MOCK_VC), { status: 200 })
+        new Response(JSON.stringify(MOCK_VC), { status: 200 }),
       )
       // Then, the verification endpoint is called
       .mockResolvedValueOnce(
         new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
           status: 200,
-        })
+        }),
       );
 
     await expect(
       isValidVc(MOCK_VC, {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      `The VC service provider ${MOCK_VC.issuer} does not advertize for a verifier service in its .well-known/vc-configuration document`
+      `The VC service provider ${MOCK_VC.issuer} does not advertize for a verifier service in its .well-known/vc-configuration document`,
     );
   });
 
@@ -278,7 +278,7 @@ describe("isValidVc", () => {
       new Response(undefined, {
         status: 400,
         statusText: "Bad request",
-      })
+      }),
     );
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
 
@@ -286,7 +286,7 @@ describe("isValidVc", () => {
       isValidVc(MOCK_VC, {
         fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
-      })
+      }),
     ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
   });
 
@@ -300,7 +300,7 @@ describe("isValidVc", () => {
       isValidVc(MOCK_VC, {
         fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
-      })
+      }),
     ).rejects.toThrow(/Parsing.*consent\.example\.com/);
   });
 
@@ -308,7 +308,7 @@ describe("isValidVc", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
 
@@ -316,7 +316,7 @@ describe("isValidVc", () => {
       isValidVc(MOCK_VC, {
         fetch: mockedFetch,
         verificationEndpoint: "https://some.verification.api",
-      })
+      }),
     ).resolves.toEqual({ checks: [], errors: [], warning: [] });
   });
 });
@@ -332,13 +332,13 @@ describe("isValidVerifiable Presentation", () => {
 
   it("falls back to the embedded fetch if none is provided", async () => {
     const mockedFetch = jest.requireMock(
-      "@inrupt/universal-fetch"
+      "@inrupt/universal-fetch",
     ) as jest.Mocked<typeof UniversalFetch>;
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
     mockedFetch.fetch.mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP);
 
@@ -349,7 +349,7 @@ describe("isValidVerifiable Presentation", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
@@ -366,7 +366,7 @@ describe("isValidVerifiable Presentation", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
 
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
@@ -382,7 +382,7 @@ describe("isValidVerifiable Presentation", () => {
           verifiablePresentation: MOCK_VP,
           options: { domain: "domain", challenge: "challenge" },
         }),
-      })
+      }),
     );
   });
 
@@ -390,7 +390,7 @@ describe("isValidVerifiable Presentation", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
 
@@ -399,18 +399,18 @@ describe("isValidVerifiable Presentation", () => {
       MOCK_VP,
       {
         fetch: mockedFetch,
-      }
+      },
     );
     expect(mockedFetch).toHaveBeenCalledWith(
       "https://some.verification.api",
-      expect.anything()
+      expect.anything(),
     );
     expect(getVerifiableCredentialApiConfiguration).not.toHaveBeenCalled();
   });
 
   it("discovers the verification endpoint if none is provided", async () => {
     const mockedDiscovery = mocked(
-      getVerifiableCredentialApiConfiguration
+      getVerifiableCredentialApiConfiguration,
     ).mockResolvedValueOnce({
       verifierService: "https://some.vc.verifier",
       legacy: {},
@@ -423,7 +423,7 @@ describe("isValidVerifiable Presentation", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
           status: 200,
-        })
+        }),
       );
 
     await isValidVerifiablePresentation(null, MOCK_VP, { fetch: mockedFetch });
@@ -439,15 +439,15 @@ describe("isValidVerifiable Presentation", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
 
     await expect(
       isValidVerifiablePresentation(null, MOCK_VP, {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      `The VC service provider ${MOCK_VP.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`
+      `The VC service provider ${MOCK_VP.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`,
     );
   });
 
@@ -458,13 +458,13 @@ describe("isValidVerifiable Presentation", () => {
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
         fetch: mockedFetch as typeof fetch,
-      })
+      }),
     ).rejects.toThrow(
       `The request to [${MOCK_VP}] returned an unexpected response: ${JSON.stringify(
         MOCK_VP,
         null,
-        "  "
-      )}`
+        "  ",
+      )}`,
     );
   });
 
@@ -472,16 +472,16 @@ describe("isValidVerifiable Presentation", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(`some non-JSON response`, {
         status: 200,
-      })
+      }),
     );
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
         fetch: mockedFetch as typeof fetch,
-      })
+      }),
     ).rejects.toThrow(
-      `Parsing the response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] as JSON failed:`
+      `Parsing the response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] as JSON failed:`,
     );
   });
 
@@ -490,14 +490,14 @@ describe("isValidVerifiable Presentation", () => {
       new Response(undefined, {
         status: 400,
         statusText: "Bad request",
-      })
+      }),
     );
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
         fetch: mockedFetch as typeof fetch,
-      })
+      }),
     ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
   });
 
@@ -505,14 +505,14 @@ describe("isValidVerifiable Presentation", () => {
     const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
-      })
+      }),
     );
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
         fetch: mockedFetch as typeof fetch,
-      })
+      }),
     ).resolves.toEqual({ checks: [], errors: [], warning: [] });
   });
 });

@@ -117,7 +117,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         validCredentialClaims,
         {
           fetch: session.fetch,
-        }
+        },
       );
       expect(credential.credentialSubject.id).toBe(vcSubject);
       await revokeVerifiableCredential(
@@ -125,7 +125,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         credential.id,
         {
           fetch: session.fetch,
-        }
+        },
       );
     });
 
@@ -140,7 +140,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         undefined,
         {
           fetch: session.fetch,
-        }
+        },
       );
       await expect(vcPromise).rejects.toThrow(/400/);
     });
@@ -166,7 +166,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         },
         {
           fetch: session.fetch,
-        }
+        },
       );
       // Jest is confused by the conditional test block.
       // eslint-disable-next-line jest/no-standalone-expect
@@ -182,7 +182,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         validCredentialClaims,
         {
           fetch: session.fetch,
-        }
+        },
       );
       await expect(
         revokeVerifiableCredential(
@@ -190,8 +190,8 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           credential.id,
           {
             fetch: session.fetch,
-          }
-        )
+          },
+        ),
       ).resolves.not.toThrow();
       const verificationResponse = await session.fetch(
         new URL("verify", env.vcProvider).href,
@@ -201,7 +201,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       const verification = await verificationResponse.json();
       expect(verification.errors).toEqual([

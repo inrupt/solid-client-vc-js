@@ -137,7 +137,7 @@ export default function VerifiableCredential({
       undefined,
       {
         fetch: session.fetch,
-      }
+      },
     );
     setVerifiableCredential(JSON.stringify(credential, null, "  "));
   };
@@ -155,7 +155,7 @@ export default function VerifiableCredential({
       session.info.webId || "n/a",
       {
         fetch: session.fetch,
-      }
+      },
     );
 
     setVerifiableCredential(undefined);

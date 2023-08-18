@@ -47,27 +47,27 @@ describe("exports", () => {
       "isValidVerifiablePresentation",
     ]);
     expect(packageExports.issueVerifiableCredential).toBe(
-      issueVerifiableCredential
+      issueVerifiableCredential,
     );
     expect(packageExports.isVerifiableCredential).toBe(isVerifiableCredential);
     expect(packageExports.isVerifiablePresentation).toBe(
-      isVerifiablePresentation
+      isVerifiablePresentation,
     );
     expect(packageExports.getVerifiableCredential).toBe(
-      getVerifiableCredential
+      getVerifiableCredential,
     );
     expect(packageExports.getVerifiableCredentialApiConfiguration).toBe(
-      getVerifiableCredentialApiConfiguration
+      getVerifiableCredentialApiConfiguration,
     );
     expect(packageExports.getVerifiableCredentialAllFromShape).toBe(
-      getVerifiableCredentialAllFromShape
+      getVerifiableCredentialAllFromShape,
     );
     expect(packageExports.revokeVerifiableCredential).toBe(
-      revokeVerifiableCredential
+      revokeVerifiableCredential,
     );
     expect(packageExports.isValidVc).toBe(isValidVc);
     expect(packageExports.isValidVerifiablePresentation).toBe(
-      isValidVerifiablePresentation
+      isValidVerifiablePresentation,
     );
     expect(packageExports.query).toBe(query);
   });

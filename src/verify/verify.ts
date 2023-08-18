@@ -39,7 +39,7 @@ import {
 
 async function dereferenceVc(
   vc: VerifiableCredential | URL | UrlString,
-  fetcher: typeof fallbackFetch
+  fetcher: typeof fallbackFetch,
 ): Promise<VerifiableCredential> {
   // This test passes for both URL and UrlString
   if (!vc.toString().startsWith("http")) {
@@ -52,7 +52,7 @@ async function dereferenceVc(
     throw new Error(
       `Dereferencing [${vc.toString()}] failed: ${vcResponse.status} ${
         vcResponse.statusText
-      }`
+      }`,
     );
   }
   try {
@@ -62,7 +62,7 @@ async function dereferenceVc(
       `Parsing the value obtained when dereferencing [${vc.toString()}] as JSON failed: ${
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (e as any).toString()
-      }`
+      }`,
     );
   }
 }
@@ -90,7 +90,7 @@ export async function isValidVc(
   options: Partial<{
     fetch?: typeof fetch;
     verificationEndpoint?: UrlString;
-  }> = {}
+  }> = {},
 ): Promise<{ checks: string[]; warnings: string[]; errors: string[] }> {
   const fetcher = options.fetch ?? fallbackFetch;
 
@@ -101,8 +101,8 @@ export async function isValidVc(
       `The request to [${vc}] returned an unexpected response: ${JSON.stringify(
         vcObject,
         null,
-        "  "
-      )}`
+        "  ",
+      )}`,
     );
   }
 
@@ -114,7 +114,7 @@ export async function isValidVc(
 
   if (verifierEndpoint === undefined) {
     throw new Error(
-      `The VC service provider ${vcObject.issuer} does not advertize for a verifier service in its .well-known/vc-configuration document`
+      `The VC service provider ${vcObject.issuer} does not advertize for a verifier service in its .well-known/vc-configuration document`,
     );
   }
 
@@ -130,7 +130,7 @@ export async function isValidVc(
 
   if (!response.ok) {
     throw new Error(
-      `The request to the verification endpoint [${verifierEndpoint}] failed: ${response.status} ${response.statusText}`
+      `The request to the verification endpoint [${verifierEndpoint}] failed: ${response.status} ${response.statusText}`,
     );
   }
 
@@ -141,7 +141,7 @@ export async function isValidVc(
       `Parsing the response of the verification service hosted at [${verifierEndpoint}] as JSON failed: ${
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (e as any).toString()
-      }`
+      }`,
     );
   }
 }
@@ -168,7 +168,7 @@ export async function isValidVerifiablePresentation(
     fetch: typeof fetch;
     domain: string;
     challenge: string;
-  }> = {}
+  }> = {},
 ): Promise<{ checks: string[]; warnings: string[]; errors: string[] }> {
   const fetcher = options.fetch ?? fallbackFetch;
 
@@ -177,8 +177,8 @@ export async function isValidVerifiablePresentation(
       `The request to [${verifiablePresentation}] returned an unexpected response: ${JSON.stringify(
         verifiablePresentation,
         null,
-        "  "
-      )}`
+        "  ",
+      )}`,
     );
   }
 
@@ -186,13 +186,13 @@ export async function isValidVerifiablePresentation(
     verificationEndpoint ??
     (
       await getVerifiableCredentialApiConfiguration(
-        verifiablePresentation.holder as string
+        verifiablePresentation.holder as string,
       )
     ).verifierService;
 
   if (verifierEndpoint === undefined) {
     throw new Error(
-      `The VC service provider ${verifiablePresentation.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`
+      `The VC service provider ${verifiablePresentation.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`,
     );
   }
 
@@ -212,7 +212,7 @@ export async function isValidVerifiablePresentation(
 
   if (!response.ok) {
     throw new Error(
-      `The request to the verification endpoint [${verificationEndpoint}] failed: ${response.status} ${response.statusText}`
+      `The request to the verification endpoint [${verificationEndpoint}] failed: ${response.status} ${response.statusText}`,
     );
   }
 
@@ -223,7 +223,7 @@ export async function isValidVerifiablePresentation(
       `Parsing the response of the verification service hosted at [${verificationEndpoint}] as JSON failed: ${
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (e as any).toString()
-      }`
+      }`,
     );
   }
 }

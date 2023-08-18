@@ -33,7 +33,7 @@ jest.mock("@inrupt/universal-fetch");
 
 jest.mock("@inrupt/solid-client", () => {
   const solidClientModule = jest.requireActual<typeof SolidClient>(
-    "@inrupt/solid-client"
+    "@inrupt/solid-client",
   );
   solidClientModule.getSolidDataset =
     jest.fn<(typeof SolidClient)["getSolidDataset"]>();
@@ -54,30 +54,30 @@ const mockVcWellKnown = (options: {
   if (options.issuerPresent) {
     wellKnown.addIri(
       "http://www.w3.org/ns/solid/vc#issuerService",
-      `${MOCKED_VC_SERVICE}/issue`
+      `${MOCKED_VC_SERVICE}/issue`,
     );
   }
   if (options.statusPresent) {
     wellKnown.addIri(
       "http://www.w3.org/ns/solid/vc#statusService",
-      `${MOCKED_VC_SERVICE}/status`
+      `${MOCKED_VC_SERVICE}/status`,
     );
   }
   if (options.verifierPresent) {
     wellKnown.addIri(
       "http://www.w3.org/ns/solid/vc#verifierService",
-      `${MOCKED_VC_SERVICE}/verify`
+      `${MOCKED_VC_SERVICE}/verify`,
     );
   }
   if (options.derivationPresent) {
     wellKnown.addIri(
       "http://www.w3.org/ns/solid/vc#derivationService",
-      `${MOCKED_VC_SERVICE}/derive`
+      `${MOCKED_VC_SERVICE}/derive`,
     );
   }
   return setThing(
     mockSolidDatasetFrom("https://vc-service.iri/.well-known/solid"),
-    wellKnown.build()
+    wellKnown.build(),
   );
 };
 
@@ -91,7 +91,7 @@ describe("getVerifiableCredentialApiConfiguration", () => {
         .fn(getSolidDataset)
         .mockResolvedValueOnce(mockVcWellKnown({}));
       await getVerifiableCredentialApiConfiguration(
-        "https://some.example.vc/service"
+        "https://some.example.vc/service",
       );
       expect(clientModule.getSolidDataset).toHaveBeenCalledWith(
         "https://some.example.vc/.well-known/vc-configuration",
@@ -99,101 +99,103 @@ describe("getVerifiableCredentialApiConfiguration", () => {
           parsers: {
             "application/ld+json": expect.anything(),
           },
-        }
+        },
       );
     });
 
     it("returns the IRI of the issuer service if present", async () => {
       const clientModule = jest.requireMock(
-        "@inrupt/solid-client"
+        "@inrupt/solid-client",
       ) as jest.Mocked<typeof SolidClient>;
       clientModule.getSolidDataset.mockResolvedValueOnce(
-        mockVcWellKnown({ issuerPresent: true })
+        mockVcWellKnown({ issuerPresent: true }),
       );
       const result = await getVerifiableCredentialApiConfiguration(
-        "https://some.example.wellknown.iri"
+        "https://some.example.wellknown.iri",
       );
       expect(result).toEqual(
-        expect.objectContaining({ issuerService: `${MOCKED_VC_SERVICE}/issue` })
+        expect.objectContaining({
+          issuerService: `${MOCKED_VC_SERVICE}/issue`,
+        }),
       );
     });
 
     it("returns the IRI of the status service if present", async () => {
       const clientModule = jest.requireMock(
-        "@inrupt/solid-client"
+        "@inrupt/solid-client",
       ) as jest.Mocked<typeof SolidClient>;
       clientModule.getSolidDataset.mockResolvedValueOnce(
-        mockVcWellKnown({ statusPresent: true })
+        mockVcWellKnown({ statusPresent: true }),
       );
       const result = await getVerifiableCredentialApiConfiguration(
-        "https://some.example.wellknown.iri"
+        "https://some.example.wellknown.iri",
       );
       expect(result).toEqual(
         expect.objectContaining({
           statusService: `${MOCKED_VC_SERVICE}/status`,
-        })
+        }),
       );
     });
 
     it("returns the IRI of the verifier service if present", async () => {
       const clientModule = jest.requireMock(
-        "@inrupt/solid-client"
+        "@inrupt/solid-client",
       ) as jest.Mocked<typeof SolidClient>;
       clientModule.getSolidDataset.mockResolvedValueOnce(
-        mockVcWellKnown({ verifierPresent: true })
+        mockVcWellKnown({ verifierPresent: true }),
       );
       const result = await getVerifiableCredentialApiConfiguration(
-        "https://some.example.wellknown.iri"
+        "https://some.example.wellknown.iri",
       );
       expect(result).toEqual(
         expect.objectContaining({
           verifierService: `${MOCKED_VC_SERVICE}/verify`,
-        })
+        }),
       );
     });
 
     it("returns the IRI of the derivation service if present", async () => {
       const clientModule = jest.requireMock(
-        "@inrupt/solid-client"
+        "@inrupt/solid-client",
       ) as jest.Mocked<typeof SolidClient>;
       clientModule.getSolidDataset.mockResolvedValueOnce(
-        mockVcWellKnown({ derivationPresent: true })
+        mockVcWellKnown({ derivationPresent: true }),
       );
       const result = await getVerifiableCredentialApiConfiguration(
-        "https://some.example.wellknown.iri"
+        "https://some.example.wellknown.iri",
       );
       expect(result).toEqual(
         expect.objectContaining({
           derivationService: `${MOCKED_VC_SERVICE}/derive`,
-        })
+        }),
       );
     });
 
     it("returns the IRI of multiple services if present", async () => {
       const clientModule = jest.requireMock(
-        "@inrupt/solid-client"
+        "@inrupt/solid-client",
       ) as jest.Mocked<typeof SolidClient>;
       clientModule.getSolidDataset.mockResolvedValueOnce(
-        mockVcWellKnown({ derivationPresent: true, issuerPresent: true })
+        mockVcWellKnown({ derivationPresent: true, issuerPresent: true }),
       );
       const result = await getVerifiableCredentialApiConfiguration(
-        "https://some.example.wellknown.iri"
+        "https://some.example.wellknown.iri",
       );
       expect(result).toEqual(
         expect.objectContaining({
           issuerService: `${MOCKED_VC_SERVICE}/issue`,
           derivationService: `${MOCKED_VC_SERVICE}/derive`,
-        })
+        }),
       );
     });
 
     it("returns an empty object if no services are present", async () => {
       const clientModule = jest.requireMock(
-        "@inrupt/solid-client"
+        "@inrupt/solid-client",
       ) as jest.Mocked<typeof SolidClient>;
       clientModule.getSolidDataset.mockResolvedValueOnce(mockVcWellKnown({}));
       const result = await getVerifiableCredentialApiConfiguration(
-        "https://some.example.wellknown.iri"
+        "https://some.example.wellknown.iri",
       );
 
       expect(result.derivationService).toBeUndefined();
@@ -204,17 +206,17 @@ describe("getVerifiableCredentialApiConfiguration", () => {
 
     it("makes the legacy endpoints available on the legacy object", async () => {
       const clientModule = jest.requireMock(
-        "@inrupt/solid-client"
+        "@inrupt/solid-client",
       ) as jest.Mocked<typeof SolidClient>;
       clientModule.getSolidDataset.mockResolvedValueOnce(
-        mockVcWellKnown({ derivationPresent: true, issuerPresent: true })
+        mockVcWellKnown({ derivationPresent: true, issuerPresent: true }),
       );
       const result = await getVerifiableCredentialApiConfiguration(
-        "https://some.example.wellknown.iri"
+        "https://some.example.wellknown.iri",
       );
       expect(result.issuerService).toStrictEqual(result.legacy.issuerService);
       expect(result.derivationService).toStrictEqual(
-        result.legacy.derivationService
+        result.legacy.derivationService,
       );
     });
   });
@@ -222,13 +224,13 @@ describe("getVerifiableCredentialApiConfiguration", () => {
   describe("spec-compliant discovery", () => {
     it("doesn't fail if the legacy endpoints aren't discoverable", async () => {
       const clientModule = jest.requireMock(
-        "@inrupt/solid-client"
+        "@inrupt/solid-client",
       ) as jest.Mocked<typeof SolidClient>;
       clientModule.getSolidDataset.mockRejectedValueOnce(
-        new Error("A network error")
+        new Error("A network error"),
       );
       const result = await getVerifiableCredentialApiConfiguration(
-        "https://some.example.wellknown.iri"
+        "https://some.example.wellknown.iri",
       );
       expect(result.specCompliant).toBeDefined();
       expect(result.legacy).toEqual({});
@@ -237,35 +239,35 @@ describe("getVerifiableCredentialApiConfiguration", () => {
     it("builds spec-compliant endpoints", async () => {
       const BASE_URL = "https://some.example.iri";
       const result = await getVerifiableCredentialApiConfiguration(
-        "https://some.example.iri"
+        "https://some.example.iri",
       );
       expect(result.specCompliant.credentialVerifierService).toBe(
-        `${BASE_URL}/credentials/verify`
+        `${BASE_URL}/credentials/verify`,
       );
       expect(result.specCompliant.derivationService).toBe(
-        `${BASE_URL}/credentials/derive`
+        `${BASE_URL}/credentials/derive`,
       );
       expect(result.specCompliant.exchangeService).toBe(
-        `${BASE_URL}/exchanges`
+        `${BASE_URL}/exchanges`,
       );
       expect(result.specCompliant.holderPresentationAll).toBe(
-        `${BASE_URL}/presentations`
+        `${BASE_URL}/presentations`,
       );
       expect(result.specCompliant.issuerCredentialAll).toBe(
-        `${BASE_URL}/credentials`
+        `${BASE_URL}/credentials`,
       );
       expect(result.specCompliant.issuerService).toBe(
-        `${BASE_URL}/credentials/issue`
+        `${BASE_URL}/credentials/issue`,
       );
       expect(result.specCompliant.presentationVerifierService).toBe(
-        `${BASE_URL}/presentations/verify`
+        `${BASE_URL}/presentations/verify`,
       );
       expect(result.specCompliant.proveService).toBe(
-        `${BASE_URL}/presentations/prove`
+        `${BASE_URL}/presentations/prove`,
       );
       expect(result.specCompliant.queryService).toBe(`${BASE_URL}/query`);
       expect(result.specCompliant.statusService).toBe(
-        `${BASE_URL}/credentials/status`
+        `${BASE_URL}/credentials/status`,
       );
     });
   });

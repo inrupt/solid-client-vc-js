@@ -40,7 +40,7 @@ import {
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
+    "@inrupt/universal-fetch",
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
@@ -71,8 +71,8 @@ describe("isVerifiableCredential", () => {
           mockPartialCredential({
             ...defaultCredentialClaims,
             [`${entry}`]: undefined,
-          })
-        )
+          }),
+        ),
       ).toBe(false);
     });
 
@@ -102,8 +102,8 @@ describe("isVerifiableCredential", () => {
           mockPartialCredential({
             ...defaultCredentialClaims,
             issuanceDate: "Not a date",
-          })
-        )
+          }),
+        ),
       ).toBe(false);
     });
 
@@ -113,8 +113,8 @@ describe("isVerifiableCredential", () => {
           mockPartialCredential({
             ...defaultCredentialClaims,
             proofCreated: "Not a date",
-          })
-        )
+          }),
+        ),
       ).toBe(false);
     });
   });
@@ -201,8 +201,8 @@ describe("isVerifiablePresentation", () => {
           mockPartialPresentation([], {
             ...defaultVerifiableClaims,
             [`${entry}`]: undefined,
-          })
-        )
+          }),
+        ),
       ).toBe(false);
     });
 
@@ -224,7 +224,7 @@ describe("isVerifiablePresentation", () => {
 describe("concatenateContexts", () => {
   it("concatenates string-like contexts", () => {
     expect(
-      concatenateContexts("https://some.context", "https://some.other.context")
+      concatenateContexts("https://some.context", "https://some.other.context"),
     ).toEqual(["https://some.context", "https://some.other.context"]);
   });
 
@@ -232,8 +232,8 @@ describe("concatenateContexts", () => {
     expect(
       concatenateContexts(
         ["https://some.context"],
-        ["https://some.other.context"]
-      )
+        ["https://some.other.context"],
+      ),
     ).toEqual(["https://some.context", "https://some.other.context"]);
   });
 
@@ -241,14 +241,14 @@ describe("concatenateContexts", () => {
     expect(
       concatenateContexts(
         ["https://some.context"],
-        "https://some.other.context"
-      )
+        "https://some.other.context",
+      ),
     ).toEqual(["https://some.context", "https://some.other.context"]);
   });
 
   it("prevents a value to be added twice", () => {
     expect(
-      concatenateContexts("https://some.context", "https://some.context")
+      concatenateContexts("https://some.context", "https://some.context"),
     ).toEqual(["https://some.context"]);
   });
 
@@ -262,20 +262,20 @@ describe("concatenateContexts", () => {
 describe("getVerifiableCredential", () => {
   it("defaults to an unauthenticated fetch", async () => {
     const mockedFetchModule = jest.requireMock(
-      "@inrupt/universal-fetch"
+      "@inrupt/universal-fetch",
     ) as jest.Mocked<typeof UniversalFetch>;
     mockedFetchModule.fetch.mockResolvedValueOnce(
-      new Response(JSON.stringify(mockDefaultCredential()))
+      new Response(JSON.stringify(mockDefaultCredential())),
     );
 
     const redirectUrl = new URL("https://redirect.url");
     redirectUrl.searchParams.append(
       "requestVcUrl",
-      encodeURI("https://some.vc")
+      encodeURI("https://some.vc"),
     );
     redirectUrl.searchParams.append(
       "redirectUrl",
-      encodeURI("https://requestor.redirect.url")
+      encodeURI("https://requestor.redirect.url"),
     );
 
     await getVerifiableCredential("https://some.vc");
@@ -286,7 +286,7 @@ describe("getVerifiableCredential", () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()))
+        new Response(JSON.stringify(mockDefaultCredential())),
       );
 
     await getVerifiableCredential("https://some.vc", {
@@ -299,13 +299,13 @@ describe("getVerifiableCredential", () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(undefined, { status: 401, statusText: "Unauthenticated" })
+        new Response(undefined, { status: 401, statusText: "Unauthenticated" }),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(/https:\/\/some.vc.*401.*Unauthenticated/);
   });
 
@@ -317,7 +317,7 @@ describe("getVerifiableCredential", () => {
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(/https:\/\/some.vc.*JSON/);
   });
 
@@ -325,13 +325,13 @@ describe("getVerifiableCredential", () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ something: "but not a VC" }))
+        new Response(JSON.stringify({ something: "but not a VC" })),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(/https:\/\/some.vc.*Verifiable Credential/);
   });
 
@@ -339,7 +339,7 @@ describe("getVerifiableCredential", () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()))
+        new Response(JSON.stringify(mockDefaultCredential())),
       );
 
     const vc = await getVerifiableCredential("https://some.vc", {
