@@ -98,7 +98,7 @@ export async function query(
   vpRequest: VerifiablePresentationRequest,
   options?: Partial<{
     fetch: typeof fallbackFetch;
-  }>
+  }>,
 ): Promise<VerifiablePresentation> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
@@ -113,7 +113,7 @@ export async function query(
   });
   if (!response.ok) {
     throw new Error(
-      `The query endpoint [${queryEndpoint}] returned an error: ${response.status} ${response.statusText}`
+      `The query endpoint [${queryEndpoint}] returned an error: ${response.status} ${response.statusText}`,
     );
   }
 
@@ -122,14 +122,14 @@ export async function query(
     data = normalizeVp(await response.json());
   } catch (e) {
     throw new Error(
-      `The holder [${queryEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`
+      `The holder [${queryEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`,
     );
   }
   if (!isVerifiablePresentation(data)) {
     throw new Error(
       `The holder [${queryEndpoint}] did not return a Verifiable Presentation: ${JSON.stringify(
-        data
-      )}`
+        data,
+      )}`,
     );
   }
   return data;

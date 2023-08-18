@@ -37,7 +37,7 @@ const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;
  */
 function buildLegacyQuery(
   vcShape: Partial<VerifiableCredential>,
-  includeExpiredVc: boolean
+  includeExpiredVc: boolean,
 ) {
   // credentialClaims should contain all the claims, but not the context.
   const { "@context": claimsContext, ...credentialClaims } = vcShape;
@@ -59,7 +59,7 @@ function buildLegacyQuery(
  * @returns A Query by Example VP Request based on the provided example.
  */
 function buildQueryByExample(
-  vcShape: Partial<VerifiableCredential>
+  vcShape: Partial<VerifiableCredential>,
 ): VerifiablePresentationRequest {
   return {
     query: [
@@ -99,7 +99,7 @@ export async function getVerifiableCredentialAllFromShape(
   options?: Partial<{
     fetch: typeof fallbackFetch;
     includeExpiredVc: boolean;
-  }>
+  }>,
 ): Promise<VerifiableCredential[]> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
@@ -114,7 +114,7 @@ export async function getVerifiableCredentialAllFromShape(
     : // The target endpoint is legacy, and uses a proprietary request format.
       (buildLegacyQuery(
         vcShape,
-        options?.includeExpiredVc ?? false
+        options?.includeExpiredVc ?? false,
         // The legacy proprietary format is casted as a VP request to be passed to the `query` function.
       ) as unknown as VerifiablePresentationRequest);
   const vp = await query(holderEndpoint, vpRequest, {

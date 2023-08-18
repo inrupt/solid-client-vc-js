@@ -28,7 +28,7 @@ import defaultRevokeVerifiableCredential, {
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
+    "@inrupt/universal-fetch",
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
@@ -48,7 +48,7 @@ describe("revokeVerifiableCredential", () => {
         "https://some.example#credential",
         {
           fetch: mockedFetch,
-        }
+        },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -57,12 +57,12 @@ describe("revokeVerifiableCredential", () => {
 
   it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
     const mockedFetch = jest.requireMock(
-      "@inrupt/universal-fetch"
+      "@inrupt/universal-fetch",
     ) as jest.Mocked<typeof UniversalFetch>;
     try {
       await revokeVerifiableCredential(
         "https://some.endpoint",
-        "https://some.example#credential"
+        "https://some.example#credential",
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -76,14 +76,14 @@ describe("revokeVerifiableCredential", () => {
         new Response(undefined, {
           status: 400,
           statusText: "Bad request",
-        })
+        }),
       );
     await expect(
       revokeVerifiableCredential(
         "https://some.endpoint",
         "https://some.example#credential",
-        { fetch: mockedFetch }
-      )
+        { fetch: mockedFetch },
+      ),
     ).rejects.toThrow(/some.endpoint.*400.*Bad request/);
   });
 
@@ -94,14 +94,14 @@ describe("revokeVerifiableCredential", () => {
         new Response(undefined, {
           status: 200,
           statusText: "OK",
-        })
+        }),
       );
     await revokeVerifiableCredential(
       "https://some.endpoint",
       "https://some.example#credential",
       {
         fetch: mockedFetch,
-      }
+      },
     );
     expect(mockedFetch).toHaveBeenCalledWith(
       "https://some.endpoint",
@@ -119,7 +119,7 @@ describe("revokeVerifiableCredential", () => {
             },
           ],
         }),
-      })
+      }),
     );
   });
 });

@@ -30,7 +30,7 @@ import defaultIssueVerifiableCredential, {
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
+    "@inrupt/universal-fetch",
   ) as jest.Mocked<typeof UniversalFetch>;
   return {
     ...fetchModule,
@@ -48,7 +48,7 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some.context"] },
         {
           fetch: mockedFetch,
-        }
+        },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -57,13 +57,13 @@ describe("issueVerifiableCredential", () => {
 
   it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
     const mockedFetchModule = jest.requireMock(
-      "@inrupt/universal-fetch"
+      "@inrupt/universal-fetch",
     ) as jest.Mocked<typeof UniversalFetch>;
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
-        { "@context": ["https://some.context"] }
+        { "@context": ["https://some.context"] },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -77,17 +77,17 @@ describe("issueVerifiableCredential", () => {
         new Response(undefined, {
           status: 400,
           statusText: "Bad request",
-        })
+        }),
       );
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch }
-      )
+        { fetch: mockedFetch },
+      ),
     ).rejects.toThrow(
-      /https:\/\/some\.endpoint.*could not successfully issue a VC.*400.*Bad request/
+      /https:\/\/some\.endpoint.*could not successfully issue a VC.*400.*Bad request/,
     );
   });
 
@@ -97,15 +97,15 @@ describe("issueVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ someField: "Not a credential" }), {
           status: 201,
-        })
+        }),
       );
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch }
-      )
+        { fetch: mockedFetch },
+      ),
     ).rejects.toThrow("unexpected object: ");
   });
 
@@ -113,15 +113,15 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()), { status: 201 })
+        new Response(JSON.stringify(mockDefaultCredential()), { status: 201 }),
       );
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch }
-      )
+        { fetch: mockedFetch },
+      ),
     ).resolves.toEqual(mockDefaultCredential());
   });
 
@@ -132,13 +132,13 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
     expect(mockedFetch).toHaveBeenCalledWith(
       "https://some.endpoint",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -149,7 +149,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -160,7 +160,7 @@ describe("issueVerifiableCredential", () => {
         headers: {
           "Content-Type": "application/json",
         },
-      })
+      }),
     );
   });
 
@@ -171,7 +171,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
         undefined,
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -187,7 +187,7 @@ describe("issueVerifiableCredential", () => {
             },
           },
         }),
-      })
+      }),
     );
   });
 
@@ -198,7 +198,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some-subject.context"] },
         { "@context": ["https://some-credential.context"], aClaim: "a value" },
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -217,7 +217,7 @@ describe("issueVerifiableCredential", () => {
             credentialSubject: {},
           },
         }),
-      })
+      }),
     );
   });
 
@@ -228,7 +228,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some-subject.context"] },
         { "@context": ["https://some-credential.context"], type: "some-type" },
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -246,7 +246,7 @@ describe("issueVerifiableCredential", () => {
             credentialSubject: {},
           },
         }),
-      })
+      }),
     );
   });
 
@@ -262,7 +262,7 @@ describe("issueVerifiableCredential", () => {
         },
         {
           fetch: mockedFetch,
-        }
+        },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -280,7 +280,7 @@ describe("issueVerifiableCredential", () => {
             credentialSubject: {},
           },
         }),
-      })
+      }),
     );
   });
 
@@ -299,7 +299,7 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some-credential.context"] },
         {
           fetch: mockedFetch,
-        }
+        },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -319,7 +319,7 @@ describe("issueVerifiableCredential", () => {
             },
           },
         }),
-      })
+      }),
     );
   });
 
@@ -333,7 +333,7 @@ describe("issueVerifiableCredential", () => {
         undefined,
         {
           fetch: mockedFetch,
-        }
+        },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -350,7 +350,7 @@ describe("issueVerifiableCredential", () => {
             },
           },
         }),
-      })
+      }),
     );
   });
 
@@ -362,7 +362,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.subject",
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
         undefined,
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -379,7 +379,7 @@ describe("issueVerifiableCredential", () => {
             },
           },
         }),
-      })
+      }),
     );
   });
 
@@ -396,7 +396,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(mockedVc), {
         status: 201,
-      })
+      }),
     );
     const resultVc = await issueVerifiableCredential(
       "https://some.endpoint",
@@ -407,15 +407,15 @@ describe("issueVerifiableCredential", () => {
       },
       {
         fetch: mockedFetch,
-      }
+      },
     );
     expect(resultVc.proof.proofValue).toBe(
-      mockDefaultCredential().proof.proofValue
+      mockDefaultCredential().proof.proofValue,
     );
     expect(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      resultVc.proof["https://w3id.org/security#proofValue"]
+      resultVc.proof["https://w3id.org/security#proofValue"],
     ).toBeUndefined();
   });
 });

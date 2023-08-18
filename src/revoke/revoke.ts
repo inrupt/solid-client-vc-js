@@ -44,7 +44,7 @@ export async function revokeVerifiableCredential(
   credentialId: Iri,
   options?: {
     fetch: typeof fetch;
-  }
+  },
 ): Promise<void> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
@@ -67,7 +67,7 @@ export async function revokeVerifiableCredential(
   });
   if (!response.ok) {
     throw new Error(
-      `The issuer [${issuerEndpoint}] returned an error: ${response.status} ${response.statusText}`
+      `The issuer [${issuerEndpoint}] returned an error: ${response.status} ${response.statusText}`,
     );
   }
 }

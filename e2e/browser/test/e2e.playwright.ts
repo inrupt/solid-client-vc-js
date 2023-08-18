@@ -41,13 +41,13 @@ test("Issue credential to a resource, then revoking it", async ({
     page.waitForResponse((response) => response.status() === 201),
   ]);
   await expect(
-    page.innerText("pre[data-testid=verifiable-credential]")
+    page.innerText("pre[data-testid=verifiable-credential]"),
   ).resolves.not.toBe("");
 
   // Validation of type claims
 
   const vcData = JSON.parse(
-    await page.innerText("pre[data-testid=verifiable-credential]")
+    await page.innerText("pre[data-testid=verifiable-credential]"),
   );
 
   expect(vcData.type).toContain("VerifiableCredential");
@@ -60,7 +60,7 @@ test("Issue credential to a resource, then revoking it", async ({
     page.waitForResponse((response) => response.status() === 201),
   ]);
   await expect(
-    page.innerText("pre[data-testid=verifiable-credential]")
+    page.innerText("pre[data-testid=verifiable-credential]"),
   ).resolves.not.toBe("");
 });
 
@@ -79,6 +79,6 @@ test("Try issuing an invalid credential, get an error", async ({
   ]);
   // Validate we get nothing in response
   await expect(
-    page.innerText("pre[data-testid=verifiable-credential]")
+    page.innerText("pre[data-testid=verifiable-credential]"),
   ).resolves.toBe("");
 });

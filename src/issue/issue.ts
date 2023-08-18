@@ -46,7 +46,7 @@ async function internal_issueVerifiableCredential(
   issuerEndpoint: Iri,
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
-  options?: OptionsType
+  options?: OptionsType,
 ): Promise<VerifiableCredential> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
@@ -78,7 +78,7 @@ async function internal_issueVerifiableCredential(
       "@context": concatenateContexts(
         defaultContext,
         subjectClaimsContext,
-        credentialClaimsContext
+        credentialClaimsContext,
       ),
       type: [...defaultCredentialTypes, ...credentialTypes],
       ...nonTypeCredentialClaims,
@@ -93,12 +93,12 @@ async function internal_issueVerifiableCredential(
       },
       method: "POST",
       body: JSON.stringify(credentialIssueBody),
-    }
+    },
   );
   if (!response.ok) {
     // TODO: use the error library when available.
     throw new Error(
-      `The VC issuing endpoint [${issuerEndpoint}] could not successfully issue a VC: ${response.status} ${response.statusText}`
+      `The VC issuing endpoint [${issuerEndpoint}] could not successfully issue a VC: ${response.status} ${response.statusText}`,
     );
   }
   const jsonData = normalizeVc(await response.json());
@@ -109,8 +109,8 @@ async function internal_issueVerifiableCredential(
     `The VC issuing endpoint [${issuerEndpoint}] returned an unexpected object: ${JSON.stringify(
       jsonData,
       null,
-      "  "
-    )}`
+      "  ",
+    )}`,
   );
 }
 
@@ -133,7 +133,7 @@ export async function issueVerifiableCredential(
   issuerEndpoint: Iri,
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
-  options?: OptionsType
+  options?: OptionsType,
 ): Promise<VerifiableCredential>;
 /**
  * @deprecated Please remove the `subjectId` parameter
@@ -143,7 +143,7 @@ export async function issueVerifiableCredential(
   subjectId: Iri,
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
-  options?: OptionsType
+  options?: OptionsType,
 ): Promise<VerifiableCredential>;
 // The signature of the implementation here is a bit confusing, but it avoid
 // breaking changes until we remove the `subjectId` completely from the API
@@ -152,7 +152,7 @@ export async function issueVerifiableCredential(
   subjectIdOrClaims: Iri | JsonLd,
   subjectOrCredentialClaims: JsonLd | undefined,
   credentialClaimsOrOptions?: JsonLd | OptionsType,
-  options?: OptionsType
+  options?: OptionsType,
 ): Promise<VerifiableCredential> {
   if (typeof subjectIdOrClaims === "string") {
     // The function has been called with the deprecated signature, and the
@@ -161,14 +161,14 @@ export async function issueVerifiableCredential(
       issuerEndpoint,
       subjectOrCredentialClaims as JsonLd,
       credentialClaimsOrOptions as JsonLd,
-      options
+      options,
     );
   }
   return internal_issueVerifiableCredential(
     issuerEndpoint,
     subjectIdOrClaims,
     subjectOrCredentialClaims,
-    credentialClaimsOrOptions as OptionsType
+    credentialClaimsOrOptions as OptionsType,
   );
 }
 

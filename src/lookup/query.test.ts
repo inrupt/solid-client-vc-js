@@ -31,7 +31,7 @@ import {
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
+    "@inrupt/universal-fetch",
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
@@ -59,24 +59,24 @@ describe("query", () => {
         .mockResolvedValueOnce(
           new Response(JSON.stringify(mockDefaultPresentation()), {
             status: 200,
-          })
+          }),
         );
       await query(
         "https://some.endpoint/query",
         { query: [mockRequest] },
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       expect(mockedFetch).toHaveBeenCalled();
     });
 
     it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
       const mockedFetch = jest.requireMock(
-        "@inrupt/universal-fetch"
+        "@inrupt/universal-fetch",
       ) as jest.Mocked<typeof UniversalFetch>;
       mockedFetch.fetch.mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultPresentation()), {
           status: 200,
-        })
+        }),
       );
       await query("https://some.endpoint/query", { query: [mockRequest] });
       expect(mockedFetch.fetch).toHaveBeenCalled();
@@ -88,14 +88,14 @@ describe("query", () => {
         .mockResolvedValueOnce(
           new Response(undefined, {
             status: 404,
-          })
+          }),
         );
       await expect(() =>
         query(
           "https://example.org/query",
           { query: [mockRequest] },
-          { fetch: mockedFetch }
-        )
+          { fetch: mockedFetch },
+        ),
       ).rejects.toThrow();
     });
 
@@ -105,14 +105,14 @@ describe("query", () => {
         .mockResolvedValueOnce(
           new Response("Not JSON", {
             status: 200,
-          })
+          }),
         );
       await expect(() =>
         query(
           "https://example.org/query",
           { query: [mockRequest] },
-          { fetch: mockedFetch }
-        )
+          { fetch: mockedFetch },
+        ),
       ).rejects.toThrow();
     });
 
@@ -122,14 +122,14 @@ describe("query", () => {
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ json: "but not a VP" }), {
             status: 200,
-          })
+          }),
         );
       await expect(() =>
         query(
           "https://example.org/query",
           { query: [mockRequest] },
-          { fetch: mockedFetch }
-        )
+          { fetch: mockedFetch },
+        ),
       ).rejects.toThrow();
     });
 
@@ -139,12 +139,12 @@ describe("query", () => {
         .mockResolvedValueOnce(
           new Response(JSON.stringify(mockDefaultPresentation()), {
             status: 200,
-          })
+          }),
         );
       await query(
         "https://some.endpoint/query",
         { query: [mockRequest] },
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       expect(mockedFetch).toHaveBeenCalledWith(
         "https://some.endpoint/query",
@@ -153,7 +153,7 @@ describe("query", () => {
             "Content-Type": "application/json",
           },
           method: "POST",
-        })
+        }),
       );
     });
 
@@ -163,14 +163,14 @@ describe("query", () => {
         .mockResolvedValueOnce(
           new Response(JSON.stringify(mockDefaultPresentation()), {
             status: 200,
-          })
+          }),
         );
       await expect(
         query(
           "https://example.org/query",
           { query: [mockRequest] },
-          { fetch: mockedFetch }
-        )
+          { fetch: mockedFetch },
+        ),
       ).resolves.toStrictEqual(mockDefaultPresentation());
     });
 
@@ -189,16 +189,16 @@ describe("query", () => {
         .mockResolvedValueOnce(
           new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
             status: 200,
-          })
+          }),
         );
       const resultVp = await query(
         "https://example.org/query",
         { query: [mockRequest] },
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(resultVp.verifiableCredential![0].proof.proofValue).toBe(
-        mockDefaultCredential().proof.proofValue
+        mockDefaultCredential().proof.proofValue,
       );
       expect(
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -206,7 +206,7 @@ describe("query", () => {
         // @ts-ignore
         resultVp.verifiableCredential![0].proof[
           "https://w3id.org/security#proofValue"
-        ]
+        ],
       ).toBeUndefined();
     });
   });
