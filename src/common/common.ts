@@ -412,14 +412,14 @@ export async function getVerifiableCredentialApiConfiguration(
 function validateVcResponse(response: Response, vcUrl: string): Response {
   if (!response.ok) {
     throw new Error(
-      `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`
+      `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`,
     );
   }
 
   const contentType = response.headers.get("Content-Type");
   if (!contentType) {
     throw new Error(
-      `Fetching the Verifiable Credential [${vcUrl}] failed: Response does not have a Content-Type header; expected application/ld+json`
+      `Fetching the Verifiable Credential [${vcUrl}] failed: Response does not have a Content-Type header; expected application/ld+json`,
     );
   }
 
@@ -434,7 +434,7 @@ function validateVcResponse(response: Response, vcUrl: string): Response {
     !subtypes.includes("json")
   ) {
     throw new Error(
-      `Fetching the Verifiable Credential [${vcUrl}] failed: Response has an unsupported Content-Type [${contentType}]; expected application/ld+json`
+      `Fetching the Verifiable Credential [${vcUrl}] failed: Response has an unsupported Content-Type [${contentType}]; expected application/ld+json`,
     );
   }
 
@@ -446,7 +446,7 @@ async function responseToVcStore(
   vcUrl: UrlString,
   options?: Partial<{
     fetch: typeof fetch;
-  }>
+  }>,
 ): Promise<Store> {
   try {
     return await jsonLdResponseToStore(validateVcResponse(response, vcUrl), {
@@ -455,7 +455,7 @@ async function responseToVcStore(
     });
   } catch (e) {
     throw new Error(
-      `Parsing the Verifiable Credential [${vcUrl}] as JSON-LD failed: ${e}`
+      `Parsing the Verifiable Credential [${vcUrl}] as JSON-LD failed: ${e}`,
     );
   }
 }
@@ -481,25 +481,25 @@ const PROOF_VALUE = `${SEC}proofValue`;
  */
 export async function getVerifiableCredentialFromStore(
   vcStore: Store,
-  vcUrl: UrlString
+  vcUrl: UrlString,
 ): Promise<VerifiableCredential & DatasetCore> {
   const vcContext = await getVcContext();
 
   const vcs = vcStore.getSubjects(
     RDF_TYPE,
     VERIFIABLE_CREDENTIAL,
-    DF.defaultGraph()
+    DF.defaultGraph(),
   );
   if (vcs.length !== 1) {
     throw new Error(
-      `Expected exactly one Verifiable Credential in [${vcUrl}], received: ${vcs.length}`
+      `Expected exactly one Verifiable Credential in [${vcUrl}], received: ${vcs.length}`,
     );
   }
 
   const [vc] = vcs;
   if (vc.termType !== "NamedNode") {
     throw new Error(
-      `Expected the Verifiable Credential in [${vcUrl}] to be a Named Node, received: ${vc.termType}`
+      `Expected the Verifiable Credential in [${vcUrl}] to be a Named Node, received: ${vc.termType}`,
     );
   }
 
@@ -507,7 +507,7 @@ export async function getVerifiableCredentialFromStore(
   for (const t of vcStore.getObjects(vc, RDF_TYPE, DF.defaultGraph())) {
     if (t.termType !== "NamedNode") {
       throw new Error(
-        `Expected all VC types to be Named Nodes but received [${t.value}] of termType [${t.termType}]`
+        `Expected all VC types to be Named Nodes but received [${t.value}] of termType [${t.termType}]`,
       );
     }
 
@@ -519,13 +519,13 @@ export async function getVerifiableCredentialFromStore(
   function getSingleObject(
     fullProperty: string,
     subject?: Term,
-    graph: Term = DF.defaultGraph()
+    graph: Term = DF.defaultGraph(),
   ): Term {
     const objects = vcStore.getObjects(subject ?? vc, fullProperty, graph);
 
     if (objects.length !== 1) {
       throw new Error(
-        `Expected exactly one [${fullProperty}] for the Verifiable Credential ${vc.value}, received: ${objects.length}`
+        `Expected exactly one [${fullProperty}] for the Verifiable Credential ${vc.value}, received: ${objects.length}`,
       );
     }
 
@@ -537,13 +537,13 @@ export async function getVerifiableCredentialFromStore(
     subject?: Term,
     graph?: Term,
     termType = "NamedNode",
-    customContext = vcContext
+    customContext = vcContext,
   ) {
     const object = getSingleObject(fullProperty, subject, graph);
 
     if (object.termType !== termType) {
       throw new Error(
-        `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a ${termType}, received: ${object.termType}`
+        `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a ${termType}, received: ${object.termType}`,
       );
     }
 
@@ -556,18 +556,18 @@ export async function getVerifiableCredentialFromStore(
   function getSingleDateTime(
     fullProperty: string,
     subject?: Term,
-    graph?: Term
+    graph?: Term,
   ) {
     const object = getSingleObject(fullProperty, subject, graph);
 
     if (object.termType !== "Literal") {
       throw new Error(
-        `Expected issuanceDate to be a Literal, received: ${object.termType}`
+        `Expected issuanceDate to be a Literal, received: ${object.termType}`,
       );
     }
     if (!object.datatype.equals(DF.namedNode(DATE_TIME))) {
       throw new Error(
-        `Expected issuanceDate to have dataType [${DATE_TIME}], received: [${object.datatype.value}]`
+        `Expected issuanceDate to have dataType [${DATE_TIME}], received: [${object.datatype.value}]`,
       );
     }
 
@@ -584,7 +584,7 @@ export async function getVerifiableCredentialFromStore(
 
   if (proofs.length !== 1) {
     throw new Error(
-      `Expected exactly one proof to live in the proofs graph, received ${proofs.length}`
+      `Expected exactly one proof to live in the proofs graph, received ${proofs.length}`,
     );
   }
 
@@ -609,7 +609,7 @@ export async function getVerifiableCredentialFromStore(
     ) {
       proofPurposeContext = await getVcContext(
         proposedContext,
-        proposedContext.proofPurpose["@context"]
+        proposedContext.proofPurpose["@context"],
       );
     } else {
       proofPurposeContext = proofContext;
@@ -622,7 +622,7 @@ export async function getVerifiableCredentialFromStore(
     for (const predicate of vcStore.getPredicates(
       subject,
       null,
-      DF.defaultGraph()
+      DF.defaultGraph(),
     )) {
       if (predicate.termType !== "NamedNode") {
         throw new Error("Predicate must be a namedNode");
@@ -635,7 +635,7 @@ export async function getVerifiableCredentialFromStore(
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         .map((obj) => writeObject(obj, writtenTerms))
         .filter(
-          (obj) => typeof obj !== "object" || Object.keys(obj).length >= 1
+          (obj) => typeof obj !== "object" || Object.keys(obj).length >= 1,
         );
 
       if (objects.length === 1) {
@@ -689,14 +689,14 @@ export async function getVerifiableCredentialFromStore(
       created: getSingleDateTime(
         "http://purl.org/dc/terms/created",
         proof,
-        proofGraph
+        proofGraph,
       ),
       proofPurpose: getSingleObjectOfTermType(
         PROOF_PURPOSE,
         proof,
         proofGraph,
         "NamedNode",
-        proofPurposeContext
+        proofPurposeContext,
       ),
       type: proofType,
       verificationMethod: getSingleObjectOfTermType(
@@ -704,13 +704,13 @@ export async function getVerifiableCredentialFromStore(
         proof,
         proofGraph,
         "NamedNode",
-        proofContext
+        proofContext,
       ),
       proofValue: getSingleObjectOfTermType(
         PROOF_VALUE,
         proof,
         proofGraph,
-        "Literal"
+        "Literal",
       ),
     },
 
@@ -753,7 +753,7 @@ export async function getVerifiableCredentialFromResponse(
   vcUrl: UrlString,
   options?: Partial<{
     fetch: typeof fetch;
-  }>
+  }>,
 ): Promise<VerifiableCredential & DatasetCore> {
   const vcStore = await responseToVcStore(response, vcUrl, options);
   return getVerifiableCredentialFromStore(vcStore, vcUrl);
@@ -772,7 +772,7 @@ export async function getVerifiableCredential(
   vcUrl: UrlString,
   options?: Partial<{
     fetch: typeof fetch;
-  }>
+  }>,
 ): Promise<VerifiableCredential & DatasetCore> {
   const authFetch = options?.fetch ?? uniFetch;
   const response = await authFetch(vcUrl);

@@ -71,7 +71,7 @@ export class CachedJsonLdParser extends JsonLdParser {
   constructor(options?: Options) {
     super({
       documentLoader: new CachedFetchDocumentLoader(
-        options?.fetch ?? defaultFetch
+        options?.fetch ?? defaultFetch,
       ),
       baseIRI: options?.baseIRI,
     });
@@ -105,7 +105,7 @@ export async function jsonLdStringToStore(data: string, options?: Options) {
  */
 export async function jsonLdResponseToStore(
   response: Response,
-  options?: Options
+  options?: Options,
 ): Promise<Store> {
   if (response.body === null)
     throw new Error("Empty response body. Expected JSON-LD.");

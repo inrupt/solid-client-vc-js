@@ -44,13 +44,13 @@ const fetcher: (typeof UniversalFetch)["fetch"] = async (url) => {
     }),
     {
       headers: new Headers([["content-type", "application/ld+json"]]),
-    }
+    },
   );
 };
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
+    "@inrupt/universal-fetch",
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
@@ -88,12 +88,12 @@ const result = [
   DF.quad(
     DF.namedNode("https://some.example#credential"),
     DF.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-    DF.namedNode("https://www.w3.org/2018/credentials#VerifiableCredential")
+    DF.namedNode("https://www.w3.org/2018/credentials#VerifiableCredential"),
   ),
   DF.quad(
     DF.namedNode("https://some.example#credential"),
     DF.namedNode("https://www.w3.org/2018/credentials#issuer"),
-    DF.namedNode("https://some.example")
+    DF.namedNode("https://some.example"),
   ),
 ];
 
@@ -101,7 +101,7 @@ describe("jsonLdResponseToStore", () => {
   it("converting fetch response to a store", async () => {
     const response = new Response(JSON.stringify(data));
     expect(
-      isomorphic([...(await jsonLdResponseToStore(response))], result)
+      isomorphic([...(await jsonLdResponseToStore(response))], result),
     ).toBe(true);
   });
 
@@ -114,13 +114,13 @@ describe("jsonLdResponseToStore", () => {
 
   it("rejects on empty fetch response", async () => {
     await expect(jsonLdResponseToStore(new Response())).rejects.toThrow(
-      "Empty response body. Expected JSON-LD."
+      "Empty response body. Expected JSON-LD.",
     );
   });
 
   it("rejects on invalid JSON-LD", async () => {
     await expect(jsonLdResponseToStore(new Response("{"))).rejects.toThrow(
-      "Error parsing JSON-LD: [Error: Unclosed document]."
+      "Error parsing JSON-LD: [Error: Unclosed document].",
     );
   });
 
@@ -133,10 +133,10 @@ describe("jsonLdResponseToStore", () => {
           DF.quad(
             DF.namedNode("https://some.example#credential"),
             DF.namedNode("http://xmlns.com/foaf/0.1/name"),
-            DF.literal("Inrupt")
+            DF.literal("Inrupt"),
           ),
-        ]
-      )
+        ],
+      ),
     ).toBe(true);
   });
 });
@@ -158,20 +158,20 @@ describe("getVcContext", () => {
     expect(
       context.compactIri(
         "https://www.w3.org/2018/credentials#VerifiableCredential",
-        true
-      )
+        true,
+      ),
     ).toBe("VerifiableCredential");
     expect(context.expandTerm("VerifiableCredential", true)).toBe(
-      "https://www.w3.org/2018/credentials#VerifiableCredential"
+      "https://www.w3.org/2018/credentials#VerifiableCredential",
     );
   });
 
   it("should be able to compact and expand IRIs from the Inrupt context", () => {
     expect(context.compactIri("https://w3id.org/GConsent#Consent", true)).toBe(
-      "Consent"
+      "Consent",
     );
     expect(context.expandTerm("Consent", true)).toBe(
-      "https://w3id.org/GConsent#Consent"
+      "https://w3id.org/GConsent#Consent",
     );
   });
 
@@ -179,8 +179,8 @@ describe("getVcContext", () => {
     expect(
       context.compactIri(
         "https://example.org/credentials#VerifiableCredential",
-        true
-      )
+        true,
+      ),
     ).toBe("https://example.org/credentials#VerifiableCredential");
     expect(context.expandTerm("VC", true)).toBe("VC");
   });

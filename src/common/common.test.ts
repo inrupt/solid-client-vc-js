@@ -274,7 +274,7 @@ describe("getVerifiableCredential", () => {
     mockedFetchModule.fetch.mockResolvedValueOnce(
       new Response(JSON.stringify(mockDefaultCredential()), {
         headers: new Headers([["content-type", "application/json"]]),
-      })
+      }),
     );
 
     const redirectUrl = new URL("https://redirect.url");
@@ -297,7 +297,7 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     await getVerifiableCredential("https://some.vc", {
@@ -356,7 +356,7 @@ describe("getVerifiableCredential", () => {
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(/unsupported Content-Type/);
   });
 
@@ -366,15 +366,15 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify({}), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      /Expected exactly one Verifiable Credential.* received: 0/
+      /Expected exactly one Verifiable Credential.* received: 0/,
     );
   });
 
@@ -388,16 +388,16 @@ describe("getVerifiableCredential", () => {
           }),
           {
             headers: new Headers([["content-type", "application/json"]]),
-          }
-        )
+          },
+        ),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      "Expected the Verifiable Credential in [https://some.vc] to be a Named Node, received: BlankNode"
+      "Expected the Verifiable Credential in [https://some.vc] to be a Named Node, received: BlankNode",
     );
   });
 
@@ -419,16 +419,16 @@ describe("getVerifiableCredential", () => {
           }),
           {
             headers: new Headers([["content-type", "application/json"]]),
-          }
-        )
+          },
+        ),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      "Expected all VC types to be Named Nodes but received [str] of termType [Literal]"
+      "Expected all VC types to be Named Nodes but received [str] of termType [Literal]",
     );
   });
 
@@ -443,16 +443,16 @@ describe("getVerifiableCredential", () => {
           ]),
           {
             headers: new Headers([["content-type", "application/json"]]),
-          }
-        )
+          },
+        ),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      /Expected exactly one Verifiable Credential.* received: 2/
+      /Expected exactly one Verifiable Credential.* received: 2/,
     );
   });
 
@@ -462,15 +462,15 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential2Proofs()), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      /Expected exactly one \[https:\/\/w3id.org\/security#proof\].* received: 2/
+      /Expected exactly one \[https:\/\/w3id.org\/security#proof\].* received: 2/,
     );
   });
 
@@ -483,15 +483,15 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mocked), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      /Invalid dateTime in VC \[http:\/\/example.org\/not\/a\/date\]/
+      /Invalid dateTime in VC \[http:\/\/example.org\/not\/a\/date\]/,
     );
   });
 
@@ -507,15 +507,15 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mocked), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      /Expected issuanceDate to have dataType \[http:\/\/www.w3.org\/2001\/XMLSchema#dateTime\], received: \[http:\/\/www.w3.org\/2001\/XMLSchema#string\]/
+      /Expected issuanceDate to have dataType \[http:\/\/www.w3.org\/2001\/XMLSchema#dateTime\], received: \[http:\/\/www.w3.org\/2001\/XMLSchema#string\]/,
     );
   });
 
@@ -532,15 +532,15 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mocked), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      /Expected issuanceDate to be a Literal, received: NamedNode/
+      /Expected issuanceDate to be a Literal, received: NamedNode/,
     );
   });
 
@@ -554,15 +554,15 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mocked), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      "Expected property [https://www.w3.org/2018/credentials#issuer] of the Verifiable Credential [https://example.org/ns/someCredentialInstance] to be a NamedNode, received: Literal"
+      "Expected property [https://www.w3.org/2018/credentials#issuer] of the Verifiable Credential [https://example.org/ns/someCredentialInstance] to be a NamedNode, received: Literal",
     );
   });
 
@@ -585,12 +585,12 @@ describe("getVerifiableCredential", () => {
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicate"),
         // @ts-expect-error DefaultGraph is not allowed as an object
-        DataFactory.defaultGraph()
-      )
+        DataFactory.defaultGraph(),
+      ),
     );
 
     await expect(
-      getVerifiableCredentialFromStore(store, "https://some.vc")
+      getVerifiableCredentialFromStore(store, "https://some.vc"),
     ).rejects.toThrow("Unexpected term type: DefaultGraph");
   });
 
@@ -613,12 +613,12 @@ describe("getVerifiableCredential", () => {
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         // @ts-expect-error Literal is not allowed as a subject
         DataFactory.literal("https://example.org/predicate"),
-        DataFactory.namedNode("https://example.org/ns/object")
-      )
+        DataFactory.namedNode("https://example.org/ns/object"),
+      ),
     );
 
     await expect(
-      getVerifiableCredentialFromStore(store, "https://some.vc")
+      getVerifiableCredentialFromStore(store, "https://some.vc"),
     ).rejects.toThrow("Predicate must be a namedNode");
   });
 
@@ -640,7 +640,7 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mocked), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     const vc = await getVerifiableCredential("https://some.vc", {
@@ -674,35 +674,35 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("http://example.org/vc"),
         DataFactory.namedNode("https://w3id.org/security#proof"),
-        DataFactory.namedNode("http://example.org/proofGraph")
+        DataFactory.namedNode("http://example.org/proofGraph"),
       ),
       DataFactory.quad(
         DataFactory.namedNode("http://example.org/s"),
         DataFactory.namedNode("http://example.org/p"),
         DataFactory.namedNode("http://example.org/o"),
-        DataFactory.namedNode("http://example.org/proofGraph")
+        DataFactory.namedNode("http://example.org/proofGraph"),
       ),
       DataFactory.quad(
         DataFactory.namedNode("http://example.org/s2"),
         DataFactory.namedNode("http://example.org/p2"),
         DataFactory.namedNode("http://example.org/o2"),
-        DataFactory.namedNode("http://example.org/proofGraph")
+        DataFactory.namedNode("http://example.org/proofGraph"),
       ),
       DataFactory.quad(
         DataFactory.namedNode("http://example.org/vc"),
         DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
         ),
         DataFactory.namedNode(
-          "https://www.w3.org/2018/credentials#VerifiableCredential"
-        )
+          "https://www.w3.org/2018/credentials#VerifiableCredential",
+        ),
       ),
     ]);
 
     await expect(
-      getVerifiableCredentialFromStore(store, "http://example.org/vc")
+      getVerifiableCredentialFromStore(store, "http://example.org/vc"),
     ).rejects.toThrow(
-      "Expected exactly one proof to live in the proofs graph, received 2"
+      "Expected exactly one proof to live in the proofs graph, received 2",
     );
   });
 
@@ -711,35 +711,35 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("http://example.org/vc2"),
         DataFactory.namedNode("https://w3id.org/security#proof"),
-        DataFactory.namedNode("http://example.org/proofGraph")
+        DataFactory.namedNode("http://example.org/proofGraph"),
       ),
       DataFactory.quad(
         DataFactory.namedNode("http://example.org/s"),
         DataFactory.namedNode("http://example.org/p"),
         DataFactory.namedNode("http://example.org/o"),
-        DataFactory.namedNode("http://example.org/proofGraph")
+        DataFactory.namedNode("http://example.org/proofGraph"),
       ),
       DataFactory.quad(
         DataFactory.namedNode("http://example.org/s2"),
         DataFactory.namedNode("http://example.org/p2"),
         DataFactory.namedNode("http://example.org/o2"),
-        DataFactory.namedNode("http://example.org/proofGraph")
+        DataFactory.namedNode("http://example.org/proofGraph"),
       ),
       DataFactory.quad(
         DataFactory.namedNode("http://example.org/vc"),
         DataFactory.namedNode(
-          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
         ),
         DataFactory.namedNode(
-          "https://www.w3.org/2018/credentials#VerifiableCredential"
-        )
+          "https://www.w3.org/2018/credentials#VerifiableCredential",
+        ),
       ),
     ]);
 
     await expect(
-      getVerifiableCredentialFromStore(store, "http://example.org/vc")
+      getVerifiableCredentialFromStore(store, "http://example.org/vc"),
     ).rejects.toThrow(
-      "Expected exactly one [https://w3id.org/security#proof] for the Verifiable Credential http://example.org/vc, received: 0"
+      "Expected exactly one [https://w3id.org/security#proof] for the Verifiable Credential http://example.org/vc, received: 0",
     );
   });
 
@@ -753,15 +753,15 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mocked), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     await expect(
       getVerifiableCredential("https://some.vc", {
         fetch: mockedFetch,
-      })
+      }),
     ).rejects.toThrow(
-      /Expected exactly one \[https:\/\/w3id.org\/security#proofValue\] for the Verifiable Credential https:\/\/example.org\/ns\/someCredentialInstance, received: 2/
+      /Expected exactly one \[https:\/\/w3id.org\/security#proofValue\] for the Verifiable Credential https:\/\/example.org\/ns\/someCredentialInstance, received: 2/,
     );
   });
 
@@ -771,7 +771,7 @@ describe("getVerifiableCredential", () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(mockDefaultCredential()), {
           headers: new Headers([["content-type", "application/json"]]),
-        })
+        }),
       );
 
     const vc = await getVerifiableCredential("https://some.vc", {
@@ -779,7 +779,7 @@ describe("getVerifiableCredential", () => {
     });
 
     const res = await jsonLdStringToStore(
-      JSON.stringify(mockDefaultCredential())
+      JSON.stringify(mockDefaultCredential()),
     );
     expect(vc).toMatchObject(
       Object.assign(mockDefaultCredential(), {
@@ -802,34 +802,34 @@ describe("getVerifiableCredential", () => {
         },
         // Any types outside of those in our VC and Inrupt context are removed
         type: ["VerifiableCredential"],
-      })
+      }),
     );
 
     const meaninglessQuad = DataFactory.quad(
       DataFactory.namedNode("http://example.org/a"),
       DataFactory.namedNode("http://example.org/b"),
-      DataFactory.namedNode("http://example.org/c")
+      DataFactory.namedNode("http://example.org/c"),
     );
 
     const issuerQuad = DataFactory.quad(
       DataFactory.namedNode("https://example.org/ns/someCredentialInstance"),
       DataFactory.namedNode("https://www.w3.org/2018/credentials#issuer"),
-      DataFactory.namedNode("https://some.vc.issuer/in-ussr")
+      DataFactory.namedNode("https://some.vc.issuer/in-ussr"),
     );
 
     expect(isomorphic([...vc], [...res])).toBe(true);
     expect(isomorphic([...vc.match()], [...res])).toBe(true);
     expect(() => vc.add(meaninglessQuad)).toThrow("Cannot mutate this dataset");
     expect(() => vc.delete(meaninglessQuad)).toThrow(
-      "Cannot mutate this dataset"
+      "Cannot mutate this dataset",
     );
     expect(vc.has(meaninglessQuad)).toBe(false);
     expect(vc.has(issuerQuad)).toBe(true);
     expect(vc.size).toBe(13);
     expect(
       vc.match(
-        DataFactory.namedNode("https://example.org/ns/someCredentialInstance")
-      ).size
+        DataFactory.namedNode("https://example.org/ns/someCredentialInstance"),
+      ).size,
     ).toBe(6);
   });
 
@@ -839,7 +839,7 @@ describe("getVerifiableCredential", () => {
     for (const quad of store.match(
       null,
       DataFactory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-      DataFactory.namedNode("https://w3id.org/security#Ed25519Signature2018")
+      DataFactory.namedNode("https://w3id.org/security#Ed25519Signature2018"),
     )) {
       store.delete(quad);
       store.add(
@@ -847,13 +847,13 @@ describe("getVerifiableCredential", () => {
           quad.subject,
           quad.predicate,
           DataFactory.namedNode("https://w3id.org/security#notARealSignature"),
-          quad.graph
-        )
+          quad.graph,
+        ),
       );
     }
 
     expect(
-      await getVerifiableCredentialFromStore(store, "https://some.vc")
+      await getVerifiableCredentialFromStore(store, "https://some.vc"),
     ).toMatchObject(
       Object.assign(mockDefaultCredential(), {
         size: 13,
@@ -882,7 +882,7 @@ describe("getVerifiableCredential", () => {
           proofPurpose: "https://w3id.org/security#assertionMethod",
           type: "https://w3id.org/security#notARealSignature",
         },
-      })
+      }),
     );
   });
 
@@ -892,7 +892,7 @@ describe("getVerifiableCredential", () => {
     for (const quad of store.match(
       null,
       DataFactory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-      DataFactory.namedNode("https://w3id.org/security#Ed25519Signature2018")
+      DataFactory.namedNode("https://w3id.org/security#Ed25519Signature2018"),
     )) {
       store.removeQuad(quad);
       store.add(
@@ -900,15 +900,15 @@ describe("getVerifiableCredential", () => {
           quad.subject,
           quad.predicate,
           DataFactory.namedNode(
-            "https://www.w3.org/2018/credentials#VerifiableCredential"
+            "https://www.w3.org/2018/credentials#VerifiableCredential",
           ),
-          quad.graph
-        )
+          quad.graph,
+        ),
       );
     }
 
     expect(
-      await getVerifiableCredentialFromStore(store, "https://some.vc")
+      await getVerifiableCredentialFromStore(store, "https://some.vc"),
     ).toMatchObject(
       Object.assign(mockDefaultCredential(), {
         size: 13,
@@ -937,7 +937,7 @@ describe("getVerifiableCredential", () => {
           proofPurpose: "sec:assertionMethod",
           type: "VerifiableCredential",
         },
-      })
+      }),
     );
   });
 
@@ -948,23 +948,23 @@ describe("getVerifiableCredential", () => {
       null,
       DataFactory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
       DataFactory.namedNode(
-        "https://www.w3.org/2018/credentials#VerifiableCredential"
-      )
+        "https://www.w3.org/2018/credentials#VerifiableCredential",
+      ),
     )) {
       store.add(
         DataFactory.quad(
           quad.subject,
           quad.predicate,
           DataFactory.namedNode(
-            "https://www.w3.org/2018/credentials#VerifiablePresentation"
+            "https://www.w3.org/2018/credentials#VerifiablePresentation",
           ),
-          quad.graph
-        )
+          quad.graph,
+        ),
       );
     }
 
     expect(
-      await getVerifiableCredentialFromStore(store, "https://some.vc")
+      await getVerifiableCredentialFromStore(store, "https://some.vc"),
     ).toMatchObject(
       Object.assign(mockDefaultCredential(), {
         size: 14,
@@ -986,7 +986,7 @@ describe("getVerifiableCredential", () => {
         },
         // Any types outside of those in our VC and Inrupt context are removed
         type: ["VerifiableCredential", "VerifiablePresentation"],
-      })
+      }),
     );
   });
 
@@ -997,20 +997,20 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicateBnode"),
-        DataFactory.blankNode("b2")
-      )
+        DataFactory.blankNode("b2"),
+      ),
     );
 
     store.add(
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicate"),
-        DataFactory.namedNode("https://example.org/object")
-      )
+        DataFactory.namedNode("https://example.org/object"),
+      ),
     );
 
     expect(
-      await getVerifiableCredentialFromStore(store, "https://some.vc")
+      await getVerifiableCredentialFromStore(store, "https://some.vc"),
     ).toMatchObject(
       Object.assign(mockDefaultCredential(), {
         size: 15,
@@ -1036,7 +1036,7 @@ describe("getVerifiableCredential", () => {
         },
         // Any types outside of those in our VC and Inrupt context are removed
         type: ["VerifiableCredential"],
-      })
+      }),
     );
   });
 
@@ -1047,28 +1047,28 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicateBnode"),
-        DataFactory.blankNode("b2")
-      )
+        DataFactory.blankNode("b2"),
+      ),
     );
 
     store.add(
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicate"),
-        DataFactory.namedNode("https://example.org/object")
-      )
+        DataFactory.namedNode("https://example.org/object"),
+      ),
     );
 
     store.add(
       DataFactory.quad(
         DataFactory.blankNode("b2"),
         DataFactory.namedNode("https://example.org/predicate"),
-        DataFactory.blankNode("b2")
-      )
+        DataFactory.blankNode("b2"),
+      ),
     );
 
     expect(
-      await getVerifiableCredentialFromStore(store, "https://some.vc")
+      await getVerifiableCredentialFromStore(store, "https://some.vc"),
     ).toMatchObject(
       Object.assign(mockDefaultCredential(), {
         size: 16,
@@ -1099,7 +1099,7 @@ describe("getVerifiableCredential", () => {
         },
         // Any types outside of those in our VC and Inrupt context are removed
         type: ["VerifiableCredential"],
-      })
+      }),
     );
   });
 
@@ -1110,36 +1110,36 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicateBnode"),
-        DataFactory.blankNode("b2")
-      )
+        DataFactory.blankNode("b2"),
+      ),
     );
 
     store.add(
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicateBnode"),
-        DataFactory.blankNode("b3")
-      )
+        DataFactory.blankNode("b3"),
+      ),
     );
 
     store.add(
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicate"),
-        DataFactory.namedNode("https://example.org/object")
-      )
+        DataFactory.namedNode("https://example.org/object"),
+      ),
     );
 
     store.add(
       DataFactory.quad(
         DataFactory.blankNode("b2"),
         DataFactory.namedNode("https://example.org/predicate"),
-        DataFactory.blankNode("b2")
-      )
+        DataFactory.blankNode("b2"),
+      ),
     );
 
     expect(
-      await getVerifiableCredentialFromStore(store, "https://some.vc")
+      await getVerifiableCredentialFromStore(store, "https://some.vc"),
     ).toMatchObject(
       Object.assign(mockDefaultCredential(), {
         size: 17,
@@ -1175,7 +1175,7 @@ describe("getVerifiableCredential", () => {
         },
         // Any types outside of those in our VC and Inrupt context are removed
         type: ["VerifiableCredential"],
-      })
+      }),
     );
   });
 });
@@ -1183,7 +1183,10 @@ describe("getVerifiableCredential", () => {
 describe("getVerifiableCredentialFromResponse", () => {
   it("should error if the response has no content type", () => {
     return expect(
-      getVerifiableCredentialFromResponse(new Response(), "https://example.org")
+      getVerifiableCredentialFromResponse(
+        new Response(),
+        "https://example.org",
+      ),
     ).rejects.toThrow("Response does not have a Content-Type");
   });
 });
