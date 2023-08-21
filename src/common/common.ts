@@ -162,7 +162,7 @@ export function normalizeVp<T>(vpJson: T): T {
  * @returns true is the payload matches our expectation.
  */
 export function isVerifiableCredential(
-  data: unknown | VerifiableCredential
+  data: unknown | VerifiableCredential,
 ): data is VerifiableCredential {
   let dataIsVc = true;
   dataIsVc = typeof (data as VerifiableCredential).id === "string";
@@ -214,7 +214,7 @@ function isUrl(url: string): boolean {
 }
 
 export function isVerifiablePresentation(
-  vp: unknown | VerifiablePresentation
+  vp: unknown | VerifiablePresentation,
 ): vp is VerifiablePresentation {
   let inputIsVp = true;
   inputIsVp =
@@ -229,7 +229,7 @@ export function isVerifiablePresentation(
       inputIsVp &&
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       (vp as VerifiablePresentation).verifiableCredential!.every(
-        isVerifiableCredential
+        isVerifiableCredential,
       );
   }
   if ((vp as VerifiablePresentation).holder !== undefined) {
@@ -305,7 +305,7 @@ const SOLID_VC_STATUS_SERVICE = SOLID_VC_NS.concat("statusService");
 const SOLID_VC_VERIFIER_SERVICE = SOLID_VC_NS.concat("verifierService");
 
 async function discoverLegacyEndpoints(
-  vcServiceUrl: UrlString
+  vcServiceUrl: UrlString,
 ): Promise<VerifiableCredentialApiConfiguration["legacy"]> {
   const wellKnownIri = new URL(".well-known/vc-configuration", vcServiceUrl);
 
@@ -339,7 +339,7 @@ async function discoverLegacyEndpoints(
 }
 
 function discoverSpecCompliantEndpoints(
-  vcServiceUrl: UrlString
+  vcServiceUrl: UrlString,
 ): VerifiableCredentialApiConfiguration["specCompliant"] {
   return {
     issuerService: new URL("/credentials/issue", vcServiceUrl).toString(),
@@ -352,11 +352,11 @@ function discoverSpecCompliantEndpoints(
     queryService: new URL("/query", vcServiceUrl).toString(),
     credentialVerifierService: new URL(
       "/credentials/verify",
-      vcServiceUrl
+      vcServiceUrl,
     ).toString(),
     presentationVerifierService: new URL(
       "/presentations/verify",
-      vcServiceUrl
+      vcServiceUrl,
     ).toString(),
   };
 }
@@ -391,10 +391,10 @@ function discoverSpecCompliantEndpoints(
  * @since 0.2.0
  */
 export async function getVerifiableCredentialApiConfiguration(
-  vcServiceUrl: URL | UrlString
+  vcServiceUrl: URL | UrlString,
 ): Promise<VerifiableCredentialApiConfiguration> {
   const legacyEndpoints = await discoverLegacyEndpoints(
-    vcServiceUrl.toString()
+    vcServiceUrl.toString(),
   );
   const specEndpoints = discoverSpecCompliantEndpoints(vcServiceUrl.toString());
   return {

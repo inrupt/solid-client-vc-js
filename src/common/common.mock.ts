@@ -114,7 +114,7 @@ export const mockPartialCredential2Proofs = (
 };
 
 export const mockCredential = (
-  claims: CredentialClaims
+  claims: CredentialClaims,
 ): VerifiableCredential => {
   return mockPartialCredential(claims) as VerifiableCredential;
 };
@@ -137,7 +137,7 @@ export const mockDefaultCredential2Proofs = (
 
 export const mockPartialPresentation = (
   credentials: VerifiableCredential[],
-  claims?: Partial<VerifiableClaims>
+  claims?: Partial<VerifiableClaims>,
 ): Record<string, unknown> => {
   return {
     id: claims?.id,
@@ -154,10 +154,10 @@ export const mockPartialPresentation = (
 };
 
 export const mockDefaultPresentation = (
-  vc: VerifiableCredential[] = [mockDefaultCredential()]
+  vc: VerifiableCredential[] = [mockDefaultCredential()],
 ): VerifiablePresentation => {
   return mockPartialPresentation(
     vc,
-    defaultVerifiableClaims
+    defaultVerifiableClaims,
   ) as VerifiablePresentation;
 };

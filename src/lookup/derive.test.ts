@@ -30,7 +30,7 @@ import type * as QueryModule from "./query";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
+    "@inrupt/universal-fetch",
   ) as typeof UniversalFetch;
   return {
     ...fetchModule,
@@ -48,7 +48,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
   describe("legacy derive endpoint", () => {
     it("exposes a default export", async () => {
       expect(defaultGetVerifilableCredentialAllFromShape).toBe(
-        getVerifiableCredentialAllFromShape
+        getVerifiableCredentialAllFromShape,
       );
     });
     it("uses the provided fetch if any", async () => {
@@ -62,7 +62,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
           },
           {
             fetch: mockedFetch,
-          }
+          },
         );
         // eslint-disable-next-line no-empty
       } catch (_e) {}
@@ -71,7 +71,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
 
     it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
       const mockedFetch = jest.requireMock(
-        "@inrupt/universal-fetch"
+        "@inrupt/universal-fetch",
       ) as jest.Mocked<typeof UniversalFetch>;
       mockedFetch.fetch.mockResolvedValue(mockDeriveEndpointDefaultResponse());
       await getVerifiableCredentialAllFromShape("https://some.endpoint", {
@@ -94,13 +94,13 @@ describe("getVerifiableCredentialAllFromShape", () => {
         {
           includeExpiredVc: true,
           fetch: mockedFetch,
-        }
+        },
       );
       expect(mockedFetch).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
           body: expect.stringContaining("ExpiredVerifiableCredential"),
-        })
+        }),
       );
     });
 
@@ -116,7 +116,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
           "@context": ["https://some.context"],
           credentialSubject: { id: "https://some.subject/" },
         },
-        { fetch: mockedFetch }
+        { fetch: mockedFetch },
       );
       expect(spiedQuery).toHaveBeenCalledWith(
         "https://some.endpoint",
@@ -129,7 +129,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
             credentialSubject: { id: "https://some.subject/" },
           },
         }),
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -144,8 +144,8 @@ describe("getVerifiableCredentialAllFromShape", () => {
             "@context": ["https://some.context"],
             credentialSubject: { id: "https://some.subject/" },
           },
-          { fetch: mockedFetch }
-        )
+          { fetch: mockedFetch },
+        ),
       ).resolves.toEqual(mockDefaultPresentation().verifiableCredential);
     });
 
@@ -161,8 +161,8 @@ describe("getVerifiableCredentialAllFromShape", () => {
             {
               status: 200,
               statusText: "OK",
-            }
-          )
+            },
+          ),
         );
       await expect(
         getVerifiableCredentialAllFromShape(
@@ -171,8 +171,8 @@ describe("getVerifiableCredentialAllFromShape", () => {
             "@context": ["https://some.context"],
             credentialSubject: { id: "https://some.subject/" },
           },
-          { fetch: mockedFetch }
-        )
+          { fetch: mockedFetch },
+        ),
       ).resolves.toEqual([]);
     });
   });
@@ -193,7 +193,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
         VC_SHAPE,
         {
           fetch: mockedFetch,
-        }
+        },
       );
 
       expect(spiedQuery).toHaveBeenCalledWith(
@@ -210,7 +210,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
             },
           ],
         }),
-        expect.anything()
+        expect.anything(),
       );
     });
   });
