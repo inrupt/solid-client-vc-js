@@ -427,10 +427,7 @@ function validateVcResponse(response: Response, vcUrl: string): Response {
   const [mediaType, subtypesString] = parsedContentType.type.split("/");
   const subtypes = subtypesString.split("+");
 
-  if (
-    mediaType !== "application" ||
-    !subtypes.includes("json")
-  ) {
+  if (mediaType !== "application" || !subtypes.includes("json")) {
     throw new Error(
       `Fetching the Verifiable Credential [${vcUrl}] failed: Response has an unsupported Content-Type [${contentType}]; expected application/ld+json`,
     );
