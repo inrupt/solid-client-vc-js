@@ -429,8 +429,6 @@ function validateVcResponse(response: Response, vcUrl: string): Response {
 
   if (
     mediaType !== "application" ||
-    // TODO: See if the response is expected to include the ld
-    // || !subtypes.includes('ld')
     !subtypes.includes("json")
   ) {
     throw new Error(
