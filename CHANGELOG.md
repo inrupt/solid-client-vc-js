@@ -8,6 +8,10 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+## 0.7.2 - 2023-09-15
+
+- Build system (bundler and TypeScript) updates. This should be transparent to dependants.
+
 ## 0.7.1 - 2023-06-10
 
 - Fix broken checks for `null` fields
