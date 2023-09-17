@@ -10,7 +10,7 @@ The following changes have been implemented but not released yet:
 
 ## 0.7.2 - 2023-09-15
 
-- Transitive dependency updates.
+- Build system (bundler and TypeScript) updates. This should be transparent to dependants.
 
 ## 0.7.1 - 2023-06-10
 
