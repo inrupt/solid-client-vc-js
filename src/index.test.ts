@@ -26,6 +26,7 @@ import {
   isVerifiablePresentation,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
+  getVerifiableCredentialFromResponse,
 } from "./common/common";
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
 import revokeVerifiableCredential from "./revoke/revoke";
@@ -36,6 +37,7 @@ describe("exports", () => {
   it("includes all of the expected functions", () => {
     expect(Object.keys(packageExports)).toEqual([
       "issueVerifiableCredential",
+      "getVerifiableCredentialFromResponse",
       "isVerifiableCredential",
       "isVerifiablePresentation",
       "getVerifiableCredential",
@@ -48,6 +50,9 @@ describe("exports", () => {
     ]);
     expect(packageExports.issueVerifiableCredential).toBe(
       issueVerifiableCredential,
+    );
+    expect(packageExports.getVerifiableCredentialFromResponse).toBe(
+      getVerifiableCredentialFromResponse,
     );
     expect(packageExports.isVerifiableCredential).toBe(isVerifiableCredential);
     expect(packageExports.isVerifiablePresentation).toBe(
