@@ -56,7 +56,7 @@ export function getVcContext(
   const myParser = new ContextParser({
     documentLoader: new CachedFetchDocumentLoader(),
   });
-  return myParser.parse([...Object.values(CONTEXTS), ...contexts]);
+  return myParser.parse([...Object.values(CONTEXTS).map(x => x['@context']), ...contexts]);
 }
 
 interface Options {

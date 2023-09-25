@@ -879,8 +879,8 @@ describe("getVerifiableCredential", () => {
           ...mockDefaultCredential().proof,
           // Proof purpose has full URI as compacting this relies on the
           // context of the "type"
-          proofPurpose: "https://w3id.org/security#assertionMethod",
-          type: "https://w3id.org/security#notARealSignature",
+          proofPurpose: "sec:assertionMethod",
+          type: "sec:notARealSignature",
         },
       }),
     );
