@@ -26,18 +26,18 @@
 import type { UrlString } from "@inrupt/solid-client";
 import {
   getIri,
+  getJsonLdParser,
   getSolidDataset,
   getThingAll,
-  getJsonLdParser,
 } from "@inrupt/solid-client";
 import { fetch as uniFetch } from "@inrupt/universal-fetch";
-import { Util } from "jsonld-streaming-serializer";
 import type { DatasetCore } from "@rdfjs/types";
-import type { BlankNode, Store, Term } from "n3";
-import { DataFactory as DF } from "n3";
 import contentTypeParser from "content-type";
-import VcContext from "../parser/contexts/vc";
+import { Util } from "jsonld-streaming-serializer";
+import type { Store, Term } from "n3";
+import { DataFactory as DF } from "n3";
 import { context } from "../parser/contexts";
+import VcContext from "../parser/contexts/vc";
 import { getVcContext, jsonLdResponseToStore } from "../parser/jsonld";
 
 export type Iri = string;
@@ -460,8 +460,6 @@ const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 const XSD = "http://www.w3.org/2001/XMLSchema#";
 const SEC = "https://w3id.org/security#";
 const CRED = "https://www.w3.org/2018/credentials#";
-const GCONSENT = "https://w3id.org/GConsent#";
-const ACL = "http://www.w3.org/ns/auth/acl#";
 const RDF_TYPE = `${RDF}type`;
 const VERIFIABLE_CREDENTIAL = `${VC}VerifiableCredential`;
 const DATE_TIME = `${XSD}dateTime`;
@@ -472,18 +470,6 @@ const PROOF = `${SEC}proof`;
 const PROOF_PURPOSE = `${SEC}proofPurpose`;
 const VERIFICATION_METHOD = `${SEC}verificationMethod`;
 const PROOF_VALUE = `${SEC}proofValue`;
-
-const HAS_CONSENT = `${GCONSENT}hasConsent`;
-const IS_PROVIDED_TO = `${GCONSENT}isProvidedTo`;
-const FOR_PERSONAL_DATA = `${GCONSENT}forPersonalData`;
-const HAS_STATUS = `${GCONSENT}hasStatus`;
-const FOR_DATA_SUBJECT = `${GCONSENT}isConsentForDataSubject`;
-const MODE = `${ACL}mode`;
-const PROVIDED_CONSENT = `${ACL}providedConsent`;
-
-const inherit = "urn:uuid:71ab2f68-a68b-4452-b968-dd23e0570227";
-
-// FIXME: Just add a general check for `@type`
 
 /**
  * @hidden
@@ -513,6 +499,7 @@ export async function getVerifiableCredentialFromStore(
   }
 
   const type: string[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const typeContexts: any[] = [];
 
   for (const t of vcStore.getObjects(vc, RDF_TYPE, DF.defaultGraph())) {
@@ -526,8 +513,9 @@ export async function getVerifiableCredentialFromStore(
     // that some of the very short forms of the IRIs are not showing up here
     const compact = vcContext.compactIri(t.value, true);
 
-    if (compact in VcContext['@context']) {
-      typeContexts.push((VcContext as any)['@context'][compact]['@context'])
+    if (compact in VcContext["@context"]) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      typeContexts.push((VcContext as any)["@context"][compact]["@context"]);
     }
 
     if (/^[a-z]+$/i.test(compact)) type.push(compact);
@@ -556,7 +544,7 @@ export async function getVerifiableCredentialFromStore(
     fullProperty: string,
     subject?: Term,
     graph?: Term,
-    termType: Term['termType'] = "NamedNode",
+    termType: Term["termType"] = "NamedNode",
     customContext = vcContext,
   ) {
     const object = getSingleObject(fullProperty, subject, graph);
@@ -630,7 +618,7 @@ export async function getVerifiableCredentialFromStore(
       proofPurposeContext = await getVcContext(
         proposedContext,
         proposedContext.proofPurpose["@context"],
-        ...typeContexts
+        ...typeContexts,
       );
     } else {
       proofPurposeContext = proofContext;
@@ -672,7 +660,12 @@ export async function getVerifiableCredentialFromStore(
   let i = 0;
   const data: Record<string, number> = {};
 
-  function writeObject(object: Term, writtenTerms: string[], predicate: string, customContext = vcContext) {
+  function writeObject(
+    object: Term,
+    writtenTerms: string[],
+    predicate: string,
+    customContext = vcContext,
+  ) {
     switch (object.termType) {
       case "BlankNode": {
         const obj = writtenTerms.includes(object.value)
@@ -685,20 +678,27 @@ export async function getVerifiableCredentialFromStore(
       }
       // eslint-disable-next-line no-fallthrough
       case "NamedNode":
-      case "Literal":
+      case "Literal": {
         const compact = customContext.compactIri(predicate, true);
         const termContext = customContext.getContextRaw()[compact];
         const term = Util.termToValue(object, customContext, {
-          compactIds: termContext && ('@type' in termContext),
+          // If an `@type` is defined in the context, then the
+          // parser can determine that it is an IRI immediately
+          // and so we don't need to wrap it in an object with an
+          // `@id` entry.
+          compactIds: termContext && "@type" in termContext,
           vocab: true,
-          useNativeTypes: true
+          useNativeTypes: true,
         });
 
-        // Special case
-        if (term['@value'] === true || term['@value'] === false) {
-          return term['@value']
+        // Special case: Booleans (any any other native literals for
+        // that matter) don't need to be wrapped in an object with an
+        // `@value` key.
+        if (term["@value"] === true || term["@value"] === false) {
+          return term["@value"];
         }
         return term;
+      }
       default:
         throw new Error(`Unexpected term type: ${object.termType}`);
     }
@@ -771,78 +771,6 @@ export async function getVerifiableCredentialFromStore(
       return vcStore.size;
     },
   };
-
-  // let prop: { key: 'hasConsent' | 'providedConsent'; node: BlankNode } | undefined = undefined;
-
-  // for (const [key, pred] of [['hasConsent', HAS_CONSENT], ['providedConsent', PROVIDED_CONSENT]] as const) {
-  //   try {
-  //     prop = { key, node: DF.blankNode(
-  //       getSingleObjectOfTermType(pred, DF.namedNode(credentialSubjectTerm), DF.defaultGraph(), 'BlankNode')
-  //     ) }
-  //   } catch (e) {
-  //     // do nothing
-  //   }
-  // }
-
-  // if (prop) {
-  //   try {
-  //     function getNamedNodeObjects(store: Store, ...args: Parameters<Store['getObjects']>) {
-  //       return store.getObjects(...args).map(term => {
-  //         if (term.termType !== 'NamedNode') {
-  //           throw new Error(`Expected [${term.value}] to have termType NamedNode. Got [${term.termType}].`)
-  //         }
-  //         return term.value
-  //       })
-  //     }
-  
-  //     const hasConsent: Record<string, string | string[]> = {
-  //       forPersonalData: getNamedNodeObjects(vcStore, prop.node, FOR_PERSONAL_DATA, DF.defaultGraph()),
-  //       hasStatus: getSingleObjectOfTermType(HAS_STATUS, prop.node, DF.defaultGraph(), 'NamedNode'),
-  //       isProvidedTo: getSingleObjectOfTermType(IS_PROVIDED_TO, prop.node, DF.defaultGraph(), 'NamedNode'),
-  //       mode: getNamedNodeObjects(vcStore, prop.node, MODE, DF.defaultGraph()),
-  //       isConsentForDataSubject: getSingleObjectOfTermType(FOR_DATA_SUBJECT, prop.node, DF.defaultGraph(), 'NamedNode'),
-  //     }
-  //     const inheritValues = vcStore.getObjects(prop.node, DF.namedNode(inherit), DF.defaultGraph());
-  
-  //     for (const elem of inheritValues) {
-  //       if (elem.termType !== "Literal") {
-  //         throw new Error(`Expected inherit value to be a Literal. Instead recieved [${elem.value}] of type [${elem.termType}]`);
-  //       }
-  //       if (!elem.datatype.equals(DF.namedNode('http://www.w3.org/2001/XMLSchema#boolean'))) {
-  //         throw new Error(`Expected inherit value to be a boolean. Instead recieved [${elem.value}] with datatype [${elem.datatypeString}]`);
-  //       }
-  //     }
-  
-  //     if (inheritValues.length > 1) {
-  //       throw new Error(`Expected at most one value for inherit. Received ${inheritValues.length}`);
-  //     }
-      
-  //     if (inheritValues.length === 1) {
-  //       hasConsent.inherit = inheritValues[0].value
-  //     }
-  
-  //     res.credentialSubject[prop.key] = hasConsent;
-  //   } catch (e) {
-  //     console.log(`Error overrriding hasConsent [${e}]`)
-  //     // Do nothingIS_PROVIDED_TO
-  //   }
-  // }
-  
-
-// Do hasConsent explicitly so we can frame things in the expected
-      // manner (in particular making sure single results such as "http://www.w3.org/ns/auth/acl#Read" are still in a list)
-      // for modes etc.
-      // NOTE: This *is* specific to access grants, and makes the following normalization code in the access grants library redundant:
-      // - https://github.com/inrupt/solid-client-access-grants-js/blob/ce63dc6591a286c1847ac9b5537af7c953437d8a/src/gConsent/request/issueAccessRequest.ts#L44
-      // - https://github.com/inrupt/solid-client-access-grants-js/blob/ce63dc6591a286c1847ac9b5537af7c953437d8a/src/gConsent/manage/approveAccessRequest.ts#L61
-      // hasConsent: {
-      //   forPersonalData: ["https://some.resource"],
-      //   hasStatus: getSingleObjectOfTermType,
-      //   mode: ["http://www.w3.org/ns/auth/acl#Read"],
-      //   isProvidedTo: getSingleObjectOfTermType(HAS_CONSENT, DF.namedNode(credentialSubjectTerm), DF.defaultGraph(), 'BlankNode'),
-      //   inherit: options?.inherit ?? true,
-      //   isConsentForDataSubject:
-      // },
 
   return res;
 }
