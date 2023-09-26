@@ -38,6 +38,7 @@ import type { Store, Term } from "n3";
 import { DataFactory as DF } from "n3";
 import { context } from "../parser/contexts";
 import VcContext from "../parser/contexts/vc";
+import type { ParseOptions } from "../parser/jsonld";
 import { getVcContext, jsonLdResponseToStore } from "../parser/jsonld";
 
 export type Iri = string;
@@ -439,13 +440,11 @@ function validateVcResponse(response: Response, vcUrl: string): Response {
 async function responseToVcStore(
   response: Response,
   vcUrl: UrlString,
-  options?: Partial<{
-    fetch: typeof fetch;
-  }>,
+  options?: ParseOptions,
 ): Promise<Store> {
   try {
     return await jsonLdResponseToStore(validateVcResponse(response, vcUrl), {
-      fetch: options?.fetch,
+      ...options,
       baseIRI: vcUrl,
     });
   } catch (e) {
@@ -787,9 +786,7 @@ export async function getVerifiableCredentialFromStore(
 export async function getVerifiableCredentialFromResponse(
   response: Response,
   vcUrl: UrlString,
-  options?: Partial<{
-    fetch: typeof fetch;
-  }>,
+  options?: ParseOptions,
 ): Promise<VerifiableCredential & DatasetCore> {
   const vcStore = await responseToVcStore(response, vcUrl, options);
   return getVerifiableCredentialFromStore(vcStore, vcUrl);
@@ -806,9 +803,7 @@ export async function getVerifiableCredentialFromResponse(
  */
 export async function getVerifiableCredential(
   vcUrl: UrlString,
-  options?: Partial<{
-    fetch: typeof fetch;
-  }>,
+  options?: ParseOptions,
 ): Promise<VerifiableCredential & DatasetCore> {
   const authFetch = options?.fetch ?? uniFetch;
   const response = await authFetch(vcUrl);

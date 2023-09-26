@@ -135,6 +135,7 @@ export async function isValidVc(
   }
 
   try {
+    // FIXME: Perform parsing here
     return await response.json();
   } catch (e) {
     throw new Error(
@@ -217,6 +218,7 @@ export async function isValidVerifiablePresentation(
   }
 
   try {
+    // FIXME: Perform parsing here
     return await response.json();
   } catch (e) {
     throw new Error(

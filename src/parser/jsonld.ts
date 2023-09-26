@@ -36,11 +36,24 @@ import type { JsonLd } from "../common/common";
  * A JSON-LD document loader with the standard context for VCs pre-loaded
  */
 class CachedFetchDocumentLoader extends FetchDocumentLoader {
+  private contexts: Record<string, JsonLd>;
+
+  constructor(
+    contexts?: Record<string, JsonLd>,
+    private readonly allowContextFetching = true,
+    ...args: ConstructorParameters<typeof FetchDocumentLoader>
+  ) {
+    super(...args);
+    this.contexts = contexts ? { ...contexts, ...CONTEXTS } : CONTEXTS;
+  }
+
   public async load(url: string): Promise<IJsonLdContext> {
-    if (Object.keys(CONTEXTS).includes(url)) {
-      return CONTEXTS[url as keyof typeof CONTEXTS];
+    if (Object.keys(this.contexts).includes(url)) {
+      return this.contexts[url as keyof typeof CONTEXTS];
     }
-    // FIXME: See if we want to error on other contexts
+    if (!this.allowContextFetching) {
+      throw new Error(`Unexpected context requested [${url}]`);
+    }
     return super.load(url);
   }
 }
@@ -62,18 +75,22 @@ export function getVcContext(
   ]);
 }
 
-interface Options {
+export interface ParseOptions {
   fetch?: typeof globalThis.fetch;
   baseIRI?: string;
+  contexts?: Record<string, JsonLd>;
+  allowContextFetching?: boolean;
 }
 
 /**
  * Our internal JsonLd Parser with a cached VC context
  */
 export class CachedJsonLdParser extends JsonLdParser {
-  constructor(options?: Options) {
+  constructor(options?: ParseOptions) {
     super({
       documentLoader: new CachedFetchDocumentLoader(
+        options?.contexts,
+        options?.allowContextFetching,
         options?.fetch ?? defaultFetch,
       ),
       baseIRI: options?.baseIRI,
@@ -87,7 +104,10 @@ export class CachedJsonLdParser extends JsonLdParser {
  * @param options An optional fetch function for dereferencing remote contexts
  * @returns A store containing the Quads in the JSON-LD response
  */
-export async function jsonLdStringToStore(data: string, options?: Options) {
+export async function jsonLdStringToStore(
+  data: string,
+  options?: ParseOptions,
+) {
   try {
     const parser = new CachedJsonLdParser(options);
     const store = new Store();
@@ -108,7 +128,7 @@ export async function jsonLdStringToStore(data: string, options?: Options) {
  */
 export async function jsonLdResponseToStore(
   response: Response,
-  options?: Options,
+  options?: ParseOptions,
 ): Promise<Store> {
   if (response.body === null)
     throw new Error("Empty response body. Expected JSON-LD.");
@@ -144,6 +164,6 @@ export async function jsonLdResponseToStore(
  * @param options An optional fetch function for dereferencing remote contexts
  * @returns A store containing the Quads in the JSON-LD response
  */
-export function jsonLdToStore(data: JsonLd, options?: Options) {
+export function jsonLdToStore(data: JsonLd, options?: ParseOptions) {
   return jsonLdStringToStore(JSON.stringify(data), options);
 }
