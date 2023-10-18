@@ -681,6 +681,7 @@ export async function getVerifiableCredentialFromStore(
         const compact = customContext.compactIri(predicate, true);
         const termContext = customContext.getContextRaw()[compact];
         const term = Util.termToValue(object, customContext, {
+          // FIXME: This could also be @json, xsd:type - so this needs to be more strict
           // If an `@type` is defined in the context, then the
           // parser can determine that it is an IRI immediately
           // and so we don't need to wrap it in an object with an

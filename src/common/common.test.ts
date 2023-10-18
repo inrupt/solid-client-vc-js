@@ -1005,7 +1005,10 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicateTrue"),
-        DataFactory.literal("true", DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")),
+        DataFactory.literal(
+          "true",
+          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean"),
+        ),
       ),
     );
 
@@ -1013,7 +1016,10 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicateFalse"),
-        DataFactory.literal("false", DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")),
+        DataFactory.literal(
+          "false",
+          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean"),
+        ),
       ),
     );
 
@@ -1021,7 +1027,10 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicateFalse"),
-        DataFactory.literal("false", DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")),
+        DataFactory.literal(
+          "false",
+          DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean"),
+        ),
       ),
     );
 
@@ -1029,7 +1038,9 @@ describe("getVerifiableCredential", () => {
       DataFactory.quad(
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://w3id.org/GConsent#forPurpose"),
-        DataFactory.namedNode("http://example.org/known/to/be/iri/from/predicate"),
+        DataFactory.namedNode(
+          "http://example.org/known/to/be/iri/from/predicate",
+        ),
       ),
     );
 
@@ -1067,7 +1078,7 @@ describe("getVerifiableCredential", () => {
           "https://example.org/predicateBnode": {},
           "https://example.org/predicateFalse": false,
           "https://example.org/predicateTrue": true,
-          forPurpose: "http://example.org/known/to/be/iri/from/predicate"
+          forPurpose: "http://example.org/known/to/be/iri/from/predicate",
         },
         // Any types outside of those in our VC and Inrupt context are removed
         type: ["VerifiableCredential"],

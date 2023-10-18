@@ -117,9 +117,13 @@ describe("jsonLdResponseToStore", () => {
         issuer: "https://some.example",
       }),
     );
-    await expect(jsonLdResponseToStore(response, {
-      allowContextFetching: false
-    })).rejects.toThrowError('Unexpected context requested [http://example.org/my/remote/context]');
+    await expect(
+      jsonLdResponseToStore(response, {
+        allowContextFetching: false,
+      }),
+    ).rejects.toThrow(
+      "Unexpected context requested [http://example.org/my/remote/context]",
+    );
   });
 
   it("converting fetch response with custom prefix definition to a store", async () => {
