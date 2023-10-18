@@ -90,7 +90,7 @@
     "@inrupt/universal-fetch": "^1.0.1",
     "content-type": "^1.0.5",
     "event-emitter-promisify": "^1.1.0",
-    "jsonld-context-parser": "^2.3.0",
+    "jsonld-context-parser": "^2.3.3",
     "jsonld-streaming-parser": "^3.2.1",
     "jsonld-streaming-serializer": "^2.1.0",
     "n3": "^1.17.0"

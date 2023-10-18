@@ -105,8 +105,7 @@ describe("jsonLdResponseToStore", () => {
     ).toBe(true);
   });
 
-  // This is currently broken - see https://github.com/rubensworks/jsonld-streaming-parser.js/issues/112
-  it.skip("converting fetch response with custom prefix definition to a store", async () => {
+  it("converting fetch response with custom prefix definition to a store", async () => {
     const response = new Response(JSON.stringify(dataWithPrefix));
     const quads = [...(await jsonLdResponseToStore(response))];
     expect(isomorphic(quads, result)).toBe(true);
