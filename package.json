@@ -67,7 +67,7 @@
     "@types/jest": "^29.2.2",
     "@types/n3": "^1.16.0",
     "@types/node": "^20.1.2",
-    "@types/rdfjs__dataset": "2.0.3",
+    "@types/rdfjs__dataset": "2.0.5",
     "dotenv-flow": "^3.2.0",
     "eslint": "^8.18.0",
     "jest": "^29.3.0",

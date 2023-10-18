@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@inrupt/solid-client-vc": "^0.5.0",
-    "next": "13.0.6",
+    "next": "13.5.4",
     "react": "18.2.0"
   },
   "devDependencies": {
