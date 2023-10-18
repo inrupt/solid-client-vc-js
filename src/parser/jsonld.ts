@@ -44,7 +44,7 @@ class CachedFetchDocumentLoader extends FetchDocumentLoader {
     ...args: ConstructorParameters<typeof FetchDocumentLoader>
   ) {
     super(...args);
-    this.contexts = contexts ? { ...contexts, ...CONTEXTS } : CONTEXTS;
+    this.contexts = { ...contexts, ...CONTEXTS };
   }
 
   public async load(url: string): Promise<IJsonLdContext> {

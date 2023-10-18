@@ -105,6 +105,23 @@ describe("jsonLdResponseToStore", () => {
     ).toBe(true);
   });
 
+  it("should error if trying to fetch a remote context when allowContextFetching is disabled", async () => {
+    const response = new Response(
+      JSON.stringify({
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "http://example.org/my/remote/context",
+        ],
+        id: "https://some.example#credential",
+        type: ["VerifiableCredential"],
+        issuer: "https://some.example",
+      }),
+    );
+    await expect(jsonLdResponseToStore(response, {
+      allowContextFetching: false
+    })).rejects.toThrowError('Unexpected context requested [http://example.org/my/remote/context]');
+  });
+
   it("converting fetch response with custom prefix definition to a store", async () => {
     const response = new Response(JSON.stringify(dataWithPrefix));
     const quads = [...(await jsonLdResponseToStore(response))];

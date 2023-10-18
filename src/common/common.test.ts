@@ -990,7 +990,7 @@ describe("getVerifiableCredential", () => {
     );
   });
 
-  it("should handle credential subject with a blank node", async () => {
+  it("should handle credential subject with a blank node and a boolean", async () => {
     const store = await jsonLdToStore(mockDefaultCredential());
 
     store.add(
@@ -998,6 +998,38 @@ describe("getVerifiableCredential", () => {
         DataFactory.namedNode("https://some.webid.provider/strelka"),
         DataFactory.namedNode("https://example.org/predicateBnode"),
         DataFactory.blankNode("b2"),
+      ),
+    );
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.webid.provider/strelka"),
+        DataFactory.namedNode("https://example.org/predicateTrue"),
+        DataFactory.literal("true", DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")),
+      ),
+    );
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.webid.provider/strelka"),
+        DataFactory.namedNode("https://example.org/predicateFalse"),
+        DataFactory.literal("false", DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")),
+      ),
+    );
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.webid.provider/strelka"),
+        DataFactory.namedNode("https://example.org/predicateFalse"),
+        DataFactory.literal("false", DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#boolean")),
+      ),
+    );
+
+    store.add(
+      DataFactory.quad(
+        DataFactory.namedNode("https://some.webid.provider/strelka"),
+        DataFactory.namedNode("https://w3id.org/GConsent#forPurpose"),
+        DataFactory.namedNode("http://example.org/known/to/be/iri/from/predicate"),
       ),
     );
 
@@ -1013,7 +1045,7 @@ describe("getVerifiableCredential", () => {
       await getVerifiableCredentialFromStore(store, "https://some.vc"),
     ).toMatchObject(
       Object.assign(mockDefaultCredential(), {
-        size: 15,
+        size: 18,
         // We always re-frame w.r.t to this context
         "@context": [
           "https://www.w3.org/2018/credentials/v1",
@@ -1033,6 +1065,9 @@ describe("getVerifiableCredential", () => {
             "@id": "https://example.org/object",
           },
           "https://example.org/predicateBnode": {},
+          "https://example.org/predicateFalse": false,
+          "https://example.org/predicateTrue": true,
+          forPurpose: "http://example.org/known/to/be/iri/from/predicate"
         },
         // Any types outside of those in our VC and Inrupt context are removed
         type: ["VerifiableCredential"],
