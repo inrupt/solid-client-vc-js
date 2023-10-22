@@ -523,19 +523,19 @@ function writeObject(
   predicate: string,
   vcStore: Store,
   customContext: JsonLdContextNormalized,
-  bnodeId: (id: BlankNode) => string,
+  createBnodeId: (id: BlankNode) => string,
 ) {
   switch (object.termType) {
     case "BlankNode": {
       const obj = writtenTerms.includes(object.value)
         ? {}
-        : getProperties(object, vcStore, customContext, bnodeId, [
+        : getProperties(object, vcStore, customContext, createBnodeId, [
             ...writtenTerms,
             object.value,
           ]);
 
       // eslint-disable-next-line no-multi-assign
-      obj["@id"] = bnodeId(object);
+      obj["@id"] = createBnodeId(object);
       return obj;
     }
     // eslint-disable-next-line no-fallthrough
@@ -573,7 +573,7 @@ function getProperties(
   subject: Term,
   vcStore: Store,
   vcContext: JsonLdContextNormalized,
-  bnodeId: (id: BlankNode) => string,
+  createBnodeId: (id: BlankNode) => string,
   writtenTerms: string[] = [],
 ) {
   const object: Record<string, unknown> = {};
@@ -599,7 +599,7 @@ function getProperties(
           predicate.value,
           vcStore,
           vcContext,
-          bnodeId,
+          createBnodeId,
         ),
       )
       .filter((obj) => typeof obj !== "object" || Object.keys(obj).length >= 1);
@@ -617,7 +617,7 @@ function getProperties(
 /**
  * @hidden
  */
-function bnodeIdFactory() {
+function createBnodeIdFactory() {
   let i = 0;
   const data: Record<string, number> = {};
   // eslint-disable-next-line no-return-assign, no-multi-assign
@@ -661,7 +661,7 @@ export async function getVerifiableCredentialFromStore(
   vcStore: Store,
   vcUrl: UrlString,
 ): Promise<VerifiableCredential & DatasetCore> {
-  const bnodeId = bnodeIdFactory();
+  const createBnodeId = createBnodeIdFactory();
   let vcContext = await getVcContext();
 
   const vcs = vcStore.getSubjects(
@@ -776,7 +776,7 @@ export async function getVerifiableCredentialFromStore(
         DF.namedNode(credentialSubjectTerm),
         vcStore,
         vcContext,
-        bnodeId,
+        createBnodeId,
       ),
       id: credentialSubjectTerm,
     },
