@@ -46,7 +46,6 @@ export type CredentialClaims = VerifiableClaims & {
 
 export const defaultVerifiableClaims: VerifiableClaims = {
   "@context": [
-    // { ex: "https://example.org/ns/" },
     "https://www.w3.org/2018/credentials/v1",
     "https://schema.inrupt.com/credentials/v1.jsonld",
   ],
