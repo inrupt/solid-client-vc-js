@@ -473,6 +473,27 @@ const PROOF_VALUE = `${SEC}proofValue`;
 /**
  * @hidden
  */
+function getSingleObject(
+  fullProperty: string,
+  vcStore: Store,
+  vc: Term,
+  subject?: Term,
+  graph: Term = DF.defaultGraph(),
+): Term {
+  const objects = vcStore.getObjects(subject ?? vc, fullProperty, graph);
+
+  if (objects.length !== 1) {
+    throw new Error(
+      `Expected exactly one [${fullProperty}] for the Verifiable Credential ${vc.value}, received: ${objects.length}`,
+    );
+  }
+
+  return objects[0];
+}
+
+/**
+ * @hidden
+ */
 export async function getVerifiableCredentialFromStore(
   vcStore: Store,
   vcUrl: UrlString,
@@ -523,22 +544,6 @@ export async function getVerifiableCredentialFromStore(
   // This allows any context specific to the type of the things that we are re-framing to be applied
   vcContext = await getVcContext(...typeContexts);
 
-  function getSingleObject(
-    fullProperty: string,
-    subject?: Term,
-    graph: Term = DF.defaultGraph(),
-  ): Term {
-    const objects = vcStore.getObjects(subject ?? vc, fullProperty, graph);
-
-    if (objects.length !== 1) {
-      throw new Error(
-        `Expected exactly one [${fullProperty}] for the Verifiable Credential ${vc.value}, received: ${objects.length}`,
-      );
-    }
-
-    return objects[0];
-  }
-
   function getSingleObjectOfTermType(
     fullProperty: string,
     subject?: Term,
@@ -546,7 +551,7 @@ export async function getVerifiableCredentialFromStore(
     termType: Term["termType"] = "NamedNode",
     customContext = vcContext,
   ) {
-    const object = getSingleObject(fullProperty, subject, graph);
+    const object = getSingleObject(fullProperty, vcStore, vc, subject, graph);
 
     if (object.termType !== termType) {
       throw new Error(
@@ -565,7 +570,7 @@ export async function getVerifiableCredentialFromStore(
     subject?: Term,
     graph?: Term,
   ) {
-    const object = getSingleObject(fullProperty, subject, graph);
+    const object = getSingleObject(fullProperty, vcStore, vc, subject, graph);
 
     if (object.termType !== "Literal") {
       throw new Error(
@@ -586,7 +591,7 @@ export async function getVerifiableCredentialFromStore(
   }
 
   // The proof lives within a named graph
-  const proofGraph = getSingleObject(PROOF);
+  const proofGraph = getSingleObject(PROOF, vcStore, vc);
   const proofs = vcStore.getSubjects(null, null, proofGraph);
 
   if (proofs.length !== 1) {
@@ -681,12 +686,19 @@ export async function getVerifiableCredentialFromStore(
         const compact = customContext.compactIri(predicate, true);
         const termContext = customContext.getContextRaw()[compact];
         const term = Util.termToValue(object, customContext, {
-          // FIXME: This could also be @json, xsd:type - so this needs to be more strict
           // If an `@type` is defined in the context, then the
           // parser can determine that it is an IRI immediately
           // and so we don't need to wrap it in an object with an
           // `@id` entry.
-          compactIds: termContext && "@type" in termContext,
+          compactIds:
+            // Make sure the object of the `@type` keyword is a string
+            termContext &&
+            "@type" in termContext &&
+            typeof termContext["@type"] === "string" &&
+            // Make sure the object is not a protected keyword that is not `@id`
+            (!termContext["@type"].startsWith("@") || termContext["@type"] === '@id') &&
+            // Make sure the object is not a datatype
+            !termContext["@type"].startsWith(XSD),
           vocab: true,
           useNativeTypes: true,
         });
