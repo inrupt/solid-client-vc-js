@@ -36,6 +36,7 @@ import contentTypeParser from "content-type";
 import { Util } from "jsonld-streaming-serializer";
 import type { Store, Term } from "n3";
 import { DataFactory as DF } from "n3";
+import type { JsonLdContextNormalized } from "jsonld-context-parser";
 import { context } from "../parser/contexts";
 import VcContext from "../parser/contexts/vc";
 import type { ParseOptions } from "../parser/jsonld";
@@ -491,6 +492,29 @@ function getSingleObject(
   return objects[0];
 }
 
+function getSingleObjectOfTermType(
+  fullProperty: string,
+  vcStore: Store,
+  vc: Term,
+  customContext: JsonLdContextNormalized,
+  subject?: Term,
+  graph?: Term,
+  termType: Term["termType"] = "NamedNode",
+) {
+  const object = getSingleObject(fullProperty, vcStore, vc, subject, graph);
+
+  if (object.termType !== termType) {
+    throw new Error(
+      `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a ${termType}, received: ${object.termType}`,
+    );
+  }
+
+  // TODO: Make sure that Literals with URIs are correclty handled here
+  return object.termType === "NamedNode"
+    ? customContext.compactIri(object.value, true)
+    : object.value;
+}
+
 /**
  * @hidden
  */
@@ -544,27 +568,6 @@ export async function getVerifiableCredentialFromStore(
   // This allows any context specific to the type of the things that we are re-framing to be applied
   vcContext = await getVcContext(...typeContexts);
 
-  function getSingleObjectOfTermType(
-    fullProperty: string,
-    subject?: Term,
-    graph?: Term,
-    termType: Term["termType"] = "NamedNode",
-    customContext = vcContext,
-  ) {
-    const object = getSingleObject(fullProperty, vcStore, vc, subject, graph);
-
-    if (object.termType !== termType) {
-      throw new Error(
-        `Expected property [${fullProperty}] of the Verifiable Credential [${vc.value}] to be a ${termType}, received: ${object.termType}`,
-      );
-    }
-
-    // TODO: Make sure that Literals with URIs are correclty handled here
-    return object.termType === "NamedNode"
-      ? customContext.compactIri(object.value, true)
-      : object.value;
-  }
-
   function getSingleDateTime(
     fullProperty: string,
     subject?: Term,
@@ -601,7 +604,14 @@ export async function getVerifiableCredentialFromStore(
   }
 
   const [proof] = proofs;
-  const proofType = getSingleObjectOfTermType(RDF_TYPE, proof, proofGraph);
+  const proofType = getSingleObjectOfTermType(
+    RDF_TYPE,
+    vcStore,
+    vc,
+    vcContext,
+    proof,
+    proofGraph,
+  );
 
   const proposedContextTemp =
     VcContext["@context"][proofType as keyof (typeof VcContext)["@context"]];
@@ -696,7 +706,8 @@ export async function getVerifiableCredentialFromStore(
             "@type" in termContext &&
             typeof termContext["@type"] === "string" &&
             // Make sure the object is not a protected keyword that is not `@id`
-            (!termContext["@type"].startsWith("@") || termContext["@type"] === '@id') &&
+            (!termContext["@type"].startsWith("@") ||
+              termContext["@type"] === "@id") &&
             // Make sure the object is not a datatype
             !termContext["@type"].startsWith(XSD),
           vocab: true,
@@ -716,7 +727,12 @@ export async function getVerifiableCredentialFromStore(
     }
   }
 
-  const credentialSubjectTerm = getSingleObjectOfTermType(CREDENTIAL_SUBJECT);
+  const credentialSubjectTerm = getSingleObjectOfTermType(
+    CREDENTIAL_SUBJECT,
+    vcStore,
+    vc,
+    proofContext,
+  );
 
   const res: VerifiableCredential & DatasetCore = {
     "@context": context,
@@ -728,7 +744,7 @@ export async function getVerifiableCredentialFromStore(
       ...getProperties(DF.namedNode(credentialSubjectTerm)),
       id: credentialSubjectTerm,
     },
-    issuer: getSingleObjectOfTermType(ISSUER),
+    issuer: getSingleObjectOfTermType(ISSUER, vcStore, vc, vcContext),
     issuanceDate: getSingleDateTime(ISSUANCE_DATE),
     type,
     proof: {
@@ -739,21 +755,28 @@ export async function getVerifiableCredentialFromStore(
       ),
       proofPurpose: getSingleObjectOfTermType(
         PROOF_PURPOSE,
+        vcStore,
+        vc,
+        proofPurposeContext,
         proof,
         proofGraph,
         "NamedNode",
-        proofPurposeContext,
       ),
       type: proofType,
       verificationMethod: getSingleObjectOfTermType(
         VERIFICATION_METHOD,
+        vcStore,
+        vc,
+        proofContext,
         proof,
         proofGraph,
         "NamedNode",
-        proofContext,
       ),
       proofValue: getSingleObjectOfTermType(
         PROOF_VALUE,
+        vcStore,
+        vc,
+        proofContext,
         proof,
         proofGraph,
         "Literal",
