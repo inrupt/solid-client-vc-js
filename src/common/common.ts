@@ -34,7 +34,7 @@ import { fetch as uniFetch } from "@inrupt/universal-fetch";
 import type { DatasetCore } from "@rdfjs/types";
 import contentTypeParser from "content-type";
 import { Util } from "jsonld-streaming-serializer";
-import type { Store, Term } from "n3";
+import type { BlankNode, Store, Term } from "n3";
 import { DataFactory as DF } from "n3";
 import type { JsonLdContextNormalized } from "jsonld-context-parser";
 import { context } from "../parser/contexts";
@@ -492,6 +492,9 @@ function getSingleObject(
   return objects[0];
 }
 
+/**
+ * @hidden
+ */
 function getSingleObjectOfTermType(
   fullProperty: string,
   vcStore: Store,
@@ -509,6 +512,7 @@ function getSingleObjectOfTermType(
     );
   }
 
+  // return writeObject(object, [], fullProperty, vcStore, customContext);
   // TODO: Make sure that Literals with URIs are correclty handled here
   return object.termType === "NamedNode"
     ? customContext.compactIri(object.value, true)
@@ -518,10 +522,144 @@ function getSingleObjectOfTermType(
 /**
  * @hidden
  */
+function getProperties(subject: Term, vcStore: Store, vcContext: JsonLdContextNormalized, bnodeId: (id: BlankNode) => string, writtenTerms: string[] = []) {
+  const object: Record<string, unknown> = {};
+
+  for (const predicate of vcStore.getPredicates(
+    subject,
+    null,
+    DF.defaultGraph(),
+  )) {
+    if (predicate.termType !== "NamedNode") {
+      throw new Error("Predicate must be a namedNode");
+    }
+
+    const compact = vcContext.compactIri(predicate.value, true);
+    const objects = vcStore
+      .getObjects(subject, predicate, DF.defaultGraph())
+      // writeObject and getProperties depend on each other circularly
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      .map((obj) => writeObject(obj, writtenTerms, predicate.value, vcStore, vcContext, bnodeId))
+      .filter(
+        (obj) => typeof obj !== "object" || Object.keys(obj).length >= 1,
+      );
+
+    if (objects.length === 1) {
+      [object[compact]] = objects;
+    } else if (objects.length > 1) {
+      object[compact] = objects;
+    }
+  }
+
+  return object;
+}
+
+/**
+ * @hidden
+ */
+function bnodeIdFactory() {
+  let i = 0;
+  const data: Record<string, number> = {};
+  return (term: BlankNode) => `_:b${(data[term.value] ??= i += 1)}`
+}
+
+/**
+ * @hidden
+ */
+function writeObject(
+  object: Term,
+  writtenTerms: string[],
+  predicate: string,
+  vcStore: Store,
+  customContext: JsonLdContextNormalized,
+  bnodeId: (id: BlankNode) => string
+) {
+  switch (object.termType) {
+    case "BlankNode": {
+      const obj = writtenTerms.includes(object.value)
+        ? {}
+        : getProperties(object, vcStore, customContext, bnodeId, [...writtenTerms, object.value]);
+
+      // eslint-disable-next-line no-multi-assign
+      obj["@id"] = bnodeId(object);
+      return obj;
+    }
+    // eslint-disable-next-line no-fallthrough
+    case "NamedNode":
+    case "Literal": {
+      const compact = customContext.compactIri(predicate, true);
+      const termContext = customContext.getContextRaw()[compact];
+      const term = Util.termToValue(object, customContext, {
+        // If an `@type` is defined in the context, then the
+        // parser can determine that it is an IRI immediately
+        // and so we don't need to wrap it in an object with an
+        // `@id` entry.
+        compactIds:
+          // Make sure the object of the `@type` keyword is a string
+          termContext &&
+          "@type" in termContext &&
+          typeof termContext["@type"] === "string" &&
+          // Make sure the object is not a protected keyword that is not `@id`
+          (!termContext["@type"].startsWith("@") ||
+            termContext["@type"] === "@id") &&
+          // Make sure the object is not a datatype
+          !termContext["@type"].startsWith(XSD),
+        vocab: true,
+        useNativeTypes: true,
+      });
+
+      // Special case: Booleans (any any other native literals for
+      // that matter) don't need to be wrapped in an object with an
+      // `@value` key.
+      if (term["@value"] === true || term["@value"] === false) {
+        return term["@value"];
+      }
+      return term;
+    }
+    default:
+      throw new Error(`Unexpected term type: ${object.termType}`);
+  }
+}
+
+/**
+ * @hidden
+ */
+function getSingleDateTime(
+  fullProperty: string,
+  vcStore: Store,
+  vc: Term,
+  subject?: Term,
+  graph?: Term,
+) {
+  const object = getSingleObject(fullProperty, vcStore, vc, subject, graph);
+
+  if (object.termType !== "Literal") {
+    throw new Error(
+      `Expected issuanceDate to be a Literal, received: ${object.termType}`,
+    );
+  }
+  if (!object.datatype.equals(DF.namedNode(DATE_TIME))) {
+    throw new Error(
+      `Expected issuanceDate to have dataType [${DATE_TIME}], received: [${object.datatype.value}]`,
+    );
+  }
+
+  if (Number.isNaN(Date.parse(object.value))) {
+    throw new Error(`Invalid dateTime in VC [${object.value}]`);
+  }
+
+  return object.value;
+}
+
+
+/**
+ * @hidden
+ */
 export async function getVerifiableCredentialFromStore(
   vcStore: Store,
   vcUrl: UrlString,
 ): Promise<VerifiableCredential & DatasetCore> {
+  const bnodeId = bnodeIdFactory();
   let vcContext = await getVcContext();
 
   const vcs = vcStore.getSubjects(
@@ -567,31 +705,6 @@ export async function getVerifiableCredentialFromStore(
 
   // This allows any context specific to the type of the things that we are re-framing to be applied
   vcContext = await getVcContext(...typeContexts);
-
-  function getSingleDateTime(
-    fullProperty: string,
-    subject?: Term,
-    graph?: Term,
-  ) {
-    const object = getSingleObject(fullProperty, vcStore, vc, subject, graph);
-
-    if (object.termType !== "Literal") {
-      throw new Error(
-        `Expected issuanceDate to be a Literal, received: ${object.termType}`,
-      );
-    }
-    if (!object.datatype.equals(DF.namedNode(DATE_TIME))) {
-      throw new Error(
-        `Expected issuanceDate to have dataType [${DATE_TIME}], received: [${object.datatype.value}]`,
-      );
-    }
-
-    if (Number.isNaN(Date.parse(object.value))) {
-      throw new Error(`Invalid dateTime in VC [${object.value}]`);
-    }
-
-    return object.value;
-  }
 
   // The proof lives within a named graph
   const proofGraph = getSingleObject(PROOF, vcStore, vc);
@@ -639,99 +752,11 @@ export async function getVerifiableCredentialFromStore(
     }
   }
 
-  function getProperties(subject: Term, writtenTerms: string[] = []) {
-    const object: Record<string, unknown> = {};
-
-    for (const predicate of vcStore.getPredicates(
-      subject,
-      null,
-      DF.defaultGraph(),
-    )) {
-      if (predicate.termType !== "NamedNode") {
-        throw new Error("Predicate must be a namedNode");
-      }
-
-      const compact = vcContext.compactIri(predicate.value, true);
-      const objects = vcStore
-        .getObjects(subject, predicate, DF.defaultGraph())
-        // writeObject and getProperties depend on each other circularly
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        .map((obj) => writeObject(obj, writtenTerms, predicate.value))
-        .filter(
-          (obj) => typeof obj !== "object" || Object.keys(obj).length >= 1,
-        );
-
-      if (objects.length === 1) {
-        [object[compact]] = objects;
-      } else if (objects.length > 1) {
-        object[compact] = objects;
-      }
-    }
-
-    return object;
-  }
-
-  let i = 0;
-  const data: Record<string, number> = {};
-
-  function writeObject(
-    object: Term,
-    writtenTerms: string[],
-    predicate: string,
-    customContext = vcContext,
-  ) {
-    switch (object.termType) {
-      case "BlankNode": {
-        const obj = writtenTerms.includes(object.value)
-          ? {}
-          : getProperties(object, [...writtenTerms, object.value]);
-
-        // eslint-disable-next-line no-multi-assign
-        obj["@id"] = `_:b${(data[object.value] ??= i += 1)}`;
-        return obj;
-      }
-      // eslint-disable-next-line no-fallthrough
-      case "NamedNode":
-      case "Literal": {
-        const compact = customContext.compactIri(predicate, true);
-        const termContext = customContext.getContextRaw()[compact];
-        const term = Util.termToValue(object, customContext, {
-          // If an `@type` is defined in the context, then the
-          // parser can determine that it is an IRI immediately
-          // and so we don't need to wrap it in an object with an
-          // `@id` entry.
-          compactIds:
-            // Make sure the object of the `@type` keyword is a string
-            termContext &&
-            "@type" in termContext &&
-            typeof termContext["@type"] === "string" &&
-            // Make sure the object is not a protected keyword that is not `@id`
-            (!termContext["@type"].startsWith("@") ||
-              termContext["@type"] === "@id") &&
-            // Make sure the object is not a datatype
-            !termContext["@type"].startsWith(XSD),
-          vocab: true,
-          useNativeTypes: true,
-        });
-
-        // Special case: Booleans (any any other native literals for
-        // that matter) don't need to be wrapped in an object with an
-        // `@value` key.
-        if (term["@value"] === true || term["@value"] === false) {
-          return term["@value"];
-        }
-        return term;
-      }
-      default:
-        throw new Error(`Unexpected term type: ${object.termType}`);
-    }
-  }
-
   const credentialSubjectTerm = getSingleObjectOfTermType(
     CREDENTIAL_SUBJECT,
     vcStore,
     vc,
-    proofContext,
+    proofContext
   );
 
   const res: VerifiableCredential & DatasetCore = {
@@ -741,15 +766,17 @@ export async function getVerifiableCredentialFromStore(
     // we do not support this
     // https://www.w3.org/TR/vc-data-model/#example-specifying-multiple-subjects-in-a-verifiable-credential
     credentialSubject: {
-      ...getProperties(DF.namedNode(credentialSubjectTerm)),
+      ...getProperties(DF.namedNode(credentialSubjectTerm), vcStore, vcContext, bnodeId),
       id: credentialSubjectTerm,
     },
     issuer: getSingleObjectOfTermType(ISSUER, vcStore, vc, vcContext),
-    issuanceDate: getSingleDateTime(ISSUANCE_DATE),
+    issuanceDate: getSingleDateTime(ISSUANCE_DATE, vcStore, vc),
     type,
     proof: {
       created: getSingleDateTime(
         "http://purl.org/dc/terms/created",
+        vcStore,
+        vc,
         proof,
         proofGraph,
       ),
