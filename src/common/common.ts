@@ -499,7 +499,6 @@ function getSingleObjectOfTermType(
   fullProperty: string,
   vcStore: Store,
   vc: Term,
-  customContext: JsonLdContextNormalized,
   subject?: Term,
   graph?: Term,
   termType: Term["termType"] = "NamedNode",
@@ -512,17 +511,71 @@ function getSingleObjectOfTermType(
     );
   }
 
-  // return writeObject(object, [], fullProperty, vcStore, customContext);
-  // TODO: Make sure that Literals with URIs are correclty handled here
-  return object.termType === "NamedNode"
-    ? customContext.compactIri(object.value, true)
-    : object.value;
+  return object.value;
 }
 
 /**
  * @hidden
  */
-function getProperties(subject: Term, vcStore: Store, vcContext: JsonLdContextNormalized, bnodeId: (id: BlankNode) => string, writtenTerms: string[] = []) {
+function writeObject(
+  object: Term,
+  writtenTerms: string[],
+  predicate: string,
+  vcStore: Store,
+  customContext: JsonLdContextNormalized,
+  bnodeId: (id: BlankNode) => string,
+) {
+  switch (object.termType) {
+    case "BlankNode": {
+      const obj = writtenTerms.includes(object.value)
+        ? {}
+        : getProperties(object, vcStore, customContext, bnodeId, [
+            ...writtenTerms,
+            object.value,
+          ]);
+
+      // eslint-disable-next-line no-multi-assign
+      obj["@id"] = bnodeId(object);
+      return obj;
+    }
+    // eslint-disable-next-line no-fallthrough
+    case "NamedNode":
+    case "Literal": {
+      const compact = customContext.compactIri(predicate, true);
+      const termContext = customContext.getContextRaw()[compact];
+      const term = Util.termToValue(object, customContext, {
+        // If an `@type` is defined in the context, then the
+        // parser can determine that it is an IRI immediately
+        // and so we don't need to wrap it in an object with an
+        // `@id` entry.
+        compactIds: termContext && "@type" in termContext,
+        vocab: true,
+        useNativeTypes: true,
+      });
+
+      // Special case: Booleans (any any other native literals for
+      // that matter) don't need to be wrapped in an object with an
+      // `@value` key.
+      if (term["@value"] === true || term["@value"] === false) {
+        return term["@value"];
+      }
+      return term;
+    }
+    default:
+      throw new Error(`Unexpected term type: ${object.termType}`);
+  }
+}
+
+/**
+ * @hidden
+ */
+function getProperties(
+  subject: Term,
+  vcStore: Store,
+  vcContext: JsonLdContextNormalized,
+  bnodeId: (id: BlankNode) => string,
+  writtenTerms: string[] = [],
+) {
   const object: Record<string, unknown> = {};
 
   for (const predicate of vcStore.getPredicates(
@@ -539,10 +592,17 @@ function getProperties(subject: Term, vcStore: Store, vcContext: JsonLdContextNo
       .getObjects(subject, predicate, DF.defaultGraph())
       // writeObject and getProperties depend on each other circularly
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      .map((obj) => writeObject(obj, writtenTerms, predicate.value, vcStore, vcContext, bnodeId))
-      .filter(
-        (obj) => typeof obj !== "object" || Object.keys(obj).length >= 1,
-      );
+      .map((obj) =>
+        writeObject(
+          obj,
+          writtenTerms,
+          predicate.value,
+          vcStore,
+          vcContext,
+          bnodeId,
+        ),
+      )
+      .filter((obj) => typeof obj !== "object" || Object.keys(obj).length >= 1);
 
     if (objects.length === 1) {
       [object[compact]] = objects;
@@ -560,65 +620,8 @@ function getProperties(subject: Term, vcStore: Store, vcContext: JsonLdContextNo
 function bnodeIdFactory() {
   let i = 0;
   const data: Record<string, number> = {};
-  return (term: BlankNode) => `_:b${(data[term.value] ??= i += 1)}`
-}
-
-/**
- * @hidden
- */
-function writeObject(
-  object: Term,
-  writtenTerms: string[],
-  predicate: string,
-  vcStore: Store,
-  customContext: JsonLdContextNormalized,
-  bnodeId: (id: BlankNode) => string
-) {
-  switch (object.termType) {
-    case "BlankNode": {
-      const obj = writtenTerms.includes(object.value)
-        ? {}
-        : getProperties(object, vcStore, customContext, bnodeId, [...writtenTerms, object.value]);
-
-      // eslint-disable-next-line no-multi-assign
-      obj["@id"] = bnodeId(object);
-      return obj;
-    }
-    // eslint-disable-next-line no-fallthrough
-    case "NamedNode":
-    case "Literal": {
-      const compact = customContext.compactIri(predicate, true);
-      const termContext = customContext.getContextRaw()[compact];
-      const term = Util.termToValue(object, customContext, {
-        // If an `@type` is defined in the context, then the
-        // parser can determine that it is an IRI immediately
-        // and so we don't need to wrap it in an object with an
-        // `@id` entry.
-        compactIds:
-          // Make sure the object of the `@type` keyword is a string
-          termContext &&
-          "@type" in termContext &&
-          typeof termContext["@type"] === "string" &&
-          // Make sure the object is not a protected keyword that is not `@id`
-          (!termContext["@type"].startsWith("@") ||
-            termContext["@type"] === "@id") &&
-          // Make sure the object is not a datatype
-          !termContext["@type"].startsWith(XSD),
-        vocab: true,
-        useNativeTypes: true,
-      });
-
-      // Special case: Booleans (any any other native literals for
-      // that matter) don't need to be wrapped in an object with an
-      // `@value` key.
-      if (term["@value"] === true || term["@value"] === false) {
-        return term["@value"];
-      }
-      return term;
-    }
-    default:
-      throw new Error(`Unexpected term type: ${object.termType}`);
-  }
+  // eslint-disable-next-line no-return-assign, no-multi-assign
+  return (term: BlankNode) => `_:b${(data[term.value] ??= i += 1)}`;
 }
 
 /**
@@ -650,7 +653,6 @@ function getSingleDateTime(
 
   return object.value;
 }
-
 
 /**
  * @hidden
@@ -721,13 +723,17 @@ export async function getVerifiableCredentialFromStore(
     RDF_TYPE,
     vcStore,
     vc,
-    vcContext,
     proof,
     proofGraph,
   );
 
   const proposedContextTemp =
-    VcContext["@context"][proofType as keyof (typeof VcContext)["@context"]];
+    VcContext["@context"][
+      vcContext.compactIri(
+        proofType,
+        true,
+      ) as keyof (typeof VcContext)["@context"]
+    ];
   const proposedContext =
     typeof proposedContextTemp === "object" &&
     "@context" in proposedContextTemp &&
@@ -756,9 +762,9 @@ export async function getVerifiableCredentialFromStore(
     CREDENTIAL_SUBJECT,
     vcStore,
     vc,
-    proofContext
   );
 
+  const proofArgs = [vcStore, vc, proof, proofGraph] as const;
   const res: VerifiableCredential & DatasetCore = {
     "@context": context,
     id: vc.value,
@@ -766,46 +772,34 @@ export async function getVerifiableCredentialFromStore(
     // we do not support this
     // https://www.w3.org/TR/vc-data-model/#example-specifying-multiple-subjects-in-a-verifiable-credential
     credentialSubject: {
-      ...getProperties(DF.namedNode(credentialSubjectTerm), vcStore, vcContext, bnodeId),
+      ...getProperties(
+        DF.namedNode(credentialSubjectTerm),
+        vcStore,
+        vcContext,
+        bnodeId,
+      ),
       id: credentialSubjectTerm,
     },
-    issuer: getSingleObjectOfTermType(ISSUER, vcStore, vc, vcContext),
+    issuer: getSingleObjectOfTermType(ISSUER, vcStore, vc),
     issuanceDate: getSingleDateTime(ISSUANCE_DATE, vcStore, vc),
     type,
     proof: {
       created: getSingleDateTime(
         "http://purl.org/dc/terms/created",
-        vcStore,
-        vc,
-        proof,
-        proofGraph,
+        ...proofArgs,
       ),
-      proofPurpose: getSingleObjectOfTermType(
-        PROOF_PURPOSE,
-        vcStore,
-        vc,
-        proofPurposeContext,
-        proof,
-        proofGraph,
-        "NamedNode",
+      proofPurpose: proofPurposeContext.compactIri(
+        getSingleObjectOfTermType(PROOF_PURPOSE, ...proofArgs),
+        true,
       ),
-      type: proofType,
-      verificationMethod: getSingleObjectOfTermType(
-        VERIFICATION_METHOD,
-        vcStore,
-        vc,
-        proofContext,
-        proof,
-        proofGraph,
-        "NamedNode",
+      type: proofContext.compactIri(proofType, true),
+      verificationMethod: proofContext.compactIri(
+        getSingleObjectOfTermType(VERIFICATION_METHOD, ...proofArgs),
+        true,
       ),
       proofValue: getSingleObjectOfTermType(
         PROOF_VALUE,
-        vcStore,
-        vc,
-        proofContext,
-        proof,
-        proofGraph,
+        ...proofArgs,
         "Literal",
       ),
     },
