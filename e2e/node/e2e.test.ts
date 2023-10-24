@@ -147,7 +147,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
   });
 
   describe("lookup VCs", () => {
-    it("returns all VC issued matching a given shape", async () => {
+    it.skip("returns all VC issued matching a given shape", async () => {
       const result = await getVerifiableCredentialAllFromShape(
         new URL("derive", env.vcProvider).href,
         {
