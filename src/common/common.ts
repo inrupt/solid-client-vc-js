@@ -26,11 +26,21 @@
 import type { UrlString } from "@inrupt/solid-client";
 import {
   getIri,
+  getJsonLdParser,
   getSolidDataset,
   getThingAll,
-  getJsonLdParser,
 } from "@inrupt/solid-client";
 import { fetch as uniFetch } from "@inrupt/universal-fetch";
+import type { DatasetCore } from "@rdfjs/types";
+import contentTypeParser from "content-type";
+import { Util } from "jsonld-streaming-serializer";
+import type { BlankNode, Store, Term } from "n3";
+import { DataFactory as DF } from "n3";
+import type { JsonLdContextNormalized } from "jsonld-context-parser";
+import { context } from "../parser/contexts";
+import VcContext from "../parser/contexts/vc";
+import type { ParseOptions } from "../parser/jsonld";
+import { jsonLdToStore } from "../parser/jsonld";
 
 export type Iri = string;
 /**
@@ -239,7 +249,7 @@ export function concatenateContexts(...contexts: unknown[]): unknown {
   contexts.forEach((additionalContext) => {
     // Case when the context is an array of IRIs and/or inline contexts
     if (Array.isArray(additionalContext)) {
-      additionalContext.forEach((context) => result.add(context));
+      additionalContext.forEach((contextEntry) => result.add(contextEntry));
     } else if (additionalContext !== null && additionalContext !== undefined) {
       // Case when the context is a single remote URI or a single inline context
       result.add(additionalContext);
@@ -397,6 +407,51 @@ export async function getVerifiableCredentialApiConfiguration(
 }
 
 /**
+ * @hidden
+ */
+export async function verifiableCredentialToDataset(vc: VerifiableCredential, options?: ParseOptions): Promise<VerifiableCredential & DatasetCore> {
+  let store: DatasetCore;
+  try {
+    store = await jsonLdToStore(vc, options);
+  } catch (e) {
+    throw new Error(
+      `Parsing the Verifiable Credential as JSON-LD failed: ${e}`,
+    );
+  }
+
+  return {
+    ...vc,
+    // Make this a DatasetCore without polluting the object with
+    // all of the properties present in the N3.Store
+    [Symbol.iterator]() {
+      return store[Symbol.iterator]();
+    },
+    has(quad) {
+      return store.has(quad);
+    },
+    match(subject, predicate, object, graph) {
+      // We need to cast to DatasetCore because the N3.Store
+      // type uses an internal type for Term rather than the @rdfjs/types Term
+      return store.match(subject, predicate, object, graph);
+    },
+    add() {
+      throw new Error("Cannot mutate this dataset");
+    },
+    delete() {
+      throw new Error("Cannot mutate this dataset");
+    },
+    get size() {
+      return store.size;
+    },
+    // For backwards compatibility the dataset properties
+    // SHOULD NOT be included when we JSON.stringify the object
+    toJSON() {
+      return vc;
+    }
+  }
+}
+
+/**
  * Dereference a VC URL, and verify that the resulting content is valid.
  *
  * @param vcUrl The URL of the VC.
@@ -407,32 +462,29 @@ export async function getVerifiableCredentialApiConfiguration(
  */
 export async function getVerifiableCredential(
   vcUrl: UrlString,
-  options?: Partial<{
-    fetch: typeof fetch;
-  }>,
-): Promise<VerifiableCredential> {
+  options?: ParseOptions,
+): Promise<VerifiableCredential & DatasetCore> {
   const authFetch = options?.fetch ?? uniFetch;
-  return authFetch(vcUrl as string)
-    .then(async (response) => {
-      if (!response.ok) {
-        throw new Error(
-          `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`,
-        );
-      }
-      try {
-        return normalizeVc(await response.json());
-      } catch (e) {
-        throw new Error(
-          `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`,
-        );
-      }
-    })
-    .then((vc) => {
-      if (!isVerifiableCredential(vc)) {
-        throw new Error(
-          `The value received from [${vcUrl}] is not a Verifiable Credential`,
-        );
-      }
-      return vc;
-    });
+  const response = await authFetch(vcUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  let vc: unknown | VerifiableCredential;
+  try {
+    vc = normalizeVc(await response.json());
+  } catch (e) {
+    throw new Error(
+      `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`,
+    );
+  }
+  if (!isVerifiableCredential(vc)) {
+    throw new Error(
+      `The value received from [${vcUrl}] is not a Verifiable Credential`,
+    );
+  }
+  return await verifiableCredentialToDataset(vc, options);
 }

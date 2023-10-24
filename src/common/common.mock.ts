@@ -45,9 +45,15 @@ export type CredentialClaims = VerifiableClaims & {
 };
 
 export const defaultVerifiableClaims: VerifiableClaims = {
-  "@context": { ex: "https://example.org/ns/" },
-  id: "ex:someCredentialInstance",
-  type: [...defaultCredentialTypes, "ex:spaceDogCertificate"],
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://schema.inrupt.com/credentials/v1.jsonld",
+  ],
+  id: "https://example.org/ns/someCredentialInstance",
+  type: [
+    ...defaultCredentialTypes,
+    "https://example.org/ns/spaceDogCertificate",
+  ],
   proofType: "Ed25519Signature2018",
   proofCreated: "2021-08-19T16:08:31Z",
   proofVerificationMethod:
@@ -63,16 +69,19 @@ export const defaultCredentialClaims: CredentialClaims = {
   issuanceDate: "1960-08-19T16:08:31Z",
   subjectId: "https://some.webid.provider/strelka",
   subjectClaims: {
-    "ex:status": "https://example.org/ns/GoodDog",
-    "ex:passengerOf": "https://example.org/ns/Korabl-Sputnik2",
+    "https://example.org/ns/status": "https://example.org/ns/GoodDog",
+    "https://example.org/ns/passengerOf":
+      "https://example.org/ns/Korabl-Sputnik2",
   },
 };
 
 export const mockPartialCredential = (
   claims?: Partial<CredentialClaims>,
+  id?: string,
 ): Record<string, unknown> => {
   return {
-    id: claims?.id,
+    "@context": claims?.["@context"],
+    id: id ?? claims?.id,
     type: claims?.type,
     issuer: claims?.issuer,
     issuanceDate: claims?.issuanceDate,
@@ -90,14 +99,39 @@ export const mockPartialCredential = (
   };
 };
 
+export const mockPartialCredential2Proofs = (
+  claims?: Partial<CredentialClaims>,
+  id?: string,
+): Record<string, unknown> => {
+  return {
+    ...mockPartialCredential(claims, id),
+    proof: [
+      mockPartialCredential(claims, id).proof,
+      mockPartialCredential(claims, id).proof,
+    ],
+  };
+};
+
 export const mockCredential = (
   claims: CredentialClaims,
 ): VerifiableCredential => {
   return mockPartialCredential(claims) as VerifiableCredential;
 };
 
-export const mockDefaultCredential = (): VerifiableCredential => {
-  return mockPartialCredential(defaultCredentialClaims) as VerifiableCredential;
+export const mockDefaultCredential = (id?: string): VerifiableCredential => {
+  return mockPartialCredential(
+    defaultCredentialClaims,
+    id,
+  ) as VerifiableCredential;
+};
+
+export const mockDefaultCredential2Proofs = (
+  id?: string,
+): VerifiableCredential => {
+  return mockPartialCredential2Proofs(
+    defaultCredentialClaims,
+    id,
+  ) as VerifiableCredential;
 };
 
 export const mockPartialPresentation = (

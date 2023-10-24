@@ -113,16 +113,28 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest
       .fn<(typeof UniversalFetch)["fetch"]>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()), { status: 201 }),
+        new Response(JSON.stringify(mockDefaultCredential()), {
+          status: 201,
+          headers: new Headers([["content-type", "application/ld+json"]]),
+        }),
       );
-    await expect(
-      issueVerifiableCredential(
-        "https://some.endpoint",
-        { "@context": ["https://some.context"] },
-        { "@context": ["https://some.context"] },
-        { fetch: mockedFetch },
-      ),
-    ).resolves.toEqual(mockDefaultCredential());
+
+        const vc = await issueVerifiableCredential(
+          "https://some.endpoint",
+          { "@context": ["https://some.context"] },
+          { "@context": ["https://some.context"] },
+          { fetch: mockedFetch },
+        )
+
+    expect(
+      vc,
+    ).toMatchObject({ ...mockDefaultCredential(), size: 13 });
+
+    expect(
+      JSON.parse(JSON.stringify(vc)),
+    ).toEqual(mockDefaultCredential());
+
+
   });
 
   it("sends a request to the specified issuer", async () => {
@@ -396,6 +408,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(mockedVc), {
         status: 201,
+        headers: new Headers([["content-type", "application/json"]]),
       }),
     );
     const resultVc = await issueVerifiableCredential(

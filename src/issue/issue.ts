@@ -25,13 +25,15 @@
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
+import type { DatasetCore } from "@rdfjs/types";
 import type { Iri, JsonLd, VerifiableCredential } from "../common/common";
 import {
-  isVerifiableCredential,
   concatenateContexts,
   defaultContext,
   defaultCredentialTypes,
+  isVerifiableCredential,
   normalizeVc,
+  verifiableCredentialToDataset,
 } from "../common/common";
 
 type OptionsType = {
@@ -47,7 +49,7 @@ async function internal_issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: OptionsType,
-): Promise<VerifiableCredential> {
+): Promise<VerifiableCredential & DatasetCore> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;
@@ -101,9 +103,10 @@ async function internal_issueVerifiableCredential(
       `The VC issuing endpoint [${issuerEndpoint}] could not successfully issue a VC: ${response.status} ${response.statusText}`,
     );
   }
+
   const jsonData = normalizeVc(await response.json());
   if (isVerifiableCredential(jsonData)) {
-    return jsonData;
+    return verifiableCredentialToDataset(jsonData);
   }
   throw new Error(
     `The VC issuing endpoint [${issuerEndpoint}] returned an unexpected object: ${JSON.stringify(
@@ -134,7 +137,7 @@ export async function issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: OptionsType,
-): Promise<VerifiableCredential>;
+): Promise<VerifiableCredential & DatasetCore>;
 /**
  * @deprecated Please remove the `subjectId` parameter
  */
@@ -144,7 +147,7 @@ export async function issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: OptionsType,
-): Promise<VerifiableCredential>;
+): Promise<VerifiableCredential & DatasetCore>;
 // The signature of the implementation here is a bit confusing, but it avoid
 // breaking changes until we remove the `subjectId` completely from the API
 export async function issueVerifiableCredential(
@@ -153,7 +156,7 @@ export async function issueVerifiableCredential(
   subjectOrCredentialClaims: JsonLd | undefined,
   credentialClaimsOrOptions?: JsonLd | OptionsType,
   options?: OptionsType,
-): Promise<VerifiableCredential> {
+): Promise<VerifiableCredential & DatasetCore> {
   if (typeof subjectIdOrClaims === "string") {
     // The function has been called with the deprecated signature, and the
     // subjectOrCredentialClaims parameter should be ignored.
