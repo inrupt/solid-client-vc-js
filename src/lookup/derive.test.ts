@@ -27,6 +27,7 @@ import defaultGetVerifilableCredentialAllFromShape, {
   getVerifiableCredentialAllFromShape,
 } from "./derive";
 import type * as QueryModule from "./query";
+import type { VerifiableCredential } from "../common/common";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -137,16 +138,24 @@ describe("getVerifiableCredentialAllFromShape", () => {
       const mockedFetch = jest
         .fn<(typeof UniversalFetch)["fetch"]>()
         .mockResolvedValue(mockDeriveEndpointDefaultResponse());
-      await expect(
-        getVerifiableCredentialAllFromShape(
-          "https://some.endpoint",
-          {
-            "@context": ["https://some.context"],
-            credentialSubject: { id: "https://some.subject/" },
-          },
-          { fetch: mockedFetch },
-        ),
-      ).resolves.toEqual(mockDefaultPresentation().verifiableCredential);
+
+      const vc = await getVerifiableCredentialAllFromShape(
+        "https://some.endpoint",
+        {
+          "@context": ["https://some.context"],
+          credentialSubject: { id: "https://some.subject/" },
+        },
+        { fetch: mockedFetch },
+      );
+
+      expect(vc).toMatchObject(
+        mockDefaultPresentation()
+          .verifiableCredential as VerifiableCredential[],
+      );
+
+      expect(JSON.parse(JSON.stringify(vc))).toEqual(
+        mockDefaultPresentation().verifiableCredential,
+      );
     });
 
     it("returns an empty array if the VP contains no VCs", async () => {

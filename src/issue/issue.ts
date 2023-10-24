@@ -35,6 +35,7 @@ import {
   normalizeVc,
   verifiableCredentialToDataset,
 } from "../common/common";
+import type { ParseOptions } from "../parser/jsonld";
 
 type OptionsType = {
   fetch?: typeof fallbackFetch;
@@ -48,7 +49,7 @@ async function internal_issueVerifiableCredential(
   issuerEndpoint: Iri,
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
-  options?: OptionsType,
+  options?: OptionsType & ParseOptions,
 ): Promise<VerifiableCredential & DatasetCore> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {

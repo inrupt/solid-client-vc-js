@@ -20,12 +20,18 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
+import type { DatasetCore } from "@rdfjs/types";
 import type {
   Iri,
   VerifiableCredential,
   VerifiablePresentation,
 } from "../common/common";
-import { isVerifiablePresentation, normalizeVp } from "../common/common";
+import {
+  isVerifiablePresentation,
+  normalizeVp,
+  verifiableCredentialToDataset,
+} from "../common/common";
+import type { ParseOptions } from "../parser/jsonld";
 
 /**
  * Based on https://w3c-ccg.github.io/vp-request-spec/#query-by-example.
@@ -60,6 +66,10 @@ export type VerifiablePresentationRequest = {
   challenge?: string;
   domain?: string;
 };
+
+interface ParsedVerifiablePresentation extends VerifiablePresentation {
+  verifiableCredential?: (VerifiableCredential & DatasetCore)[];
+}
 
 /**
  * Send a Verifiable Presentation Request to a query endpoint in order to retrieve
@@ -96,10 +106,11 @@ export type VerifiablePresentationRequest = {
 export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
-  options?: Partial<{
-    fetch: typeof fallbackFetch;
-  }>,
-): Promise<VerifiablePresentation> {
+  options?: ParseOptions &
+    Partial<{
+      fetch: typeof fallbackFetch;
+    }>,
+): Promise<ParsedVerifiablePresentation> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;
@@ -132,5 +143,12 @@ export async function query(
       )}`,
     );
   }
-  return data;
+  if (data.verifiableCredential) {
+    data.verifiableCredential = await Promise.all(
+      data.verifiableCredential.map((vc) =>
+        verifiableCredentialToDataset(vc, options),
+      ),
+    );
+  }
+  return data as ParsedVerifiablePresentation;
 }

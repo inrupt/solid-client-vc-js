@@ -165,13 +165,14 @@ describe("query", () => {
             status: 200,
           }),
         );
-      await expect(
-        query(
-          "https://example.org/query",
-          { query: [mockRequest] },
-          { fetch: mockedFetch },
-        ),
-      ).resolves.toStrictEqual(mockDefaultPresentation());
+
+      const vp = await query(
+        "https://example.org/query",
+        { query: [mockRequest] },
+        { fetch: mockedFetch },
+      );
+      expect(vp).toMatchObject(mockDefaultPresentation());
+      expect(JSON.parse(JSON.stringify(vp))).toEqual(mockDefaultPresentation());
     });
 
     it("normalizes the VP sent by the endpoint", async () => {

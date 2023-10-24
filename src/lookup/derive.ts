@@ -20,6 +20,7 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
+import type { DatasetCore } from "@rdfjs/types";
 import type { Iri, VerifiableCredential } from "../common/common";
 import { concatenateContexts, defaultContext } from "../common/common";
 import type { VerifiablePresentationRequest } from "./query";
@@ -100,7 +101,7 @@ export async function getVerifiableCredentialAllFromShape(
     fetch: typeof fallbackFetch;
     includeExpiredVc: boolean;
   }>,
-): Promise<VerifiableCredential[]> {
+): Promise<(VerifiableCredential & DatasetCore)[]> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;

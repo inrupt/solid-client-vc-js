@@ -24,6 +24,7 @@ import { mocked } from "jest-mock";
 import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
 import {
+  getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
   isVerifiableCredential,
   isVerifiablePresentation,
@@ -179,7 +180,13 @@ describe("isValidVc", () => {
       verificationEndpoint: MOCK_VERIFY_ENDPOINT,
     });
 
-    expect(mockedFetch).toHaveBeenCalledWith("https://example.com/someVc");
+    expect(getVerifiableCredential).toHaveBeenCalledWith(
+      "https://example.com/someVc",
+      {
+        fetch: mockedFetch,
+        verificationEndpoint: "https://consent.example.com",
+      },
+    );
   });
 
   it("throws if looking up the passed url fails", async () => {
@@ -193,7 +200,9 @@ describe("isValidVc", () => {
         fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
-    ).rejects.toThrow(/example.com\/someVc.*400 Failed/);
+    ).rejects.toThrow(
+      "The request to [https://example.com/someVc] returned an unexpected response: undefined",
+    );
   });
 
   it("throws if looking up the passed url doesn't resolve to JSON", async () => {
@@ -205,7 +214,9 @@ describe("isValidVc", () => {
         fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
-    ).rejects.toThrow(/Parsing.*example.com\/someVc/);
+    ).rejects.toThrow(
+      "The request to [https://example.com/someVc] returned an unexpected response: undefined",
+    );
   });
 
   it("throws if the passed url returns a non-vc", async () => {

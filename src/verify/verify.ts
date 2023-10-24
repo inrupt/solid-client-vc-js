@@ -31,40 +31,22 @@ import type {
   VerifiablePresentation,
 } from "../common/common";
 import {
+  getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
   isVerifiableCredential,
   isVerifiablePresentation,
-  normalizeVc,
 } from "../common/common";
+import type { ParseOptions } from "../parser/jsonld";
 
 async function dereferenceVc(
   vc: VerifiableCredential | URL | UrlString,
-  fetcher: typeof fallbackFetch,
+  options?: ParseOptions,
 ): Promise<VerifiableCredential> {
   // This test passes for both URL and UrlString
   if (!vc.toString().startsWith("http")) {
     return vc as VerifiableCredential;
   }
-  // vc is either an IRI-shaped string or a URL object. In both
-  // cases, vc.toString() is an IRI.
-  const vcResponse = await fetcher(vc.toString());
-  if (!vcResponse.ok) {
-    throw new Error(
-      `Dereferencing [${vc.toString()}] failed: ${vcResponse.status} ${
-        vcResponse.statusText
-      }`,
-    );
-  }
-  try {
-    return normalizeVc(await vcResponse.json());
-  } catch (e) {
-    throw new Error(
-      `Parsing the value obtained when dereferencing [${vc.toString()}] as JSON failed: ${
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (e as any).toString()
-      }`,
-    );
-  }
+  return getVerifiableCredential(vc.toString(), options);
 }
 
 /**
@@ -87,14 +69,15 @@ async function dereferenceVc(
  */
 export async function isValidVc(
   vc: VerifiableCredential | URL | UrlString,
-  options: Partial<{
+  options?: Partial<{
     fetch?: typeof fetch;
     verificationEndpoint?: UrlString;
-  }> = {},
+  }> &
+    ParseOptions,
 ): Promise<{ checks: string[]; warnings: string[]; errors: string[] }> {
-  const fetcher = options.fetch ?? fallbackFetch;
+  const fetcher = options?.fetch ?? fallbackFetch;
 
-  const vcObject = await dereferenceVc(vc, fetcher);
+  const vcObject = await dereferenceVc(vc, options);
 
   if (!isVerifiableCredential(vcObject)) {
     throw new Error(
@@ -108,7 +91,7 @@ export async function isValidVc(
 
   // Discover the consent endpoint from the resource part of the Access Grant.
   const verifierEndpoint =
-    options.verificationEndpoint ??
+    options?.verificationEndpoint ??
     (await getVerifiableCredentialApiConfiguration(vcObject.issuer))
       .verifierService;
 
