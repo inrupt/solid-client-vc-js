@@ -18,11 +18,12 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-import { jest, describe, it, expect } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
+import { Response } from "@inrupt/universal-fetch";
+import { describe, expect, it, jest } from "@jest/globals";
+import { DataFactory } from "n3";
 import { isomorphic } from "rdf-isomorphic";
-import { DataFactory, Store } from "n3";
+import { jsonLdStringToStore } from "../parser/jsonld";
 import type { VerifiableCredential } from "./common";
 import {
   concatenateContexts,
@@ -33,14 +34,13 @@ import {
 } from "./common";
 import {
   defaultCredentialClaims,
-  mockPartialCredential,
-  mockDefaultCredential,
-  mockDefaultPresentation,
-  mockPartialPresentation,
   defaultVerifiableClaims,
+  mockDefaultCredential,
   mockDefaultCredential2Proofs,
+  mockDefaultPresentation,
+  mockPartialCredential,
+  mockPartialPresentation,
 } from "./common.mock";
-import { jsonLdStringToStore, jsonLdToStore } from "../parser/jsonld";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -380,7 +380,7 @@ describe("getVerifiableCredential", () => {
         fetch: mockedFetch,
       }),
     ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential"
+      "The value received from [https://some.vc] is not a Verifiable Credential",
     );
   });
 
@@ -403,7 +403,7 @@ describe("getVerifiableCredential", () => {
         fetch: mockedFetch,
       }),
     ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential"
+      "The value received from [https://some.vc] is not a Verifiable Credential",
     );
   });
 
@@ -434,7 +434,7 @@ describe("getVerifiableCredential", () => {
         fetch: mockedFetch,
       }),
     ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential"
+      "The value received from [https://some.vc] is not a Verifiable Credential",
     );
   });
 
@@ -458,7 +458,7 @@ describe("getVerifiableCredential", () => {
         fetch: mockedFetch,
       }),
     ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential"
+      "The value received from [https://some.vc] is not a Verifiable Credential",
     );
   });
 
@@ -476,7 +476,7 @@ describe("getVerifiableCredential", () => {
         fetch: mockedFetch,
       }),
     ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential"
+      "The value received from [https://some.vc] is not a Verifiable Credential",
     );
   });
 
@@ -497,7 +497,7 @@ describe("getVerifiableCredential", () => {
         fetch: mockedFetch,
       }),
     ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential"
+      "The value received from [https://some.vc] is not a Verifiable Credential",
     );
   });
 
@@ -521,7 +521,7 @@ describe("getVerifiableCredential", () => {
         fetch: mockedFetch,
       }),
     ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential"
+      "The value received from [https://some.vc] is not a Verifiable Credential",
     );
   });
 
@@ -568,7 +568,7 @@ describe("getVerifiableCredential", () => {
         fetch: mockedFetch,
       }),
     ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential"
+      "The value received from [https://some.vc] is not a Verifiable Credential",
     );
   });
 
@@ -623,7 +623,7 @@ describe("getVerifiableCredential", () => {
         fetch: mockedFetch,
       }),
     ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential"
+      "The value received from [https://some.vc] is not a Verifiable Credential",
     );
   });
 

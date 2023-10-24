@@ -19,34 +19,12 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, it, describe, expect, beforeAll } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
+import { beforeAll, describe, expect, it, jest } from "@jest/globals";
+import type { JsonLdContextNormalized } from "jsonld-context-parser";
 import { DataFactory as DF } from "n3";
 import { isomorphic } from "rdf-isomorphic";
-import type { JsonLdContextNormalized } from "jsonld-context-parser";
-import { jsonLdToStore, getVcContext } from "./jsonld";
-
-const fetcher: (typeof UniversalFetch)["fetch"] = async (url) => {
-  if (url !== "https://example.com/myContext") {
-    throw new Error("Unexpected URL");
-  }
-
-  return new Response(
-    JSON.stringify({
-      "@context": {
-        Person: "http://xmlns.com/foaf/0.1/Person",
-        xsd: "http://www.w3.org/2001/XMLSchema#",
-        name: "http://xmlns.com/foaf/0.1/name",
-        nickname: "http://xmlns.com/foaf/0.1/nick",
-        affiliation: "http://schema.org/affiliation",
-      },
-    }),
-    {
-      headers: new Headers([["content-type", "application/ld+json"]]),
-    },
-  );
-};
+import { getVcContext, jsonLdToStore } from "./jsonld";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -61,25 +39,6 @@ jest.mock("@inrupt/universal-fetch", () => {
 const data = {
   "@context": "https://www.w3.org/2018/credentials/v1",
   id: "https://some.example#credential",
-  type: ["VerifiableCredential"],
-  issuer: "https://some.example",
-};
-
-const dataExampleContext = {
-  "@context": [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://example.com/myContext",
-  ],
-  id: "https://some.example#credential",
-  name: "Inrupt",
-};
-
-const dataWithPrefix = {
-  "@context": [
-    { ex: "https://some.example#" },
-    "https://www.w3.org/2018/credentials/v1",
-  ],
-  id: "ex:credential",
   type: ["VerifiableCredential"],
   issuer: "https://some.example",
 };

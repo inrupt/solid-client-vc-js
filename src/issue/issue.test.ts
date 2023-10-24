@@ -119,22 +119,16 @@ describe("issueVerifiableCredential", () => {
         }),
       );
 
-        const vc = await issueVerifiableCredential(
-          "https://some.endpoint",
-          { "@context": ["https://some.context"] },
-          { "@context": ["https://some.context"] },
-          { fetch: mockedFetch },
-        )
+    const vc = await issueVerifiableCredential(
+      "https://some.endpoint",
+      { "@context": ["https://some.context"] },
+      { "@context": ["https://some.context"] },
+      { fetch: mockedFetch },
+    );
 
-    expect(
-      vc,
-    ).toMatchObject({ ...mockDefaultCredential(), size: 13 });
+    expect(vc).toMatchObject({ ...mockDefaultCredential(), size: 13 });
 
-    expect(
-      JSON.parse(JSON.stringify(vc)),
-    ).toEqual(mockDefaultCredential());
-
-
+    expect(JSON.parse(JSON.stringify(vc))).toEqual(mockDefaultCredential());
   });
 
   it("sends a request to the specified issuer", async () => {

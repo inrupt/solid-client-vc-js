@@ -74,7 +74,6 @@ export function getVcContext(
 }
 
 export interface ParseOptions {
-  fetch?: typeof globalThis.fetch;
   baseIRI?: string;
   contexts?: Record<string, JsonLd>;
   allowContextFetching?: boolean;
@@ -89,7 +88,7 @@ export class CachedJsonLdParser extends JsonLdParser {
       documentLoader: new CachedFetchDocumentLoader(
         options?.contexts,
         options?.allowContextFetching,
-        options?.fetch ?? defaultFetch,
+        defaultFetch,
       ),
       baseIRI: options?.baseIRI,
     });

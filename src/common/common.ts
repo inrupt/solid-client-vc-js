@@ -32,13 +32,6 @@ import {
 } from "@inrupt/solid-client";
 import { fetch as uniFetch } from "@inrupt/universal-fetch";
 import type { DatasetCore } from "@rdfjs/types";
-import contentTypeParser from "content-type";
-import { Util } from "jsonld-streaming-serializer";
-import type { BlankNode, Store, Term } from "n3";
-import { DataFactory as DF } from "n3";
-import type { JsonLdContextNormalized } from "jsonld-context-parser";
-import { context } from "../parser/contexts";
-import VcContext from "../parser/contexts/vc";
 import type { ParseOptions } from "../parser/jsonld";
 import { jsonLdToStore } from "../parser/jsonld";
 
@@ -409,7 +402,10 @@ export async function getVerifiableCredentialApiConfiguration(
 /**
  * @hidden
  */
-export async function verifiableCredentialToDataset(vc: VerifiableCredential, options?: ParseOptions): Promise<VerifiableCredential & DatasetCore> {
+export async function verifiableCredentialToDataset(
+  vc: VerifiableCredential,
+  options?: ParseOptions,
+): Promise<VerifiableCredential & DatasetCore> {
   let store: DatasetCore;
   try {
     store = await jsonLdToStore(vc, options);
@@ -447,8 +443,8 @@ export async function verifiableCredentialToDataset(vc: VerifiableCredential, op
     // SHOULD NOT be included when we JSON.stringify the object
     toJSON() {
       return vc;
-    }
-  }
+    },
+  };
 }
 
 /**
@@ -462,7 +458,9 @@ export async function verifiableCredentialToDataset(vc: VerifiableCredential, op
  */
 export async function getVerifiableCredential(
   vcUrl: UrlString,
-  options?: ParseOptions,
+  options?: ParseOptions & {
+    fetch?: typeof fetch;
+  },
 ): Promise<VerifiableCredential & DatasetCore> {
   const authFetch = options?.fetch ?? uniFetch;
   const response = await authFetch(vcUrl);
@@ -486,5 +484,5 @@ export async function getVerifiableCredential(
       `The value received from [${vcUrl}] is not a Verifiable Credential`,
     );
   }
-  return await verifiableCredentialToDataset(vc, options);
+  return verifiableCredentialToDataset(vc, options);
 }
