@@ -20,11 +20,24 @@
 //
 import VC from "./vc";
 import Inrupt from "./inrupt";
+import vc from "./inrupt-vc";
+import integrity from "./data-integrity";
+import ed25519 from "./ed25519-2020";
+import revocation from "./revocation-list";
+import statusList from "./status-list";
 
 const contextDefinitions = {
   "https://www.w3.org/2018/credentials/v1": VC,
   "https://schema.inrupt.com/credentials/v1.jsonld": Inrupt,
 } as const;
+
+export const cachedContexts = {
+  "https://vc.inrupt.com/credentials/v1": vc,
+  "https://w3id.org/security/data-integrity/v1": integrity,
+  "https://w3id.org/vc-revocation-list-2020/v1": revocation,
+  "https://w3id.org/vc/status-list/2021/v1": statusList,
+  "https://w3id.org/security/suites/ed25519-2020/v1": ed25519,
+};
 
 export const context = Object.keys(contextDefinitions);
 export default contextDefinitions;

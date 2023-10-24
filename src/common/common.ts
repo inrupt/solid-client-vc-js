@@ -535,7 +535,7 @@ function writeObject(
           ]);
 
       // eslint-disable-next-line no-multi-assign
-      obj["@id"] = createBnodeId(object);
+      // obj["@id"] = createBnodeId(object);
       return obj;
     }
     // eslint-disable-next-line no-fallthrough
@@ -825,6 +825,19 @@ export async function getVerifiableCredentialFromStore(
     },
     get size() {
       return vcStore.size;
+    },
+    // For backwards compatibility the dataset properties
+    // SHOULD NOT be included when we JSON.stringify the object
+    toJSON() {
+      return {
+        "@context": this["@context"],
+        id: this.id,
+        credentialSubject: this.credentialSubject,
+        issuer: this.issuer,
+        issuanceDate: this.issuanceDate,
+        type: this.type,
+        proof: this.proof,
+      };
     },
   };
 

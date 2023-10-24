@@ -31,6 +31,7 @@ import {
   getVerifiableCredentialFromStore,
   isVerifiableCredential,
   isVerifiablePresentation,
+  normalizeVc,
 } from "./common";
 import {
   defaultCredentialClaims,
@@ -53,6 +54,13 @@ jest.mock("@inrupt/universal-fetch", () => {
       throw new Error("Fetch should not be called");
     }),
   };
+});
+
+describe("normalizeVc", () => {
+  it("returns the same object", () => {
+    const obj = {};
+    expect(normalizeVc(obj)).toEqual(obj);
+  });
 });
 
 describe("isVerifiableCredential", () => {
@@ -647,7 +655,7 @@ describe("getVerifiableCredential", () => {
       fetch: mockedFetch,
     });
 
-    expect(vc).toMatchObject({
+    const result = {
       ...mocked,
       credentialSubject: {
         ...mocked.credentialSubject,
@@ -657,6 +665,7 @@ describe("getVerifiableCredential", () => {
         },
         // This is how blank nodes are represented
         "https://example.org/my/predicate/i": {
+          "@id": "_:b1",
           "https://example.org/my/predicate": {
             "@value": "object",
           },
@@ -666,7 +675,14 @@ describe("getVerifiableCredential", () => {
         // Unknown types like http://example.org/spaceDog are excluded
         "VerifiableCredential",
       ],
-    });
+    };
+
+    // Since we have dataset properties in vc it should match the result
+    // but won't equal
+    expect(vc).toMatchObject(result);
+    // However we DO NOT want these properties showing up when we stringify
+    // the VC
+    expect(JSON.parse(JSON.stringify(vc))).toEqual(result);
   });
 
   it("should error if more than 2 subjects in proof graph", async () => {

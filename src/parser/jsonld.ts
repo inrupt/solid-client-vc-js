@@ -29,7 +29,7 @@ import type {
 import { ContextParser, FetchDocumentLoader } from "jsonld-context-parser";
 import { JsonLdParser } from "jsonld-streaming-parser";
 import { Store } from "n3";
-import CONTEXTS from "./contexts";
+import CONTEXTS, { cachedContexts } from "./contexts";
 import type { JsonLd } from "../common/common";
 
 /**
@@ -44,7 +44,7 @@ class CachedFetchDocumentLoader extends FetchDocumentLoader {
     ...args: ConstructorParameters<typeof FetchDocumentLoader>
   ) {
     super(...args);
-    this.contexts = { ...contexts, ...CONTEXTS };
+    this.contexts = { ...contexts, ...cachedContexts, ...CONTEXTS };
   }
 
   public async load(url: string): Promise<IJsonLdContext> {
