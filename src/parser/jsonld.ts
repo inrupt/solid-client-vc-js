@@ -79,17 +79,32 @@ export interface ParseOptions {
   allowContextFetching?: boolean;
 }
 
+let reusableDocumentLoader: CachedFetchDocumentLoader;
+
 /**
  * Our internal JsonLd Parser with a cached VC context
  */
 export class CachedJsonLdParser extends JsonLdParser {
   constructor(options?: ParseOptions) {
-    super({
-      documentLoader: new CachedFetchDocumentLoader(
+    let documentLoader: CachedFetchDocumentLoader;
+
+    if (!options?.contexts && !options?.allowContextFetching) {
+      reusableDocumentLoader ??= new CachedFetchDocumentLoader(
         options?.contexts,
         options?.allowContextFetching,
         defaultFetch,
-      ),
+      );
+      documentLoader = reusableDocumentLoader;
+    } else {
+      documentLoader = new CachedFetchDocumentLoader(
+        options.contexts,
+        options.allowContextFetching,
+        defaultFetch,
+      );
+    }
+
+    super({
+      documentLoader,
       baseIRI: options?.baseIRI,
     });
   }

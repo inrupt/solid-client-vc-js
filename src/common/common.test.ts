@@ -707,7 +707,7 @@ describe("getVerifiableCredential", () => {
       );
     });
 
-    it("errors if the context contains an IRI that is not cached or fetchable when allowedContextFetching", async () => {
+    it("resolves if allowContextFetching is enabled and the context can be fetched", async () => {
       (uniFetch as jest.Mock<typeof uniFetch>).mockResolvedValueOnce(
         new Response(
           JSON.stringify({
@@ -723,6 +723,20 @@ describe("getVerifiableCredential", () => {
         getVerifiableCredential("https://some.vc", {
           fetch: mockedFetch,
           allowContextFetching: true,
+        }),
+      ).resolves.toMatchObject(mockCredential);
+    });
+
+    it("resolves if the context is cached", async () => {
+      await expect(
+        getVerifiableCredential("https://some.vc", {
+          fetch: mockedFetch,
+          allowContextFetching: true,
+          contexts: {
+            "http://example.org/my/sample/context": {
+              "@context": {},
+            },
+          },
         }),
       ).resolves.toMatchObject(mockCredential);
     });
