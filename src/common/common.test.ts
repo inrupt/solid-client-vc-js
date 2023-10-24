@@ -19,8 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 import type * as UniversalFetch from "@inrupt/universal-fetch";
-import { Response } from "@inrupt/universal-fetch";
-import { describe, expect, it, jest } from "@jest/globals";
+import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
+import { describe, expect, it, jest, beforeEach } from "@jest/globals";
 import { DataFactory } from "n3";
 import { isomorphic } from "rdf-isomorphic";
 import { jsonLdStringToStore } from "../parser/jsonld";
@@ -675,5 +675,56 @@ describe("getVerifiableCredential", () => {
         DataFactory.namedNode("https://example.org/ns/someCredentialInstance"),
       ).size,
     ).toBe(6);
+  });
+
+  describe("with non cached contexts", () => {
+    const mockCredential = {
+      ...mockDefaultCredential(),
+      "@context": [
+        ...(mockDefaultCredential()["@context"] as string[]),
+        "http://example.org/my/sample/context",
+      ],
+    };
+    let mockedFetch: jest.Mock<(typeof UniversalFetch)["fetch"]>;
+
+    beforeEach(() => {
+      mockedFetch = jest
+        .fn<(typeof UniversalFetch)["fetch"]>()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(mockCredential), {
+            headers: new Headers([["content-type", "application/json"]]),
+          }),
+        );
+    });
+
+    it("errors if the context contains an IRI that is not cached", async () => {
+      await expect(
+        getVerifiableCredential("https://some.vc", {
+          fetch: mockedFetch,
+        }),
+      ).rejects.toThrow(
+        "Unexpected context requested [http://example.org/my/sample/context]",
+      );
+    });
+
+    it("errors if the context contains an IRI that is not cached or fetchable when allowedContextFetching", async () => {
+      (uniFetch as jest.Mock<typeof uniFetch>).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            "@context": {},
+          }),
+          {
+            headers: new Headers([["content-type", "application/ld+json"]]),
+          },
+        ),
+      );
+
+      await expect(
+        getVerifiableCredential("https://some.vc", {
+          fetch: mockedFetch,
+          allowContextFetching: true,
+        }),
+      ).resolves.toMatchObject(mockCredential);
+    });
   });
 });

@@ -20,7 +20,7 @@
 //
 
 /* eslint-disable max-classes-per-file */
-import defaultFetch from "@inrupt/universal-fetch";
+import { fetch as defaultFetch } from "@inrupt/universal-fetch";
 import { promisifyEventEmitter } from "event-emitter-promisify";
 import type {
   IJsonLdContext,
@@ -40,10 +40,10 @@ class CachedFetchDocumentLoader extends FetchDocumentLoader {
 
   constructor(
     contexts?: Record<string, JsonLd>,
-    private readonly allowContextFetching = true,
+    private readonly allowContextFetching = false,
     ...args: ConstructorParameters<typeof FetchDocumentLoader>
   ) {
-    super(...args);
+    super(args[0] ?? defaultFetch);
     this.contexts = { ...contexts, ...cachedContexts, ...CONTEXTS };
   }
 
@@ -105,16 +105,12 @@ export async function jsonLdStringToStore(
   data: string,
   options?: ParseOptions,
 ) {
-  try {
-    const parser = new CachedJsonLdParser(options);
-    const store = new Store();
-    const storePromise = promisifyEventEmitter(store.import(parser), store);
-    parser.write(data);
-    parser.end();
-    return await storePromise;
-  } catch (e) {
-    throw new Error(`Error parsing JSON-LD: [${e}].`);
-  }
+  const parser = new CachedJsonLdParser(options);
+  const store = new Store();
+  const storePromise = promisifyEventEmitter(store.import(parser), store);
+  parser.write(data);
+  parser.end();
+  return storePromise;
 }
 
 /**
