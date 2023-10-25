@@ -88,6 +88,11 @@ const reusableDocumentLoader = new CachedFetchDocumentLoader();
 class MyContextParser extends ContextParser {
   private cachedParsing: Record<string, Promise<JsonLdContextNormalized>> = {};
 
+  private parentContexts = new Map<
+    IJsonLdContextNormalizedRaw | undefined,
+    Map<JsonLdContext, Promise<JsonLdContextNormalized>>
+  >();
+
   async parse(
     context: JsonLdContext,
     options?: IParseOptions,
@@ -100,16 +105,25 @@ class MyContextParser extends ContextParser {
       context.every((c) => typeof c === "string")
     ) {
       const str = JSON.stringify(context);
-      console.log('cache hit', str in this.cachedParsing);
+      console.log("cache hit", str in this.cachedParsing);
       return (this.cachedParsing[str] ??= super.parse(context, options));
       // return super.parse(context, options)
     }
+    if (!Array.isArray(context)) {
+      if (!this.parentContexts.has(options?.parentContext)) {
+        this.parentContexts.set(options?.parentContext, new Map());
+      }
+
+      const childContext = this.parentContexts.get(options?.parentContext)!;
+
+      if (!childContext.has(context)) {
+        childContext.set(context, super.parse(context, options));
+      }
+
+      return childContext.get(context)!;
+    }
 
     return super.parse(context, options);
-  }
-
-  load(url: string) {
-    return super.load(url);
   }
 }
 
