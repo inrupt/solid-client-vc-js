@@ -23,6 +23,7 @@ import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
 import { describe, expect, it, jest, beforeEach } from "@jest/globals";
 import { DataFactory } from "n3";
 import { isomorphic } from "rdf-isomorphic";
+import type { IJsonLdContext } from "jsonld-context-parser";
 import { jsonLdStringToStore } from "../parser/jsonld";
 import type { VerifiableCredential } from "./common";
 import {
@@ -574,6 +575,45 @@ describe("getVerifiableCredential", () => {
 
   it("should handle credential subjects with multiple objects", async () => {
     const mocked = mockDefaultCredential();
+    mocked.credentialSubject = {
+      ...mocked.credentialSubject,
+      "https://example.org/ns/passengerOf": [
+        { "@id": "http://example.org/v1" },
+        { "@id": "http://example.org/v2" },
+      ],
+      "https://example.org/my/predicate/i": {
+        "https://example.org/my/predicate": "object",
+      },
+    };
+
+    const mockedFetch = jest
+      .fn<(typeof UniversalFetch)["fetch"]>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mocked), {
+          headers: new Headers([["content-type", "application/json"]]),
+        }),
+      );
+
+    const vc = await getVerifiableCredential("https://some.vc", {
+      fetch: mockedFetch,
+    });
+
+    // Since we have dataset properties in vc it should match the result
+    // but won't equal
+    expect(vc).toMatchObject(mocked);
+    // However we DO NOT want these properties showing up when we stringify
+    // the VC
+    expect(JSON.parse(JSON.stringify(vc))).toEqual(mocked);
+  });
+
+  it("should handle credential subjects with multiple objects and a custom context", async () => {
+    const mocked = mockDefaultCredential();
+    mocked["@context"] = [
+      ...(mocked["@context"] as (IJsonLdContext | string)[]),
+      {
+        ex: "http://example.org/",
+      },
+    ];
     mocked.credentialSubject = {
       ...mocked.credentialSubject,
       "https://example.org/ns/passengerOf": [

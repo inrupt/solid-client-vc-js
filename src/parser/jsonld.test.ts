@@ -20,11 +20,14 @@
 //
 
 import type * as UniversalFetch from "@inrupt/universal-fetch";
-import { beforeAll, describe, expect, it, jest } from "@jest/globals";
-import type { JsonLdContextNormalized } from "jsonld-context-parser";
+import { describe, expect, it, jest } from "@jest/globals";
 import { DataFactory as DF } from "n3";
 import { isomorphic } from "rdf-isomorphic";
-import { getVcContext, jsonLdToStore } from "./jsonld";
+import {
+  CachedFetchDocumentLoader,
+  CachingContextParser,
+  jsonLdToStore,
+} from "./jsonld";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -62,41 +65,101 @@ describe("jsonLdToStore", () => {
   });
 });
 
-describe("getVcContext", () => {
-  let context: JsonLdContextNormalized;
+describe("CachingContextParser", () => {
+  it("should return the same object parsing the same context multiple times", async () => {
+    const contextParser = new CachingContextParser({
+      documentLoader: new CachedFetchDocumentLoader(),
+    });
+    await expect(
+      contextParser.parse("https://w3id.org/vc/status-list/2021/v1"),
+    ).resolves.toEqual(
+      await contextParser.parse("https://w3id.org/vc/status-list/2021/v1"),
+    );
 
-  beforeAll(async () => {
-    context = await getVcContext();
-  });
+    await expect(
+      contextParser.parse({ ex: "http://example.org" }),
+    ).resolves.toEqual(await contextParser.parse({ ex: "http://example.org" }));
 
-  it("should be able to compact and expand IRIs from the VC context", () => {
-    expect(
-      context.compactIri(
-        "https://www.w3.org/2018/credentials#VerifiableCredential",
-        true,
+    await expect(
+      contextParser.parse([
+        "https://w3id.org/vc/status-list/2021/v1",
+        { ex: "http://example.org" },
+      ]),
+    ).resolves.toEqual(
+      await contextParser.parse([
+        "https://w3id.org/vc/status-list/2021/v1",
+        { ex: "http://example.org" },
+      ]),
+    );
+
+    await expect(
+      contextParser.parse(
+        [
+          "https://w3id.org/vc/status-list/2021/v1",
+          { ex: "http://example.org" },
+        ],
+        {
+          parentContext: undefined,
+        },
       ),
-    ).toBe("VerifiableCredential");
-    expect(context.expandTerm("VerifiableCredential", true)).toBe(
-      "https://www.w3.org/2018/credentials#VerifiableCredential",
+    ).resolves.toEqual(
+      await contextParser.parse([
+        "https://w3id.org/vc/status-list/2021/v1",
+        { ex: "http://example.org" },
+      ]),
     );
-  });
 
-  it("should be able to compact and expand IRIs from the Inrupt context", () => {
-    expect(context.compactIri("https://w3id.org/GConsent#Consent", true)).toBe(
-      "Consent",
-    );
-    expect(context.expandTerm("Consent", true)).toBe(
-      "https://w3id.org/GConsent#Consent",
-    );
-  });
-
-  it("should not compact and expand IRIs not in the VC or Inrupt context", () => {
-    expect(
-      context.compactIri(
-        "https://example.org/credentials#VerifiableCredential",
-        true,
+    await expect(
+      contextParser.parse(
+        [
+          "https://w3id.org/vc/status-list/2021/v1",
+          { ex: "http://example.org" },
+        ],
+        {
+          parentContext: {},
+        },
       ),
-    ).toBe("https://example.org/credentials#VerifiableCredential");
-    expect(context.expandTerm("VC", true)).toBe("VC");
+    ).resolves.toEqual(
+      await contextParser.parse([
+        "https://w3id.org/vc/status-list/2021/v1",
+        { ex: "http://example.org" },
+      ]),
+    );
+
+    await expect(
+      contextParser.parse([
+        "https://w3id.org/vc/status-list/2021/v1",
+        { ex: "http://example.org" },
+      ]),
+    ).resolves.toEqual(
+      await contextParser.parse(
+        [
+          "https://w3id.org/vc/status-list/2021/v1",
+          { ex: "http://example.org" },
+        ],
+        {
+          parentContext: {},
+        },
+      ),
+    );
+
+    await expect(
+      contextParser.parse([
+        "https://w3id.org/vc/status-list/2021/v1",
+        { ex: "http://example.org" },
+      ]),
+    ).resolves.not.toEqual(
+      await contextParser.parse(
+        [
+          "https://w3id.org/vc/status-list/2021/v1",
+          { ex: "http://example.org" },
+        ],
+        {
+          parentContext: {
+            "@base": "http://example.org/test",
+          },
+        },
+      ),
+    );
   });
 });

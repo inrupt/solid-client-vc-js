@@ -38,7 +38,7 @@ import CONTEXTS, { cachedContexts } from "./contexts";
 /**
  * A JSON-LD document loader with the standard context for VCs pre-loaded
  */
-class CachedFetchDocumentLoader extends FetchDocumentLoader {
+export class CachedFetchDocumentLoader extends FetchDocumentLoader {
   private contexts: Record<string, JsonLd>;
 
   constructor(
@@ -59,21 +59,6 @@ class CachedFetchDocumentLoader extends FetchDocumentLoader {
     }
     return super.load(url);
   }
-}
-
-/**
- * Creates a context for use with the VC library
- */
-export function getVcContext(
-  ...contexts: IJsonLdContext[]
-): Promise<JsonLdContextNormalized> {
-  const myParser = new ContextParser({
-    documentLoader: new CachedFetchDocumentLoader(),
-  });
-  return myParser.parse([
-    ...Object.values(CONTEXTS).map((x) => x["@context"]),
-    ...contexts,
-  ]);
 }
 
 export interface ParseOptions {
@@ -102,13 +87,10 @@ function hashContext(
       JSON.stringify(context.map((c) => (typeof c === "string" ? c : cmap(c)))),
     );
   }
-  if (typeof context === "string") {
-    return md5(context);
-  }
-  return cmap(context).toString();
+  return typeof context === "string" ? md5(context) : cmap(context).toString();
 }
 
-class MyContextParser extends ContextParser {
+export class CachingContextParser extends ContextParser {
   private cachedParsing: Record<string, Promise<JsonLdContextNormalized>> = {};
 
   private contextMap: Map<IJsonLdContext, number> = new Map();
@@ -136,7 +118,7 @@ class MyContextParser extends ContextParser {
 
     if (
       options?.parentContext &&
-      Object.keys(options?.parentContext ?? {}).length !== 0
+      Object.keys(options.parentContext).length !== 0
     ) {
       hash = md5(hash + this.cmap(options.parentContext));
     }
@@ -148,7 +130,7 @@ class MyContextParser extends ContextParser {
 }
 
 let reusableDocumentLoader: CachedFetchDocumentLoader;
-let reusableContextParser: MyContextParser;
+let reusableContextParser: CachingContextParser;
 
 /**
  * Our internal JsonLd Parser with a cached VC context
@@ -158,7 +140,11 @@ export class CachedJsonLdParser extends JsonLdParser {
     let documentLoader: CachedFetchDocumentLoader;
 
     if (!options?.contexts && !options?.allowContextFetching) {
-      reusableDocumentLoader ??= new CachedFetchDocumentLoader();
+      reusableDocumentLoader ??= new CachedFetchDocumentLoader(
+        undefined,
+        undefined,
+        defaultFetch,
+      );
       documentLoader = reusableDocumentLoader;
     } else {
       documentLoader = new CachedFetchDocumentLoader(
@@ -174,7 +160,7 @@ export class CachedJsonLdParser extends JsonLdParser {
     });
 
     if (!options?.contexts && !options?.allowContextFetching) {
-      reusableContextParser ??= new MyContextParser({
+      reusableContextParser ??= new CachingContextParser({
         documentLoader: reusableDocumentLoader,
       });
       // @ts-expect-error parsingContext is an internal property
