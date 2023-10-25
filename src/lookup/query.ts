@@ -143,10 +143,16 @@ export async function query(
       )}`,
     );
   }
+  console.log("querying", data.verifiableCredential?.length, "vcs");
   if (data.verifiableCredential) {
-    const newVerifiableCredential: (VerifiableCredential & DatasetCore)[] = []
+    const newVerifiableCredential: (VerifiableCredential & DatasetCore)[] = [];
     for (const vc of data.verifiableCredential) {
-      newVerifiableCredential.push(await verifiableCredentialToDataset(vc, options));
+      console.time(vc.id);
+      newVerifiableCredential.push(
+        // eslint-disable-next-line no-await-in-loop
+        await verifiableCredentialToDataset(vc, options),
+      );
+      console.timeEnd(vc.id);
     }
     data.verifiableCredential = newVerifiableCredential;
     // data.verifiableCredential = await Promise.all(
