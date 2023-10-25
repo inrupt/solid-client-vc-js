@@ -24,6 +24,9 @@ import { fetch as defaultFetch } from "@inrupt/universal-fetch";
 import { promisifyEventEmitter } from "event-emitter-promisify";
 import type {
   IJsonLdContext,
+  IJsonLdContextNormalizedRaw,
+  IParseOptions,
+  JsonLdContext,
   JsonLdContextNormalized,
 } from "jsonld-context-parser";
 import { ContextParser, FetchDocumentLoader } from "jsonld-context-parser";
@@ -31,6 +34,7 @@ import { JsonLdParser } from "jsonld-streaming-parser";
 import { Store } from "n3";
 import CONTEXTS, { cachedContexts } from "./contexts";
 import type { JsonLd } from "../common/common";
+import { ParsingContext } from "jsonld-streaming-parser/lib/ParsingContext";
 
 /**
  * A JSON-LD document loader with the standard context for VCs pre-loaded
@@ -79,7 +83,32 @@ export interface ParseOptions {
   allowContextFetching?: boolean;
 }
 
-let reusableDocumentLoader: CachedFetchDocumentLoader;
+const reusableDocumentLoader = new CachedFetchDocumentLoader();
+
+class MyContextParser extends ContextParser {
+  private cachedParsing: Record<string, Promise<JsonLdContextNormalized>> = {};
+
+  async parse(context: JsonLdContext, options?: IParseOptions): Promise<JsonLdContextNormalized> {
+    if (
+      typeof options?.baseIRI === 'undefined' 
+      && options?.processingMode === 1.1 
+      && Object.keys(options?.parentContext ?? {}).length === 0
+      && Array.isArray(context)
+      && context.every(c => typeof c === 'string')
+      ) {
+      const str = JSON.stringify(context);
+      return this.cachedParsing[str] ??= super.parse(context, options);
+    }
+
+    return super.parse(context);
+  }
+
+  load(url: string) {
+    return super.load(url);
+  }
+}
+
+const reusableContextParser = new MyContextParser({ documentLoader: reusableDocumentLoader })
 
 /**
  * Our internal JsonLd Parser with a cached VC context
@@ -89,11 +118,6 @@ export class CachedJsonLdParser extends JsonLdParser {
     let documentLoader: CachedFetchDocumentLoader;
 
     if (!options?.contexts && !options?.allowContextFetching) {
-      reusableDocumentLoader ??= new CachedFetchDocumentLoader(
-        options?.contexts,
-        options?.allowContextFetching,
-        defaultFetch,
-      );
       documentLoader = reusableDocumentLoader;
     } else {
       documentLoader = new CachedFetchDocumentLoader(
@@ -107,6 +131,11 @@ export class CachedJsonLdParser extends JsonLdParser {
       documentLoader,
       baseIRI: options?.baseIRI,
     });
+
+    if (!options?.contexts && !options?.allowContextFetching) {
+      // @ts-ignore
+      this.parsingContext.contextParser = reusableContextParser;
+    }
   }
 }
 
