@@ -25,6 +25,7 @@ import integrity from "./data-integrity";
 import ed25519 from "./ed25519-2020";
 import revocation from "./revocation-list";
 import statusList from "./status-list";
+import odrl from "./odrl";
 
 const contextDefinitions = {
   "https://www.w3.org/2018/credentials/v1": VC,
@@ -37,6 +38,8 @@ export const cachedContexts = {
   "https://w3id.org/vc-revocation-list-2020/v1": revocation,
   "https://w3id.org/vc/status-list/2021/v1": statusList,
   "https://w3id.org/security/suites/ed25519-2020/v1": ed25519,
+  // FIXME: Double check if we need this
+  "http://www.w3.org/ns/odrl.jsonld": odrl,
 };
 
 export const context = Object.keys(contextDefinitions);

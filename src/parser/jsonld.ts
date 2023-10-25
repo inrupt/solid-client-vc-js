@@ -32,9 +32,8 @@ import type {
 import { ContextParser, FetchDocumentLoader } from "jsonld-context-parser";
 import { JsonLdParser } from "jsonld-streaming-parser";
 import { Store } from "n3";
-import { ParsingContext } from "jsonld-streaming-parser/lib/ParsingContext";
-import CONTEXTS, { cachedContexts } from "./contexts";
 import type { JsonLd } from "../common/common";
+import CONTEXTS, { cachedContexts } from "./contexts";
 
 /**
  * A JSON-LD document loader with the standard context for VCs pre-loaded
@@ -83,8 +82,6 @@ export interface ParseOptions {
   allowContextFetching?: boolean;
 }
 
-const reusableDocumentLoader = new CachedFetchDocumentLoader();
-
 class MyContextParser extends ContextParser {
   private cachedParsing: Record<string, Promise<JsonLdContextNormalized>> = {};
 
@@ -105,9 +102,8 @@ class MyContextParser extends ContextParser {
       context.every((c) => typeof c === "string")
     ) {
       const str = JSON.stringify(context);
-      console.log("cache hit", str in this.cachedParsing);
+      // eslint-disable-next-line no-return-assign
       return (this.cachedParsing[str] ??= super.parse(context, options));
-      // return super.parse(context, options)
     }
     if (!Array.isArray(context)) {
       if (!this.parentContexts.has(options?.parentContext)) {
@@ -127,9 +123,8 @@ class MyContextParser extends ContextParser {
   }
 }
 
-const reusableContextParser = new MyContextParser({
-  documentLoader: reusableDocumentLoader,
-});
+let reusableDocumentLoader: CachedFetchDocumentLoader;
+let reusableContextParser: MyContextParser;
 
 /**
  * Our internal JsonLd Parser with a cached VC context
@@ -139,6 +134,7 @@ export class CachedJsonLdParser extends JsonLdParser {
     let documentLoader: CachedFetchDocumentLoader;
 
     if (!options?.contexts && !options?.allowContextFetching) {
+      reusableDocumentLoader ??= new CachedFetchDocumentLoader();
       documentLoader = reusableDocumentLoader;
     } else {
       documentLoader = new CachedFetchDocumentLoader(
@@ -154,7 +150,10 @@ export class CachedJsonLdParser extends JsonLdParser {
     });
 
     if (!options?.contexts && !options?.allowContextFetching) {
-      // @ts-ignore
+      reusableContextParser ??= new MyContextParser({
+        documentLoader: reusableDocumentLoader,
+      });
+      // @ts-expect-error parsingContext is an internal property
       this.parsingContext.contextParser = reusableContextParser;
     }
   }
