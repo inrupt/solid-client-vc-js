@@ -24,7 +24,6 @@ import { fetch as defaultFetch } from "@inrupt/universal-fetch";
 import { promisifyEventEmitter } from "event-emitter-promisify";
 import type {
   IJsonLdContext,
-  IJsonLdContextNormalizedRaw,
   IParseOptions,
   JsonLdContext,
   JsonLdContextNormalized,
@@ -32,6 +31,7 @@ import type {
 import { ContextParser, FetchDocumentLoader } from "jsonld-context-parser";
 import { JsonLdParser } from "jsonld-streaming-parser";
 import { Store } from "n3";
+import md5 from "md5";
 import type { JsonLd } from "../common/common";
 import CONTEXTS, { cachedContexts } from "./contexts";
 
@@ -82,44 +82,68 @@ export interface ParseOptions {
   allowContextFetching?: boolean;
 }
 
+function hashOptions(options: IParseOptions | undefined) {
+  const opts = { ...options, parentContext: undefined };
+  for (const key of Object.keys(opts)) {
+    if (typeof opts[key as keyof typeof opts] === "undefined") {
+      delete opts[key as keyof typeof opts];
+    }
+  }
+
+  return md5(JSON.stringify(opts, Object.keys(opts).sort()));
+}
+
+function hashContext(
+  context: JsonLdContext,
+  cmap: (c: IJsonLdContext) => number,
+): string {
+  if (Array.isArray(context)) {
+    return md5(
+      JSON.stringify(context.map((c) => (typeof c === "string" ? c : cmap(c)))),
+    );
+  }
+  if (typeof context === "string") {
+    return md5(context);
+  }
+  return cmap(context).toString();
+}
+
 class MyContextParser extends ContextParser {
   private cachedParsing: Record<string, Promise<JsonLdContextNormalized>> = {};
 
-  private parentContexts = new Map<
-    IJsonLdContextNormalizedRaw | undefined,
-    Map<JsonLdContext, Promise<JsonLdContextNormalized>>
-  >();
+  private contextMap: Map<IJsonLdContext, number> = new Map();
+
+  private contextHashMap: Map<string, number> = new Map();
+
+  private mapIndex = 1;
+
+  private cmap = (context: IJsonLdContext) => {
+    if (!this.contextMap.has(context)) {
+      const hash = md5(JSON.stringify(context));
+      if (!this.contextHashMap.has(hash)) {
+        this.contextHashMap.set(hash, (this.mapIndex += 1));
+      }
+      this.contextMap.set(context, this.contextHashMap.get(hash)!);
+    }
+    return this.contextMap.get(context)!;
+  };
 
   async parse(
     context: JsonLdContext,
     options?: IParseOptions,
   ): Promise<JsonLdContextNormalized> {
+    let hash = hashOptions(options);
+
     if (
-      typeof options?.baseIRI === "undefined" &&
-      options?.processingMode === 1.1 &&
-      Object.keys(options?.parentContext ?? {}).length === 0 &&
-      Array.isArray(context) &&
-      context.every((c) => typeof c === "string")
+      options?.parentContext &&
+      Object.keys(options?.parentContext ?? {}).length !== 0
     ) {
-      const str = JSON.stringify(context);
-      // eslint-disable-next-line no-return-assign
-      return (this.cachedParsing[str] ??= super.parse(context, options));
-    }
-    if (!Array.isArray(context)) {
-      if (!this.parentContexts.has(options?.parentContext)) {
-        this.parentContexts.set(options?.parentContext, new Map());
-      }
-
-      const childContext = this.parentContexts.get(options?.parentContext)!;
-
-      if (!childContext.has(context)) {
-        childContext.set(context, super.parse(context, options));
-      }
-
-      return childContext.get(context)!;
+      hash = md5(hash + this.cmap(options.parentContext));
     }
 
-    return super.parse(context, options);
+    // eslint-disable-next-line no-return-assign
+    return (this.cachedParsing[md5(hash + hashContext(context, this.cmap))] ??=
+      super.parse(context, options));
   }
 }
 

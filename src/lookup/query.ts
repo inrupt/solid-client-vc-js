@@ -145,11 +145,20 @@ export async function query(
   }
 
   if (data.verifiableCredential) {
-    data.verifiableCredential = await Promise.all(
-      data.verifiableCredential.map((vc) =>
-        verifiableCredentialToDataset(vc, options),
-      ),
-    );
+    const newVerifiableCredential: (VerifiableCredential & DatasetCore)[] = [];
+    for (let i = 0; i < data.verifiableCredential.length; i += 500) {
+      console.time(i.toString());
+      newVerifiableCredential.push(
+        // eslint-disable-next-line no-await-in-loop
+        ...(await Promise.all(
+          data.verifiableCredential
+            .slice(i, i + 500)
+            .map((vc) => verifiableCredentialToDataset(vc, options)),
+        )),
+      );
+      console.timeEnd(i.toString());
+    }
+    data.verifiableCredential = newVerifiableCredential;
   }
   return data as ParsedVerifiablePresentation;
 }
