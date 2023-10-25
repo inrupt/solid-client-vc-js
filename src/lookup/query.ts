@@ -144,11 +144,16 @@ export async function query(
     );
   }
   if (data.verifiableCredential) {
-    data.verifiableCredential = await Promise.all(
-      data.verifiableCredential.map((vc) =>
-        verifiableCredentialToDataset(vc, options),
-      ),
-    );
+    const newVerifiableCredential: (VerifiableCredential & DatasetCore)[] = []
+    for (const vc of data.verifiableCredential) {
+      newVerifiableCredential.push(await verifiableCredentialToDataset(vc, options));
+    }
+    data.verifiableCredential = newVerifiableCredential;
+    // data.verifiableCredential = await Promise.all(
+    //   data.verifiableCredential.map((vc) =>
+    //     verifiableCredentialToDataset(vc, options),
+    //   ),
+    // );
   }
   return data as ParsedVerifiablePresentation;
 }
