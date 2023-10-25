@@ -146,13 +146,13 @@ export async function query(
 
   if (data.verifiableCredential) {
     const newVerifiableCredential: (VerifiableCredential & DatasetCore)[] = [];
-    for (let i = 0; i < data.verifiableCredential.length; i += 500) {
+    for (let i = 0; i < data.verifiableCredential.length; i += 100) {
       console.time(i.toString());
       newVerifiableCredential.push(
         // eslint-disable-next-line no-await-in-loop
         ...(await Promise.all(
           data.verifiableCredential
-            .slice(i, i + 500)
+            .slice(i, i + 100)
             .map((vc) => verifiableCredentialToDataset(vc, options)),
         )),
       );
