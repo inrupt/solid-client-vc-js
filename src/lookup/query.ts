@@ -119,6 +119,7 @@ export async function query(
 
   let data;
   try {
+    // FIXME: Perform parsing here
     data = normalizeVp(await response.json());
   } catch (e) {
     throw new Error(

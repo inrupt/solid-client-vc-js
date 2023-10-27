@@ -18,21 +18,26 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+import VC from "./vc";
+import Inrupt from "./inrupt";
+import vc from "./inrupt-vc";
+import integrity from "./data-integrity";
+import ed25519 from "./ed25519-2020";
+import revocation from "./revocation-list";
+import statusList from "./status-list";
 
-export { default as issueVerifiableCredential } from "./issue/issue";
-export type { Iri, JsonLd, VerifiableCredential } from "./common/common";
-export { getVerifiableCredentialFromResponse } from "./common/common";
-export {
-  isVerifiableCredential,
-  isVerifiablePresentation,
-  getVerifiableCredential,
-  getVerifiableCredentialApiConfiguration,
-} from "./common/common";
-export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
-export { query } from "./lookup/query";
-export type {
-  QueryByExample,
-  VerifiablePresentationRequest,
-} from "./lookup/query";
-export { revokeVerifiableCredential } from "./revoke/revoke";
-export { isValidVc, isValidVerifiablePresentation } from "./verify/verify";
+const contextDefinitions = {
+  "https://www.w3.org/2018/credentials/v1": VC,
+  "https://schema.inrupt.com/credentials/v1.jsonld": Inrupt,
+} as const;
+
+export const cachedContexts = {
+  "https://vc.inrupt.com/credentials/v1": vc,
+  "https://w3id.org/security/data-integrity/v1": integrity,
+  "https://w3id.org/vc-revocation-list-2020/v1": revocation,
+  "https://w3id.org/vc/status-list/2021/v1": statusList,
+  "https://w3id.org/security/suites/ed25519-2020/v1": ed25519,
+};
+
+export const context = Object.keys(contextDefinitions);
+export default contextDefinitions;
