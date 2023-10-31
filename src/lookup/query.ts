@@ -148,6 +148,8 @@ export async function query(
     const newVerifiableCredential: (VerifiableCredential & DatasetCore)[] = [];
     for (let i = 0; i < data.verifiableCredential.length; i += 100) {
       newVerifiableCredential.push(
+        // Limit concurrency to avoid memory overflows. For details see
+        // https://github.com/inrupt/solid-client-vc-js/pull/849#discussion_r1377400688
         // eslint-disable-next-line no-await-in-loop
         ...(await Promise.all(
           data.verifiableCredential
