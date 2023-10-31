@@ -145,7 +145,7 @@ export async function query(
   }
 
   if (data.verifiableCredential) {
-    const newVerifiableCredential: (VerifiableCredential & DatasetCore)[] = [];
+    const newVerifiableCredential: NonNullable<ParsedVerifiablePresentation['verifiableCredential']> = [];
     for (let i = 0; i < data.verifiableCredential.length; i += 100) {
       newVerifiableCredential.push(
         // Limit concurrency to avoid memory overflows. For details see
