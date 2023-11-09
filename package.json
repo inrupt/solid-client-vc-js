@@ -54,6 +54,7 @@
     "url": "https://github.com/inrupt/solid-client-vc-js.git"
   },
   "devDependencies": {
+    "@inrupt/base-rollup-config": "^2.4.1",
     "@inrupt/eslint-config-lib": "^2.0.0",
     "@inrupt/internal-playwright-helpers": "^2.0.4",
     "@inrupt/internal-test-env": "^2.0.4",
