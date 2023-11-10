@@ -21,7 +21,7 @@
 
 import type {
   Iri,
-  VerifiableCredential,
+  VerifiableCredentialBase,
   VerifiablePresentation,
 } from "./common";
 import { defaultCredentialTypes } from "./common";
@@ -114,28 +114,30 @@ export const mockPartialCredential2Proofs = (
 
 export const mockCredential = (
   claims: CredentialClaims,
-): VerifiableCredential => {
-  return mockPartialCredential(claims) as VerifiableCredential;
+): VerifiableCredentialBase => {
+  return mockPartialCredential(claims) as VerifiableCredentialBase;
 };
 
-export const mockDefaultCredential = (id?: string): VerifiableCredential => {
+export const mockDefaultCredential = (
+  id?: string,
+): VerifiableCredentialBase => {
   return mockPartialCredential(
     defaultCredentialClaims,
     id,
-  ) as VerifiableCredential;
+  ) as VerifiableCredentialBase;
 };
 
 export const mockDefaultCredential2Proofs = (
   id?: string,
-): VerifiableCredential => {
+): VerifiableCredentialBase => {
   return mockPartialCredential2Proofs(
     defaultCredentialClaims,
     id,
-  ) as VerifiableCredential;
+  ) as VerifiableCredentialBase;
 };
 
 export const mockPartialPresentation = (
-  credentials: VerifiableCredential[],
+  credentials: VerifiableCredentialBase[],
   claims?: Partial<VerifiableClaims>,
 ): Record<string, unknown> => {
   return {
@@ -153,7 +155,7 @@ export const mockPartialPresentation = (
 };
 
 export const mockDefaultPresentation = (
-  vc: VerifiableCredential[] = [mockDefaultCredential()],
+  vc: VerifiableCredentialBase[] = [mockDefaultCredential()],
 ): VerifiablePresentation => {
   return mockPartialPresentation(
     vc,

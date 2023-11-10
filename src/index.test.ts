@@ -26,6 +26,7 @@ import {
   isVerifiablePresentation,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
+  verifiableCredentialToDataset,
 } from "./common/common";
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
 import revokeVerifiableCredential from "./revoke/revoke";
@@ -40,6 +41,7 @@ describe("exports", () => {
       "isVerifiablePresentation",
       "getVerifiableCredential",
       "getVerifiableCredentialApiConfiguration",
+      "verifiableCredentialToDataset",
       "getVerifiableCredentialAllFromShape",
       "query",
       "revokeVerifiableCredential",
@@ -61,6 +63,9 @@ describe("exports", () => {
     );
     expect(packageExports.getVerifiableCredentialAllFromShape).toBe(
       getVerifiableCredentialAllFromShape,
+    );
+    expect(packageExports.verifiableCredentialToDataset).toBe(
+      verifiableCredentialToDataset,
     );
     expect(packageExports.revokeVerifiableCredential).toBe(
       revokeVerifiableCredential,

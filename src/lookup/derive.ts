@@ -20,8 +20,11 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
-import type { DatasetCore } from "@rdfjs/types";
-import type { Iri, VerifiableCredential } from "../common/common";
+import type {
+  Iri,
+  VerifiableCredential,
+  VerifiableCredentialBase,
+} from "../common/common";
 import { concatenateContexts, defaultContext } from "../common/common";
 import type { VerifiablePresentationRequest } from "./query";
 import { query } from "./query";
@@ -37,7 +40,7 @@ const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;
  * @returns A legacy object expected by the /derive endpoint of the ESS 2.0 VC service
  */
 function buildLegacyQuery(
-  vcShape: Partial<VerifiableCredential>,
+  vcShape: Partial<VerifiableCredentialBase>,
   includeExpiredVc: boolean,
 ) {
   // credentialClaims should contain all the claims, but not the context.
@@ -60,7 +63,7 @@ function buildLegacyQuery(
  * @returns A Query by Example VP Request based on the provided example.
  */
 function buildQueryByExample(
-  vcShape: Partial<VerifiableCredential>,
+  vcShape: Partial<VerifiableCredentialBase>,
 ): VerifiablePresentationRequest {
   return {
     query: [
@@ -96,12 +99,12 @@ function buildQueryByExample(
  */
 export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
-  vcShape: Partial<VerifiableCredential>,
+  vcShape: Partial<VerifiableCredentialBase>,
   options?: Partial<{
     fetch: typeof fallbackFetch;
     includeExpiredVc: boolean;
   }>,
-): Promise<(VerifiableCredential & DatasetCore)[]> {
+): Promise<VerifiableCredential[]> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;

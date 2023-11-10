@@ -20,10 +20,10 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
-import type { DatasetCore } from "@rdfjs/types";
 import type {
   Iri,
   VerifiableCredential,
+  VerifiableCredentialBase,
   VerifiablePresentation,
 } from "../common/common";
 import {
@@ -41,7 +41,7 @@ export type QueryByExample = {
   credentialQuery: {
     required?: boolean;
     reason?: string;
-    example: Partial<VerifiableCredential> & {
+    example: Partial<VerifiableCredentialBase> & {
       credentialSchema?: {
         id: string;
         type: string;
@@ -68,7 +68,7 @@ export type VerifiablePresentationRequest = {
 };
 
 interface ParsedVerifiablePresentation extends VerifiablePresentation {
-  verifiableCredential?: (VerifiableCredential & DatasetCore)[];
+  verifiableCredential?: VerifiableCredential[];
 }
 
 /**

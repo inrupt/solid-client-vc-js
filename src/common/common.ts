@@ -59,7 +59,7 @@ type Proof = {
 /**
  * A Verifiable Credential JSON-LD document, as specified by the W3C VC HTTP API.
  */
-export type VerifiableCredential = JsonLd & {
+export type VerifiableCredentialBase = JsonLd & {
   id: Iri;
   type: Iri[];
   issuer: Iri;
@@ -80,10 +80,12 @@ export type VerifiableCredential = JsonLd & {
   proof: Proof;
 };
 
+export type VerifiableCredential = VerifiableCredentialBase & DatasetCore;
+
 export type VerifiablePresentation = JsonLd & {
   id?: string;
   type: string | string[];
-  verifiableCredential?: VerifiableCredential[];
+  verifiableCredential?: VerifiableCredentialBase[];
   holder?: string;
   proof?: Proof;
 };
@@ -157,43 +159,46 @@ export function normalizeVp<T>(vpJson: T): T {
  * @returns true is the payload matches our expectation.
  */
 export function isVerifiableCredential(
-  data: unknown | VerifiableCredential,
-): data is VerifiableCredential {
+  data: unknown | VerifiableCredentialBase,
+): data is VerifiableCredentialBase {
   let dataIsVc = true;
-  dataIsVc = typeof (data as VerifiableCredential).id === "string";
-  dataIsVc = dataIsVc && Array.isArray((data as VerifiableCredential).type);
+  dataIsVc = typeof (data as VerifiableCredentialBase).id === "string";
+  dataIsVc = dataIsVc && Array.isArray((data as VerifiableCredentialBase).type);
   dataIsVc =
-    dataIsVc && typeof (data as VerifiableCredential).issuer === "string";
-  dataIsVc =
-    dataIsVc && typeof (data as VerifiableCredential).issuanceDate === "string";
+    dataIsVc && typeof (data as VerifiableCredentialBase).issuer === "string";
   dataIsVc =
     dataIsVc &&
-    !Number.isNaN(Date.parse((data as VerifiableCredential).issuanceDate));
+    typeof (data as VerifiableCredentialBase).issuanceDate === "string";
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).credentialSubject === "object";
+    !Number.isNaN(Date.parse((data as VerifiableCredentialBase).issuanceDate));
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).credentialSubject.id === "string";
-  dataIsVc =
-    dataIsVc && typeof (data as VerifiableCredential).proof === "object";
+    typeof (data as VerifiableCredentialBase).credentialSubject === "object";
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).proof.created === "string";
+    typeof (data as VerifiableCredentialBase).credentialSubject.id === "string";
+  dataIsVc =
+    dataIsVc && typeof (data as VerifiableCredentialBase).proof === "object";
   dataIsVc =
     dataIsVc &&
-    !Number.isNaN(Date.parse((data as VerifiableCredential).proof.created));
+    typeof (data as VerifiableCredentialBase).proof.created === "string";
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).proof.proofPurpose === "string";
+    !Number.isNaN(Date.parse((data as VerifiableCredentialBase).proof.created));
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).proof.proofValue === "string";
-  dataIsVc =
-    dataIsVc && typeof (data as VerifiableCredential).proof.type === "string";
+    typeof (data as VerifiableCredentialBase).proof.proofPurpose === "string";
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).proof.verificationMethod === "string";
+    typeof (data as VerifiableCredentialBase).proof.proofValue === "string";
+  dataIsVc =
+    dataIsVc &&
+    typeof (data as VerifiableCredentialBase).proof.type === "string";
+  dataIsVc =
+    dataIsVc &&
+    typeof (data as VerifiableCredentialBase).proof.verificationMethod ===
+      "string";
   return dataIsVc;
 }
 
@@ -403,9 +408,9 @@ export async function getVerifiableCredentialApiConfiguration(
  * @hidden
  */
 export async function verifiableCredentialToDataset(
-  vc: VerifiableCredential,
+  vc: VerifiableCredentialBase,
   options?: ParseOptions,
-): Promise<VerifiableCredential & DatasetCore> {
+): Promise<VerifiableCredential> {
   let store: DatasetCore;
   try {
     store = await jsonLdToStore(vc, options);
@@ -461,7 +466,7 @@ export async function getVerifiableCredential(
   options?: ParseOptions & {
     fetch?: typeof fetch;
   },
-): Promise<VerifiableCredential & DatasetCore> {
+): Promise<VerifiableCredential> {
   const authFetch = options?.fetch ?? uniFetch;
   const response = await authFetch(vcUrl);
 
@@ -471,7 +476,7 @@ export async function getVerifiableCredential(
     );
   }
 
-  let vc: unknown | VerifiableCredential;
+  let vc: unknown | VerifiableCredentialBase;
   try {
     vc = normalizeVc(await response.json());
   } catch (e) {

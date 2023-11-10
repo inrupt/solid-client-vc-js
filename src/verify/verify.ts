@@ -27,7 +27,7 @@ import type { UrlString } from "@inrupt/solid-client";
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
 import type {
-  VerifiableCredential,
+  VerifiableCredentialBase,
   VerifiablePresentation,
 } from "../common/common";
 import {
@@ -39,12 +39,12 @@ import {
 import type { ParseOptions } from "../parser/jsonld";
 
 async function dereferenceVc(
-  vc: VerifiableCredential | URL | UrlString,
+  vc: VerifiableCredentialBase | URL | UrlString,
   options?: ParseOptions,
-): Promise<VerifiableCredential> {
+): Promise<VerifiableCredentialBase> {
   // This test passes for both URL and UrlString
   if (!vc.toString().startsWith("http")) {
-    return vc as VerifiableCredential;
+    return vc as VerifiableCredentialBase;
   }
   return getVerifiableCredential(vc.toString(), options);
 }
@@ -68,7 +68,7 @@ async function dereferenceVc(
  * @since 0.3.0
  */
 export async function isValidVc(
-  vc: VerifiableCredential | URL | UrlString,
+  vc: VerifiableCredentialBase | URL | UrlString,
   options?: Partial<{
     fetch?: typeof fetch;
     verificationEndpoint?: UrlString;

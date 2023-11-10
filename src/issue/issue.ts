@@ -25,7 +25,6 @@
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
-import type { DatasetCore } from "@rdfjs/types";
 import type { Iri, JsonLd, VerifiableCredential } from "../common/common";
 import {
   concatenateContexts,
@@ -50,7 +49,7 @@ async function internal_issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: OptionsType & ParseOptions,
-): Promise<VerifiableCredential & DatasetCore> {
+): Promise<VerifiableCredential> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;
@@ -138,7 +137,7 @@ export async function issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: OptionsType,
-): Promise<VerifiableCredential & DatasetCore>;
+): Promise<VerifiableCredential>;
 /**
  * @deprecated Please remove the `subjectId` parameter
  */
@@ -148,7 +147,7 @@ export async function issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: OptionsType,
-): Promise<VerifiableCredential & DatasetCore>;
+): Promise<VerifiableCredential>;
 // The signature of the implementation here is a bit confusing, but it avoid
 // breaking changes until we remove the `subjectId` completely from the API
 export async function issueVerifiableCredential(
@@ -157,7 +156,7 @@ export async function issueVerifiableCredential(
   subjectOrCredentialClaims: JsonLd | undefined,
   credentialClaimsOrOptions?: JsonLd | OptionsType,
   options?: OptionsType,
-): Promise<VerifiableCredential & DatasetCore> {
+): Promise<VerifiableCredential> {
   if (typeof subjectIdOrClaims === "string") {
     // The function has been called with the deprecated signature, and the
     // subjectOrCredentialClaims parameter should be ignored.

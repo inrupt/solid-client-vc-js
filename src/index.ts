@@ -26,6 +26,10 @@ export {
   isVerifiablePresentation,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
+  /**
+   * @hidden @deprecated
+   */
+  verifiableCredentialToDataset,
 } from "./common/common";
 export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
 export { query } from "./lookup/query";
