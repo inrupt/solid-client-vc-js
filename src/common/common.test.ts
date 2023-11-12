@@ -290,7 +290,7 @@ describe("getVerifiableCredential", () => {
       );
 
     await getVerifiableCredential("https://some.vc", {
-      fetch: mockedFetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
     });
     expect(mockedFetch).toHaveBeenCalledWith("https://some.vc");
   });
@@ -304,7 +304,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(/https:\/\/some.vc.*401.*Unauthenticated/);
   });
@@ -316,7 +316,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(/https:\/\/some.vc.*JSON/);
   });
@@ -330,7 +330,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(/https:\/\/some.vc.*Verifiable Credential/);
   });
@@ -343,7 +343,7 @@ describe("getVerifiableCredential", () => {
       );
 
     const vc = await getVerifiableCredential("https://some.vc", {
-      fetch: mockedFetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
     });
     expect(vc).toStrictEqual(mockDefaultCredential());
   });

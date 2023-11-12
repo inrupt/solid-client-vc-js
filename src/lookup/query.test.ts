@@ -64,7 +64,7 @@ describe("query", () => {
       await query(
         "https://some.endpoint/query",
         { query: [mockRequest] },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       expect(mockedFetch).toHaveBeenCalled();
     });
@@ -94,7 +94,7 @@ describe("query", () => {
         query(
           "https://example.org/query",
           { query: [mockRequest] },
-          { fetch: mockedFetch },
+          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
         ),
       ).rejects.toThrow();
     });
@@ -111,7 +111,7 @@ describe("query", () => {
         query(
           "https://example.org/query",
           { query: [mockRequest] },
-          { fetch: mockedFetch },
+          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
         ),
       ).rejects.toThrow();
     });
@@ -128,7 +128,7 @@ describe("query", () => {
         query(
           "https://example.org/query",
           { query: [mockRequest] },
-          { fetch: mockedFetch },
+          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
         ),
       ).rejects.toThrow();
     });
@@ -144,7 +144,7 @@ describe("query", () => {
       await query(
         "https://some.endpoint/query",
         { query: [mockRequest] },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       expect(mockedFetch).toHaveBeenCalledWith(
         "https://some.endpoint/query",
@@ -169,7 +169,7 @@ describe("query", () => {
         query(
           "https://example.org/query",
           { query: [mockRequest] },
-          { fetch: mockedFetch },
+          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
         ),
       ).resolves.toStrictEqual(mockDefaultPresentation());
     });
@@ -194,7 +194,7 @@ describe("query", () => {
       const resultVp = await query(
         "https://example.org/query",
         { query: [mockRequest] },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(resultVp.verifiableCredential![0].proof.proofValue).toBe(
