@@ -426,7 +426,9 @@ describe("isValidVerifiable Presentation", () => {
         }),
       );
 
-    await isValidVerifiablePresentation(null, MOCK_VP, { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] });
+    await isValidVerifiablePresentation(null, MOCK_VP, {
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+    });
     expect(mockedDiscovery).toHaveBeenCalledWith(MOCK_VP.holder);
   });
 
