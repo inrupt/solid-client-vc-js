@@ -173,7 +173,6 @@ describe("query", () => {
       );
       expect(vp).toMatchObject(mockDefaultPresentation());
       expect(JSON.parse(JSON.stringify(vp))).toEqual(mockDefaultPresentation());
-
     });
 
     it("normalizes the VP sent by the endpoint", async () => {
