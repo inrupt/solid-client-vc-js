@@ -47,7 +47,7 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
         {
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
         },
       );
       // eslint-disable-next-line no-empty
@@ -84,7 +84,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       ),
     ).rejects.toThrow(
       /https:\/\/some\.endpoint.*could not successfully issue a VC.*400.*Bad request/,
@@ -104,7 +104,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       ),
     ).rejects.toThrow("unexpected object: ");
   });
@@ -123,7 +123,7 @@ describe("issueVerifiableCredential", () => {
       "https://some.endpoint",
       { "@context": ["https://some.context"] },
       { "@context": ["https://some.context"] },
-      { fetch: mockedFetch },
+      { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
     );
 
     expect(vc).toMatchObject({ ...mockDefaultCredential(), size: 13 });
@@ -138,7 +138,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -155,7 +155,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -177,7 +177,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
         undefined,
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -204,7 +204,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some-subject.context"] },
         { "@context": ["https://some-credential.context"], aClaim: "a value" },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -234,7 +234,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some-subject.context"] },
         { "@context": ["https://some-credential.context"], type: "some-type" },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -267,7 +267,7 @@ describe("issueVerifiableCredential", () => {
           type: ["some-type", "some-other-type"],
         },
         {
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
         },
       );
       // eslint-disable-next-line no-empty
@@ -304,7 +304,7 @@ describe("issueVerifiableCredential", () => {
         },
         { "@context": ["https://some-credential.context"] },
         {
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
         },
       );
       // eslint-disable-next-line no-empty
@@ -338,7 +338,7 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
         undefined,
         {
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
         },
       );
       // eslint-disable-next-line no-empty
@@ -368,7 +368,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.subject",
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
         undefined,
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -413,7 +413,7 @@ describe("issueVerifiableCredential", () => {
         type: ["some-type", "some-other-type"],
       },
       {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       },
     );
     expect(resultVc.proof.proofValue).toBe(

@@ -62,7 +62,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
             credentialSubject: { id: "https://some.subject/" },
           },
           {
-            fetch: mockedFetch,
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
           },
         );
         // eslint-disable-next-line no-empty
@@ -94,7 +94,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
         },
         {
           includeExpiredVc: true,
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
         },
       );
       expect(mockedFetch).toHaveBeenCalledWith(
@@ -117,7 +117,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
           "@context": ["https://some.context"],
           credentialSubject: { id: "https://some.subject/" },
         },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
       expect(spiedQuery).toHaveBeenCalledWith(
         "https://some.endpoint",
@@ -145,7 +145,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
           "@context": ["https://some.context"],
           credentialSubject: { id: "https://some.subject/" },
         },
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       );
 
       expect(vc).toMatchObject(
@@ -180,7 +180,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
             "@context": ["https://some.context"],
             credentialSubject: { id: "https://some.subject/" },
           },
-          { fetch: mockedFetch },
+          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
         ),
       ).resolves.toEqual([]);
     });
@@ -201,7 +201,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
         "https://some.endpoint/query",
         VC_SHAPE,
         {
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
         },
       );
 

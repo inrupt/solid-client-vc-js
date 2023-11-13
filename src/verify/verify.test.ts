@@ -129,7 +129,7 @@ describe("isValidVc", () => {
     );
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
     await isValidVc(MOCK_VC, {
-      fetch: mockedFetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       verificationEndpoint: MOCK_VERIFY_ENDPOINT,
     });
 
@@ -150,7 +150,7 @@ describe("isValidVc", () => {
     );
 
     await isValidVc(MOCK_VC, {
-      fetch: mockedFetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
     });
 
     expect(mockedFetch).toHaveBeenCalledWith(
@@ -176,7 +176,7 @@ describe("isValidVc", () => {
       );
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
     await isValidVc("https://example.com/someVc", {
-      fetch: mockedFetch as typeof fetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
       verificationEndpoint: MOCK_VERIFY_ENDPOINT,
     });
 
@@ -197,7 +197,7 @@ describe("isValidVc", () => {
       );
     await expect(
       isValidVc("https://example.com/someVc", {
-        fetch: mockedFetch as typeof fetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(
@@ -211,7 +211,7 @@ describe("isValidVc", () => {
       .mockResolvedValueOnce(new Response("Not a valid JSON."));
     await expect(
       isValidVc("https://example.com/someVc", {
-        fetch: mockedFetch as typeof fetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(
@@ -229,7 +229,7 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc("https://example.com/someVc", {
-        fetch: mockedFetch as typeof fetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(
@@ -246,7 +246,7 @@ describe("isValidVc", () => {
     mocked(isVerifiableCredential).mockReturnValueOnce(true);
 
     await isValidVc(MOCK_VC, {
-      fetch: mockedFetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       verificationEndpoint: "https://some.verification.api",
     });
     expect(mockedFetch).toHaveBeenCalledWith(
@@ -277,7 +277,7 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc(MOCK_VC, {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       `The VC service provider ${MOCK_VC.issuer} does not advertize for a verifier service in its .well-known/vc-configuration document`,
@@ -295,7 +295,7 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc(MOCK_VC, {
-        fetch: mockedFetch as typeof fetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
@@ -309,7 +309,7 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc(MOCK_VC, {
-        fetch: mockedFetch as typeof fetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(/Parsing.*consent\.example\.com/);
@@ -325,7 +325,7 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc(MOCK_VC, {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
         verificationEndpoint: "https://some.verification.api",
       }),
     ).resolves.toEqual({ checks: [], errors: [], warning: [] });
@@ -364,7 +364,7 @@ describe("isValidVerifiable Presentation", () => {
     );
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-      fetch: mockedFetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       domain: "domain",
       challenge: "challenge",
     });
@@ -381,7 +381,7 @@ describe("isValidVerifiable Presentation", () => {
     );
 
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-      fetch: mockedFetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       domain: "domain",
       challenge: "challenge",
     });
@@ -409,7 +409,7 @@ describe("isValidVerifiable Presentation", () => {
       "https://some.verification.api",
       MOCK_VP,
       {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       },
     );
     expect(mockedFetch).toHaveBeenCalledWith(
@@ -437,7 +437,9 @@ describe("isValidVerifiable Presentation", () => {
         }),
       );
 
-    await isValidVerifiablePresentation(null, MOCK_VP, { fetch: mockedFetch });
+    await isValidVerifiablePresentation(null, MOCK_VP, {
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+    });
     expect(mockedDiscovery).toHaveBeenCalledWith(MOCK_VP.holder);
   });
 
@@ -455,7 +457,7 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(null, MOCK_VP, {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       `The VC service provider ${MOCK_VP.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`,
@@ -468,7 +470,7 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-        fetch: mockedFetch as typeof fetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
       }),
     ).rejects.toThrow(
       `The request to [${MOCK_VP}] returned an unexpected response: ${JSON.stringify(
@@ -489,7 +491,7 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-        fetch: mockedFetch as typeof fetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
       }),
     ).rejects.toThrow(
       `Parsing the response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] as JSON failed:`,
@@ -507,7 +509,7 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-        fetch: mockedFetch as typeof fetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
       }),
     ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
   });
@@ -522,7 +524,7 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-        fetch: mockedFetch as typeof fetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
       }),
     ).resolves.toEqual({ checks: [], errors: [], warning: [] });
   });
