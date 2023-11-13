@@ -47,7 +47,7 @@ describe("revokeVerifiableCredential", () => {
         "https://some.endpoint",
         "https://some.example#credential",
         {
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
         },
       );
       // eslint-disable-next-line no-empty
@@ -82,7 +82,7 @@ describe("revokeVerifiableCredential", () => {
       revokeVerifiableCredential(
         "https://some.endpoint",
         "https://some.example#credential",
-        { fetch: mockedFetch },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       ),
     ).rejects.toThrow(/some.endpoint.*400.*Bad request/);
   });
@@ -100,7 +100,7 @@ describe("revokeVerifiableCredential", () => {
       "https://some.endpoint",
       "https://some.example#credential",
       {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       },
     );
     expect(mockedFetch).toHaveBeenCalledWith(
