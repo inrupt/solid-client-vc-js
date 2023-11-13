@@ -362,7 +362,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(/unsupported Content-Type/);
   });
@@ -378,7 +378,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -401,7 +401,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -432,7 +432,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -456,7 +456,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -474,7 +474,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -495,7 +495,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -519,7 +519,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -544,7 +544,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -566,7 +566,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -634,7 +634,7 @@ describe("getVerifiableCredential", () => {
       );
 
     const vc = await getVerifiableCredential("https://some.vc", {
-      fetch: mockedFetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
     });
 
     // Since we have dataset properties in vc it should match the result
@@ -660,7 +660,7 @@ describe("getVerifiableCredential", () => {
 
     await expect(
       getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch,
+        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
       }),
     ).rejects.toThrow(
       "The value received from [https://some.vc] is not a Verifiable Credential",
@@ -677,7 +677,7 @@ describe("getVerifiableCredential", () => {
       );
 
     const vc = await getVerifiableCredential("https://some.vc", {
-      fetch: mockedFetch,
+      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
     });
 
     const res = await jsonLdStringToStore(
@@ -740,7 +740,7 @@ describe("getVerifiableCredential", () => {
     it("errors if the context contains an IRI that is not cached", async () => {
       await expect(
         getVerifiableCredential("https://some.vc", {
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
         }),
       ).rejects.toThrow(
         "Unexpected context requested [http://example.org/my/sample/context]",
@@ -761,7 +761,7 @@ describe("getVerifiableCredential", () => {
 
       await expect(
         getVerifiableCredential("https://some.vc", {
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
           allowContextFetching: true,
         }),
       ).resolves.toMatchObject(mockCredential);
@@ -770,7 +770,7 @@ describe("getVerifiableCredential", () => {
     it("resolves if the context is cached", async () => {
       await expect(
         getVerifiableCredential("https://some.vc", {
-          fetch: mockedFetch,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
           allowContextFetching: true,
           contexts: {
             "http://example.org/my/sample/context": {
