@@ -168,6 +168,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           },
         ),
       ]);
+
       await expect(
         getVerifiableCredentialAllFromShape(
           new URL("derive", env.vcProvider).href,
@@ -211,21 +212,22 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         ),
       ).resolves.toHaveLength(1);
 
-      await revokeVerifiableCredential(
-        new URL("status", env.vcProvider).href,
-        credential1.id,
-        {
-          fetch: session.fetch,
-        },
-      );
-
-      await revokeVerifiableCredential(
-        new URL("status", env.vcProvider).href,
-        credential2.id,
-        {
-          fetch: session.fetch,
-        },
-      );
+      await Promise.all([
+        revokeVerifiableCredential(
+          new URL("status", env.vcProvider).href,
+          credential1.id,
+          {
+            fetch: session.fetch,
+          },
+        ),
+        revokeVerifiableCredential(
+          new URL("status", env.vcProvider).href,
+          credential2.id,
+          {
+            fetch: session.fetch,
+          },
+        ),
+      ]);
     });
   });
 
