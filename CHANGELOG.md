@@ -9,6 +9,7 @@ The following changes have been implemented but not released yet:
 ## Unreleased
 
 ## [0.7.3](https://github.com/inrupt/solid-client-vc-js/releases/tag/v0.7.3) - 2023-11-16
+
 ### Internal Changes
 
 - Remove some assumptions for an end-to-end test. This should be transparent to dependants.
