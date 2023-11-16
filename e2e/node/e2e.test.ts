@@ -168,6 +168,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           },
         ),
       ]);
+
       await expect(
         getVerifiableCredentialAllFromShape(
           new URL("derive", env.vcProvider).href,
