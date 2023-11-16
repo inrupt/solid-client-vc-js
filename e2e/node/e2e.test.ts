@@ -41,19 +41,19 @@ const validCredentialClaims = {
   ],
   type: ["SolidAccessRequest"],
 };
-const validSubjectClaims = {
+const validSubjectClaims = (options?: { resource?: string }) => ({
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
     "https://schema.inrupt.com/credentials/v1.jsonld",
   ],
   hasConsent: {
     mode: "Read",
-    forPersonalData: "https://example.org/ns/someData",
+    forPersonalData: options?.resource ?? "https://example.org/ns/someData",
     forPurpose: "https://example.org/ns/somePurpose",
     hasStatus: "ConsentStatusRequested",
     isConsentForDataSubject: "https://some.webid/resource-owner",
   },
-};
+});
 
 /**
  * These claims don't match the SHACL shape expected by the consent service.
@@ -113,7 +113,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
     it("Successfully gets a VC from a valid issuer", async () => {
       const credential = await issueVerifiableCredential(
         new URL("issue", env.vcProvider).href,
-        validSubjectClaims,
+        validSubjectClaims(),
         validCredentialClaims,
         {
           fetch: session.fetch,
@@ -148,29 +148,84 @@ describe("End-to-end verifiable credentials tests for environment", () => {
 
   describe("lookup VCs", () => {
     it("returns all VC issued matching a given shape", async () => {
-      const result = await getVerifiableCredentialAllFromShape(
-        new URL("derive", env.vcProvider).href,
-        {
-          "@context": [
-            "https://www.w3.org/2018/credentials/v1",
-            "https://schema.inrupt.com/credentials/v1.jsonld",
-          ],
-          type: ["VerifiableCredential", "SolidAccessGrant"],
-          credentialSubject: {
-            id: vcSubject,
-            providedConsent: {
-              hasStatus:
-                "https://w3id.org/GConsent#ConsentStatusExplicitlyGiven",
+      const [credential1, credential2] = await Promise.all([
+        issueVerifiableCredential(
+          new URL("issue", env.vcProvider).href,
+          validSubjectClaims({ resource: "https://example.org/some-resource" }),
+          validCredentialClaims,
+          {
+            fetch: session.fetch,
+          },
+        ),
+        issueVerifiableCredential(
+          new URL("issue", env.vcProvider).href,
+          validSubjectClaims({
+            resource: "https://example.org/another-resource",
+          }),
+          validCredentialClaims,
+          {
+            fetch: session.fetch,
+          },
+        ),
+      ]);
+      await expect(
+        getVerifiableCredentialAllFromShape(
+          new URL("derive", env.vcProvider).href,
+          {
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://schema.inrupt.com/credentials/v1.jsonld",
+            ],
+            type: ["VerifiableCredential", "SolidAccessGrant"],
+            credentialSubject: {
+              id: vcSubject,
+              providedConsent: {
+                hasStatus:
+                  "https://w3id.org/GConsent#ConsentStatusExplicitlyGiven",
+              },
             },
           },
-        },
+          {
+            fetch: session.fetch,
+          },
+        ),
+      ).resolves.not.toHaveLength(0);
+
+      await expect(
+        getVerifiableCredentialAllFromShape(
+          new URL("derive", env.vcProvider).href,
+          credential1,
+          {
+            fetch: session.fetch,
+          },
+        ),
+      ).resolves.toHaveLength(1);
+
+      await expect(
+        getVerifiableCredentialAllFromShape(
+          new URL("derive", env.vcProvider).href,
+          credential2,
+          {
+            fetch: session.fetch,
+          },
+        ),
+      ).resolves.toHaveLength(1);
+
+      await revokeVerifiableCredential(
+        new URL("status", env.vcProvider).href,
+        credential1.id,
         {
           fetch: session.fetch,
         },
       );
-      // Jest is confused by the conditional test block.
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(result).not.toHaveLength(0);
+
+      await revokeVerifiableCredential(
+        new URL("status", env.vcProvider).href,
+        credential2.id,
+        {
+          fetch: session.fetch,
+        },
+      );
     });
   });
 
@@ -178,7 +233,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
     it("can revoke a VC", async () => {
       const credential = await issueVerifiableCredential(
         new URL("issue", env.vcProvider).href,
-        validSubjectClaims,
+        validSubjectClaims(),
         validCredentialClaims,
         {
           fetch: session.fetch,
