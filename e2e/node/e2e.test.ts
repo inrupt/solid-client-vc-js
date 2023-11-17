@@ -177,14 +177,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
               "https://www.w3.org/2018/credentials/v1",
               "https://schema.inrupt.com/credentials/v1.jsonld",
             ],
-            type: ["VerifiableCredential", "SolidAccessGrant"],
-            credentialSubject: {
-              id: vcSubject,
-              providedConsent: {
-                hasStatus:
-                  "https://w3id.org/GConsent#ConsentStatusExplicitlyGiven",
-              },
-            },
+            type: ["VerifiableCredential"],
           },
           {
             fetch: session.fetch,
