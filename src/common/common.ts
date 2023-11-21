@@ -420,7 +420,7 @@ export async function verifiableCredentialToDataset(
     );
   }
 
-  return {
+  return Object.freeze({
     ...vc,
     // Make this a DatasetCore without polluting the object with
     // all of the properties present in the N3.Store
@@ -449,7 +449,7 @@ export async function verifiableCredentialToDataset(
     toJSON() {
       return vc;
     },
-  };
+  });
 }
 
 /**
