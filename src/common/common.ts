@@ -316,9 +316,9 @@ async function discoverLegacyEndpoints(
     });
 
     // The dataset should have a single blank node subject of all its triples.
-    const wellKnownRootBlankNode = getThingAll(vcConfigData, {
+    const [wellKnownRootBlankNode] = getThingAll(vcConfigData, {
       acceptBlankNodes: true,
-    })[0];
+    });
 
     return {
       derivationService:
@@ -407,10 +407,10 @@ export async function getVerifiableCredentialApiConfiguration(
 /**
  * @hidden
  */
-export async function verifiableCredentialToDataset(
-  vc: VerifiableCredentialBase,
+export async function verifiableCredentialToDataset<T extends JsonLd>(
+  vc: T,
   options?: ParseOptions,
-): Promise<VerifiableCredential> {
+): Promise<T & DatasetCore> {
   let store: DatasetCore;
   try {
     store = await jsonLdToStore(vc, options);

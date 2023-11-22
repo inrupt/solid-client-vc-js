@@ -141,6 +141,10 @@ export const mockPartialPresentation = (
   claims?: Partial<VerifiableClaims>,
 ): Record<string, unknown> => {
   return {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://schema.inrupt.com/credentials/v1.jsonld",
+    ],
     id: claims?.id,
     type: claims?.type,
     verifiableCredential: credentials,

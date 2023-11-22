@@ -32,7 +32,9 @@ import {
   isVerifiableCredential,
   isVerifiablePresentation,
   normalizeVc,
+  verifiableCredentialToDataset,
 } from "./common";
+import * as getters from "./getters";
 import {
   defaultCredentialClaims,
   defaultVerifiableClaims,
@@ -42,6 +44,8 @@ import {
   mockPartialCredential,
   mockPartialPresentation,
 } from "./common.mock";
+
+const { namedNode } = DataFactory;
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -63,8 +67,14 @@ describe("normalizeVc", () => {
 });
 
 describe("isVerifiableCredential", () => {
-  it("returns true if all the expected fields are present in the credential", () => {
+  it("returns true if all the expected fields are present in the credential", async () => {
     expect(isVerifiableCredential(mockDefaultCredential())).toBe(true);
+    expect(
+      getters.isVerifiableCredential(
+        await verifiableCredentialToDataset(mockDefaultCredential()),
+        namedNode(mockDefaultCredential().id),
+      ),
+    ).toBe(true);
   });
 
   describe("returns false if", () => {
@@ -79,7 +89,20 @@ describe("isVerifiableCredential", () => {
       ["proofVerificationMethod"],
       ["proofPurpose"],
       ["proofValue"],
-    ])("is missing field %s", (entry) => {
+    ])("is missing field %s", async (entry) => {
+      expect(
+        getters.isVerifiableCredential(
+          await verifiableCredentialToDataset(
+            mockPartialCredential({
+              ...defaultCredentialClaims,
+              [`${entry}`]: undefined,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            }) as any,
+          ),
+          namedNode(mockDefaultCredential().id),
+        ),
+      ).toBe(false);
+
       expect(
         isVerifiableCredential(
           mockPartialCredential({
@@ -90,13 +113,19 @@ describe("isVerifiableCredential", () => {
       ).toBe(false);
     });
 
-    it("misses a credential subject", () => {
+    it("misses a credential subject", async () => {
       const mockedCredential = mockDefaultCredential();
       delete (
         mockedCredential as {
           credentialSubject: undefined | Record<string, unknown>;
         }
       ).credentialSubject;
+      expect(
+        getters.isVerifiableCredential(
+          await verifiableCredentialToDataset(mockedCredential),
+          namedNode(mockDefaultCredential().id),
+        ),
+      ).toBe(false);
       expect(isVerifiableCredential(mockedCredential)).toBe(false);
     });
 
@@ -110,7 +139,19 @@ describe("isVerifiableCredential", () => {
       expect(isVerifiableCredential(mockedCredential)).toBe(false);
     });
 
-    it("has an unexpected date format for the issuance", () => {
+    it("has an unexpected date format for the issuance", async () => {
+      expect(
+        getters.isVerifiableCredential(
+          await verifiableCredentialToDataset(
+            mockPartialCredential({
+              ...defaultCredentialClaims,
+              issuanceDate: "Not a date",
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            }) as any,
+          ),
+          namedNode(mockDefaultCredential().id),
+        ),
+      ).toBe(false);
       expect(
         isVerifiableCredential(
           mockPartialCredential({
@@ -121,7 +162,19 @@ describe("isVerifiableCredential", () => {
       ).toBe(false);
     });
 
-    it("has an unexpected date format for the proof creation", () => {
+    it("has an unexpected date format for the proof creation", async () => {
+      expect(
+        getters.isVerifiableCredential(
+          await verifiableCredentialToDataset(
+            mockPartialCredential({
+              ...defaultCredentialClaims,
+              proofCreated: "Not a date",
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            }) as any,
+          ),
+          namedNode(mockDefaultCredential().id),
+        ),
+      ).toBe(false);
       expect(
         isVerifiableCredential(
           mockPartialCredential({
@@ -136,8 +189,9 @@ describe("isVerifiableCredential", () => {
 
 describe("isVerifiablePresentation", () => {
   describe("returns true", () => {
-    it("has all the expected fields are present in the credential", () => {
+    it("has all the expected fields are present in the credential", async () => {
       expect(isVerifiablePresentation(mockDefaultPresentation())).toBe(true);
+      // expect(getters.isVerifiablePresentation(await verifiableCredentialToDataset(mockDefaultPresentation()), namedNode(mockDefaultPresentation().id!))).toBe(true);
     });
 
     it("has no associated credentials", () => {
