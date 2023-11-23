@@ -202,7 +202,7 @@ export function isVerifiableCredential(
   return dataIsVc;
 }
 
-function isUrl(url: string): boolean {
+export function isUrl(url: string): boolean {
   try {
     // If url is not URL-shaped, this will throw.
     // eslint-disable-next-line no-new

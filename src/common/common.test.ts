@@ -191,79 +191,106 @@ describe("isVerifiablePresentation", () => {
   describe("returns true", () => {
     it("has all the expected fields are present in the credential", async () => {
       expect(isVerifiablePresentation(mockDefaultPresentation())).toBe(true);
-      // expect(getters.isVerifiablePresentation(await verifiableCredentialToDataset(mockDefaultPresentation()), namedNode(mockDefaultPresentation().id!))).toBe(true);
+      expect(
+        getters.isVerifiablePresentation(
+          await verifiableCredentialToDataset(mockDefaultPresentation()),
+          namedNode(mockDefaultPresentation().id!),
+        ),
+      ).toBe(true);
     });
 
-    it("has no associated credentials", () => {
+    it("has no associated credentials", async () => {
       expect(isVerifiablePresentation(mockDefaultPresentation([]))).toBe(true);
+      expect(
+        getters.isVerifiablePresentation(
+          await verifiableCredentialToDataset(mockDefaultPresentation([])),
+          namedNode(mockDefaultPresentation([]).id!),
+        ),
+      ).toBe(true);
     });
 
-    it("has an URL shaped holder", () => {
+    it("has an URL shaped holder", async () => {
       const mockedPresentation = mockDefaultPresentation();
       mockedPresentation.holder = "https://some.holder";
       expect(isVerifiablePresentation(mockedPresentation)).toBe(true);
+      expect(
+        getters.isVerifiablePresentation(
+          await verifiableCredentialToDataset(mockedPresentation),
+          namedNode(mockedPresentation.id!),
+        ),
+      ).toBe(true);
     });
 
-    it("is passed a correct VP with a single type", () => {
-      const vp = JSON.parse(`{
-        "@context": [
-            "https://www.w3.org/2018/credentials/v1"
-        ],
-        "holder": "https://vc.dev-next.inrupt.com",
-        "type": "VerifiablePresentation",
-        "verifiableCredential": [
-            {
-                "@context": [
-                    "https://www.w3.org/2018/credentials/v1",
-                    "https://w3id.org/security/suites/ed25519-2020/v1",
-                    "https://w3id.org/vc-revocation-list-2020/v1",
-                    "https://consent.pod.inrupt.com/credentials/v1"
+    it("is passed a correct VP with a single type", async () => {
+      const vp = {
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        id: "https://example.org/ns/someCredentialInstance",
+        holder: "https://vc.dev-next.inrupt.com",
+        type: "VerifiablePresentation",
+        verifiableCredential: [
+          {
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://w3id.org/security/suites/ed25519-2020/v1",
+              "https://w3id.org/vc-revocation-list-2020/v1",
+              "https://consent.pod.inrupt.com/credentials/v1",
+            ],
+            credentialStatus: {
+              id: "https://vc.dev-next.inrupt.com/status/niiL#0",
+              revocationListCredential:
+                "https://vc.dev-next.inrupt.com/status/niiL",
+              revocationListIndex: "0",
+              type: "RevocationList2020Status",
+            },
+            credentialSubject: {
+              providedConsent: {
+                mode: ["http://www.w3.org/ns/auth/acl#Read"],
+                hasStatus:
+                  "https://w3id.org/GConsent#ConsentStatusExplicitlyGiven",
+                forPersonalData: [
+                  "https://storage.dev-next.inrupt.com/8c6a313e-98ae-4eb2-9ab3-2df201d81a02/bookmarks/",
                 ],
-                "credentialStatus": {
-                    "id": "https://vc.dev-next.inrupt.com/status/niiL#0",
-                    "revocationListCredential": "https://vc.dev-next.inrupt.com/status/niiL",
-                    "revocationListIndex": "0",
-                    "type": "RevocationList2020Status"
-                },
-                "credentialSubject": {
-                    "providedConsent": {
-                        "mode": [
-                            "http://www.w3.org/ns/auth/acl#Read"
-                        ],
-                        "hasStatus": "https://w3id.org/GConsent#ConsentStatusExplicitlyGiven",
-                        "forPersonalData": [
-                            "https://storage.dev-next.inrupt.com/8c6a313e-98ae-4eb2-9ab3-2df201d81a02/bookmarks/"
-                        ],
-                        "forPurpose": "https://example.org/someSpecificPurpose",
-                        "isProvidedTo": "https://pod.inrupt.com/womenofsolid/profile/card#me"
-                    },
-                    "id": "https://id.dev-next.inrupt.com/virginia",
-                    "inbox": "https://pod.inrupt.com/womenofsolid/inbox/"
-                },
-                "id": "https://vc.dev-next.inrupt.com/vc/9f0855b1-7494-4770-8c49-c3fe91d82f93",
-                "issuanceDate": "2021-10-20T07:29:20.062Z",
-                "issuer": "https://vc.dev-next.inrupt.com",
-                "proof": {
-                    "created": "2021-10-20T07:31:08.898Z",
-                    "domain": "solid",
-                    "proofPurpose": "assertionMethod",
-                    "proofValue": "Q4-x1J0RqnIYBsW-O4IPskIeN_SOyUqtO8nZQdHlvz-PTwAe-L5lv2QhQHdUZpel1pEfdnll1rRD0vBdJ_svBg",
-                    "type": "Ed25519Signature2020",
-                    "verificationMethod": "https://vc.dev-next.inrupt.com/key/3eb16a3d-d31e-4f6e-b1ca-581257c69412"
-                },
-                "type": [
-                    "VerifiableCredential",
-                    "SolidAccessGrant"
-                ]
-            }
-        ]
-    }`);
+                forPurpose: "https://example.org/someSpecificPurpose",
+                isProvidedTo:
+                  "https://pod.inrupt.com/womenofsolid/profile/card#me",
+              },
+              id: "https://id.dev-next.inrupt.com/virginia",
+              inbox: "https://pod.inrupt.com/womenofsolid/inbox/",
+            },
+            id: "https://vc.dev-next.inrupt.com/vc/9f0855b1-7494-4770-8c49-c3fe91d82f93",
+            issuanceDate: "2021-10-20T07:29:20.062Z",
+            issuer: "https://vc.dev-next.inrupt.com",
+            proof: {
+              created: "2021-10-20T07:31:08.898Z",
+              domain: "solid",
+              proofPurpose: "assertionMethod",
+              proofValue:
+                "Q4-x1J0RqnIYBsW-O4IPskIeN_SOyUqtO8nZQdHlvz-PTwAe-L5lv2QhQHdUZpel1pEfdnll1rRD0vBdJ_svBg",
+              type: "Ed25519Signature2020",
+              verificationMethod:
+                "https://vc.dev-next.inrupt.com/key/3eb16a3d-d31e-4f6e-b1ca-581257c69412",
+            },
+            type: ["VerifiableCredential", "SolidAccessGrant"],
+          },
+        ],
+      };
       expect(isVerifiablePresentation(vp)).toBe(true);
+      expect(
+        getters.isVerifiablePresentation(
+          await verifiableCredentialToDataset(vp),
+          namedNode(vp.id),
+        ),
+      ).toBe(true);
     });
   });
 
   describe("returns false if", () => {
-    it.each([["type"]])("is missing field %s", (entry) => {
+    it.each([["type"]])("is missing field %s", async (entry) => {
+      const vp = mockPartialPresentation([], {
+        ...defaultVerifiableClaims,
+        [`${entry}`]: undefined,
+      });
+
       expect(
         isVerifiablePresentation(
           mockPartialPresentation([], {
@@ -272,19 +299,41 @@ describe("isVerifiablePresentation", () => {
           }),
         ),
       ).toBe(false);
+      expect(
+        getters.isVerifiablePresentation(
+          // we expect that this is not a valid Verifiable Presentation
+          // @ts-expect-error
+          await verifiableCredentialToDataset(vp),
+          // we expect that this is not a valid Verifiable Presentation
+          // @ts-expect-error
+          namedNode(vp.id),
+        ),
+      ).toBe(false);
     });
 
-    it("has a malformed credential", () => {
+    it("has a malformed credential", async () => {
       const mockedPresentation = mockDefaultPresentation([
         {} as VerifiableCredential,
       ]);
       expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
+      expect(
+        getters.isVerifiablePresentation(
+          await verifiableCredentialToDataset(mockedPresentation),
+          namedNode(mockedPresentation.id!),
+        ),
+      ).toBe(false);
     });
 
-    it("has a non-URL shaped holder", () => {
+    it("has a non-URL shaped holder", async () => {
       const mockedPresentation = mockDefaultPresentation();
       mockedPresentation.holder = "some non-URL holder";
       expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
+      expect(
+        getters.isVerifiablePresentation(
+          await verifiableCredentialToDataset(mockedPresentation),
+          namedNode(mockedPresentation.id!),
+        ),
+      ).toBe(false);
     });
   });
 });

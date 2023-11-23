@@ -28,6 +28,7 @@ import type {
 import { DataFactory } from "n3";
 import { getSingleObject } from "./rdfjs";
 import { cred, xsd, dc, sec, rdf } from "./constants";
+import { isUrl } from "./common";
 
 const { namedNode, defaultGraph, quad } = DataFactory;
 
@@ -67,10 +68,10 @@ export function getCredentialSubject(vc: DatasetWithId) {
  * @example
  *
  * ```
- * const date = getIssuer(accessGrant);
+ * const date = getIssuer(vc);
  * ```
  *
- * @param vc The Access Grant/Request
+ * @param vc The Verifiable Credential
  * @returns The VC issuer
  */
 export function getIssuer(vc: DatasetWithId): string {
@@ -103,7 +104,7 @@ function wrapDate(date: Literal) {
  * @example
  *
  * ```
- * const date = getIssuanceDate(accessGrant);
+ * const date = getIssuanceDate(vc);
  * ```
  *
  * @param vc The Verifiable Credential
@@ -212,11 +213,12 @@ export function isVerifiablePresentation(
     }
   }
 
+  const holder = [...dataset.match(id, cred.holder, null, defaultGraph())];
   return (
-    lenientSingle<NamedNode>(
-      dataset.match(id, cred.holder, null, defaultGraph()),
-      ["NamedNode"],
-    ) !== undefined &&
-    dataset.has(quad(id, rdf.type, cred.VerifiablePresentation, defaultGraph()))
+    (holder.length === 0 ||
+      (holder.length === 1 && holder[0].object.termType === "NamedNode" && isUrl(holder[0].object.value))) &&
+    // dataset.has(quad(id, rdf.type, cred.VerifiablePresentation, defaultGraph()))
+    // FIXME: Replace with the above condition
+    dataset.match(id, rdf.type, null, defaultGraph()).size >= 1
   );
 }
