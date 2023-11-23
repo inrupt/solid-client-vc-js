@@ -26,60 +26,12 @@ import type {
   BlankNode,
 } from "@rdfjs/types";
 import { DataFactory } from "n3";
-import { rdf as _rdf } from "rdf-namespaces";
 import { getSingleObject } from "./rdfjs";
+import { cred, xsd, dc, sec, rdf } from "./constants";
 
 const { namedNode, defaultGraph, quad } = DataFactory;
 
-const SEC = "https://w3id.org/security#";
-
-export const CRED = "https://www.w3.org/2018/credentials#";
-export const GC = "https://w3id.org/GConsent#";
-export const ACL = "http://www.w3.org/ns/auth/acl#";
-export const VC = "http://www.w3.org/ns/solid/vc#";
-export const XSD = "http://www.w3.org/2001/XMLSchema#";
-export const DC = "http://purl.org/dc/terms/";
-
-export const XSD_BOOLEAN = namedNode(`${XSD}boolean`);
-
-export const SOLID_ACCESS_GRANT = namedNode(`${VC}SolidAccessGrant`);
-
-export const rdf = {
-  type: namedNode(_rdf.type),
-};
-
-export const xsd = {
-  boolean: namedNode(`${XSD}boolean`),
-  dateTime: namedNode(`${XSD}dateTime`),
-};
-
-export const cred = {
-  issuanceDate: namedNode(`${CRED}issuanceDate`),
-  expirationDate: namedNode(`${CRED}expirationDate`),
-  issuer: namedNode(`${CRED}issuer`),
-  credentialSubject: namedNode(`${CRED}credentialSubject`),
-  verifiableCredential: namedNode(`${CRED}verifiableCredential`),
-  holder: namedNode(`${CRED}holder`),
-  VerifiableCredential: namedNode(`${CRED}VerifiableCredential`),
-  VerifiablePresentation: namedNode(`${CRED}VerifiablePresentation`),
-};
-
-export const INHERIT = namedNode(
-  "urn:uuid:71ab2f68-a68b-4452-b968-dd23e0570227",
-);
-
-const sec = {
-  proof: namedNode(`${SEC}proof`),
-  proofPurpose: namedNode(`${SEC}proofPurpose`),
-  proofValue: namedNode(`${SEC}proofValue`),
-  verificationMethod: namedNode(`${SEC}verificationMethod`),
-};
-
-export const dc = {
-  created: namedNode(`${DC}created`),
-};
-
-type VerifiableCredentialBase = DatasetCore & { id: string };
+export type DatasetWithId = DatasetCore & { id: string };
 
 /**
  * Get the ID (URL) of a Verifiable Credential.
@@ -93,14 +45,14 @@ type VerifiableCredentialBase = DatasetCore & { id: string };
  * @param vc The Verifiable Credential
  * @returns The VC ID URL
  */
-export function getId(vc: VerifiableCredentialBase): string {
+export function getId(vc: DatasetWithId): string {
   return vc.id;
 }
 
 /**
  * @internal
  */
-export function getCredentialSubject(vc: VerifiableCredentialBase) {
+export function getCredentialSubject(vc: DatasetWithId) {
   return getSingleObject(
     vc,
     namedNode(getId(vc)),
@@ -121,7 +73,7 @@ export function getCredentialSubject(vc: VerifiableCredentialBase) {
  * @param vc The Access Grant/Request
  * @returns The VC issuer
  */
-export function getIssuer(vc: VerifiableCredentialBase): string {
+export function getIssuer(vc: DatasetWithId): string {
   return getSingleObject(vc, namedNode(getId(vc)), cred.issuer, "NamedNode")
     .value;
 }
@@ -139,6 +91,9 @@ function wrapDate(date: Literal) {
       `Expected date to be a dateTime; recieved [${date.datatype.value}]`,
     );
   }
+  if (Number.isNaN(Date.parse(date.value))) {
+    throw new Error(`Found invalid value for date: [${date.value}]`);
+  }
   return new Date(date.value);
 }
 
@@ -151,10 +106,10 @@ function wrapDate(date: Literal) {
  * const date = getIssuanceDate(accessGrant);
  * ```
  *
- * @param vc The Access Grant/Request
+ * @param vc The Verifiable Credential
  * @returns The issuance date
  */
-export function getIssuanceDate(vc: VerifiableCredentialBase): Date {
+export function getIssuanceDate(vc: DatasetWithId): Date {
   return wrapDate(
     getSingleObject(vc, namedNode(getId(vc)), cred.issuanceDate, "Literal"),
   );
