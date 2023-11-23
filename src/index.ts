@@ -39,3 +39,9 @@ export type {
 } from "./lookup/query";
 export { revokeVerifiableCredential } from "./revoke/revoke";
 export { isValidVc, isValidVerifiablePresentation } from "./verify/verify";
+export {
+  getId,
+  getIssuanceDate,
+  getIssuer,
+  getCredentialSubject,
+} from "./common/getters";

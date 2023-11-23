@@ -51,7 +51,16 @@ export function getId(vc: DatasetWithId): string {
 }
 
 /**
- * @internal
+ * Get the subject of a Verifiable Credential.
+ *
+ * @example
+ *
+ * ```
+ * const date = getCredentialSubject(vc);
+ * ```
+ *
+ * @param vc The Verifiable Credential
+ * @returns The VC subject
  */
 export function getCredentialSubject(vc: DatasetWithId) {
   return getSingleObject(
@@ -114,6 +123,29 @@ export function getIssuanceDate(vc: DatasetWithId): Date {
   return wrapDate(
     getSingleObject(vc, namedNode(getId(vc)), cred.issuanceDate, "Literal"),
   );
+}
+
+/**
+ * Get the expiration date of an Access Grant/Request.
+ *
+ * @example
+ *
+ * ```
+ * const date = getExpirationDate(accessGrant);
+ * ```
+ *
+ * @param vc The Access Grant/Request
+ * @returns The expiration date
+ */
+export function getExpirationDate(vc: DatasetWithId): Date | undefined {
+  const expirationDate = getLenin(
+    vc,
+    namedNode(getId(vc)),
+    cred.expirationDate,
+    "Literal",
+    false,
+  );
+  return expirationDate && wrapDate(expirationDate);
 }
 
 /**
