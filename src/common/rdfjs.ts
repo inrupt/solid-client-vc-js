@@ -42,59 +42,22 @@ export function getSingleObject(
   vc: DatasetCore,
   subject: Term,
   predicate: Term,
-  type: "NamedNode",
-  required: false,
-): NamedNode | undefined;
-export function getSingleObject(
-  vc: DatasetCore,
-  subject: Term,
-  predicate: Term,
-  type: "Literal",
-  required: false,
-): Literal | undefined;
-export function getSingleObject(
-  vc: DatasetCore,
-  subject: Term,
-  predicate: Term,
-  type: "BlankNode",
-): BlankNode;
-export function getSingleObject(
-  vc: DatasetCore,
-  subject: Term,
-  predicate: Term,
   type: "Literal",
 ): Literal;
 export function getSingleObject(
   vc: DatasetCore,
   subject: Term,
   predicate: Term,
-): NamedNode | BlankNode;
-export function getSingleObject(
-  vc: DatasetCore,
-  subject: Term,
-  predicate: Term,
-  type: undefined,
-  required: false,
-): NamedNode | BlankNode | undefined;
-export function getSingleObject(
-  vc: DatasetCore,
-  subject: Term,
-  predicate: Term,
   type?: Term["termType"],
-  required: "undefined-on-many" | boolean = true,
 ): Term | undefined {
   const results = [...vc.match(subject, predicate, null, defaultGraph())];
-
-  if (results.length === 0 && !required) {
-    return undefined;
-  }
 
   if (results.length !== 1) {
     throw new Error(`Expected exactly one result. Found ${results.length}.`);
   }
 
   const [{ object }] = results;
-  const expectedTypes = type ? [type] : ["NamedNode", "BlankNode"];
+  const expectedTypes = [type];
   if (!expectedTypes.includes(object.termType)) {
     throw new Error(
       `Expected [${object.value}] to be a ${expectedTypes.join(

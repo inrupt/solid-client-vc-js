@@ -216,7 +216,9 @@ export function isVerifiablePresentation(
   const holder = [...dataset.match(id, cred.holder, null, defaultGraph())];
   return (
     (holder.length === 0 ||
-      (holder.length === 1 && holder[0].object.termType === "NamedNode" && isUrl(holder[0].object.value))) &&
+      (holder.length === 1 &&
+        holder[0].object.termType === "NamedNode" &&
+        isUrl(holder[0].object.value))) &&
     // dataset.has(quad(id, rdf.type, cred.VerifiablePresentation, defaultGraph()))
     // FIXME: Replace with the above condition
     dataset.match(id, rdf.type, null, defaultGraph()).size >= 1

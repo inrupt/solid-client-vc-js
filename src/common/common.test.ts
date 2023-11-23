@@ -21,7 +21,7 @@
 import type * as UniversalFetch from "@inrupt/universal-fetch";
 import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
 import { describe, expect, it, jest, beforeEach } from "@jest/globals";
-import { DataFactory } from "n3";
+import { DataFactory, Store } from "n3";
 import { isomorphic } from "rdf-isomorphic";
 import type { IJsonLdContext } from "jsonld-context-parser";
 import { jsonLdStringToStore } from "../parser/jsonld";
@@ -46,7 +46,7 @@ import {
 } from "./common.mock";
 import { cred } from "./constants";
 
-const { namedNode } = DataFactory;
+const { namedNode, quad, blankNode } = DataFactory;
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -302,11 +302,9 @@ describe("isVerifiablePresentation", () => {
       ).toBe(false);
       expect(
         getters.isVerifiablePresentation(
-          // we expect that this is not a valid Verifiable Presentation
-          // @ts-expect-error
+          // @ts-expect-error we expect that this is not a valid Verifiable Presentation
           await verifiableCredentialToDataset(vp),
-          // we expect that this is not a valid Verifiable Presentation
-          // @ts-expect-error
+          // @ts-expect-error we expect that this is not a valid Verifiable Presentation
           namedNode(vp.id),
         ),
       ).toBe(false);
@@ -317,8 +315,12 @@ describe("isVerifiablePresentation", () => {
         {} as VerifiableCredential,
       ]);
 
-      const mockedPresentationAsDataset = await verifiableCredentialToDataset(mockedPresentation);
-      expect(mockedPresentationAsDataset.match(null, cred.verifiableCredential, null).size).toEqual(0);
+      const mockedPresentationAsDataset =
+        await verifiableCredentialToDataset(mockedPresentation);
+      expect(
+        mockedPresentationAsDataset.match(null, cred.verifiableCredential, null)
+          .size,
+      ).toBe(0);
       expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
       expect(
         getters.isVerifiablePresentation(
@@ -326,6 +328,35 @@ describe("isVerifiablePresentation", () => {
           namedNode(mockedPresentation.id!),
         ),
       ).toBe(true);
+
+      // Should return false when we artifically add a blank node to the dataset
+      expect(
+        getters.isVerifiablePresentation(
+          new Store([
+            ...mockedPresentationAsDataset,
+            quad(
+              namedNode(mockedPresentation.id!),
+              cred.verifiableCredential,
+              blankNode(),
+            ),
+          ]),
+          namedNode(mockedPresentation.id!),
+        ),
+      ).toBe(false);
+      // Should return false when we artifically add a named node with invalid url to the dataset
+      expect(
+        getters.isVerifiablePresentation(
+          new Store([
+            ...mockedPresentationAsDataset,
+            quad(
+              namedNode(mockedPresentation.id!),
+              cred.verifiableCredential,
+              namedNode("http://example.org/incomplete/vc"),
+            ),
+          ]),
+          namedNode(mockedPresentation.id!),
+        ),
+      ).toBe(false);
     });
 
     it("has a non-URL shaped holder", async () => {
@@ -333,14 +364,40 @@ describe("isVerifiablePresentation", () => {
       mockedPresentation.holder = "some non-URL holder";
       expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
 
-      const presentationAsDataset = await verifiableCredentialToDataset(mockedPresentation);
-      expect(presentationAsDataset.match(null, cred.holder, null).size).toEqual(0);
+      const presentationAsDataset =
+        await verifiableCredentialToDataset(mockedPresentation);
+      expect(presentationAsDataset.match(null, cred.holder, null).size).toBe(0);
       expect(
         getters.isVerifiablePresentation(
           presentationAsDataset,
           namedNode(mockedPresentation.id!),
         ),
       ).toBe(true);
+
+      // Should return false when we artifically add a blank node to the dataset
+      expect(
+        getters.isVerifiablePresentation(
+          new Store([
+            ...presentationAsDataset,
+            quad(namedNode(mockedPresentation.id!), cred.holder, blankNode()),
+          ]),
+          namedNode(mockedPresentation.id!),
+        ),
+      ).toBe(false);
+      // Should return false when we artifically add a named node with invalid url to the dataset
+      expect(
+        getters.isVerifiablePresentation(
+          new Store([
+            ...presentationAsDataset,
+            quad(
+              namedNode(mockedPresentation.id!),
+              cred.holder,
+              namedNode("not a valid url"),
+            ),
+          ]),
+          namedNode(mockedPresentation.id!),
+        ),
+      ).toBe(false);
     });
   });
 });
