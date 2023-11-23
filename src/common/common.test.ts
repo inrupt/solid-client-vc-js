@@ -44,6 +44,7 @@ import {
   mockPartialCredential,
   mockPartialPresentation,
 } from "./common.mock";
+import { cred } from "./constants";
 
 const { namedNode } = DataFactory;
 
@@ -311,29 +312,35 @@ describe("isVerifiablePresentation", () => {
       ).toBe(false);
     });
 
-    it("has a malformed credential", async () => {
+    it("has a malformed credential that is not parsed into json-ld", async () => {
       const mockedPresentation = mockDefaultPresentation([
         {} as VerifiableCredential,
       ]);
+
+      const mockedPresentationAsDataset = await verifiableCredentialToDataset(mockedPresentation);
+      expect(mockedPresentationAsDataset.match(null, cred.verifiableCredential, null).size).toEqual(0);
       expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
       expect(
         getters.isVerifiablePresentation(
-          await verifiableCredentialToDataset(mockedPresentation),
+          mockedPresentationAsDataset,
           namedNode(mockedPresentation.id!),
         ),
-      ).toBe(false);
+      ).toBe(true);
     });
 
     it("has a non-URL shaped holder", async () => {
       const mockedPresentation = mockDefaultPresentation();
       mockedPresentation.holder = "some non-URL holder";
       expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
+
+      const presentationAsDataset = await verifiableCredentialToDataset(mockedPresentation);
+      expect(presentationAsDataset.match(null, cred.holder, null).size).toEqual(0);
       expect(
         getters.isVerifiablePresentation(
-          await verifiableCredentialToDataset(mockedPresentation),
+          presentationAsDataset,
           namedNode(mockedPresentation.id!),
         ),
-      ).toBe(false);
+      ).toBe(true);
     });
   });
 });
