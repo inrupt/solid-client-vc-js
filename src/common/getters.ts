@@ -56,8 +56,8 @@ export function getId(vc: DatasetWithId): string {
  * @param vc The Verifiable Credential
  * @returns The VC subject
  */
-export function getCredentialSubject(vc: DatasetWithId) {
-  return getSingleObject(
+export function getCredentialSubject(vc: DatasetWithId): NamedNode {
+  return getSingleObject<NamedNode>(
     vc,
     namedNode(getId(vc)),
     cred.credentialSubject,
