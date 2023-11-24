@@ -18,7 +18,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-import type { DatasetCore, Literal, NamedNode, Term } from "@rdfjs/types";
+import type { DatasetCore, Term } from "@rdfjs/types";
 import { DataFactory } from "n3";
 
 const { defaultGraph } = DataFactory;
@@ -26,24 +26,18 @@ const { defaultGraph } = DataFactory;
 /**
  * @internal
  */
-export function getSingleObject(
+export function getSingleObject<T extends Term>(
   vc: DatasetCore,
   subject: Term,
   predicate: Term,
-  type: "NamedNode",
-): NamedNode;
-export function getSingleObject(
+  type: Term["termType"],
+): T;
+export function getSingleObject<T extends Term>(
   vc: DatasetCore,
   subject: Term,
   predicate: Term,
-  type: "Literal",
-): Literal;
-export function getSingleObject(
-  vc: DatasetCore,
-  subject: Term,
-  predicate: Term,
-  type?: Term["termType"],
-): Term | undefined {
+  type?: T["termType"],
+): T {
   const results = [...vc.match(subject, predicate, null, defaultGraph())];
 
   if (results.length !== 1) {
@@ -60,5 +54,18 @@ export function getSingleObject(
     );
   }
 
-  return object;
+  return object as T;
+}
+
+/**
+ * @internal
+ */
+export function lenientSingle<T extends Term>(
+  dataset: DatasetCore,
+  termTypes: T["termType"][] = ["NamedNode", "BlankNode"],
+): T | undefined {
+  const array = [...dataset];
+  return array.length === 1 && termTypes.includes(array[0].object.termType)
+    ? (array[0].object as T)
+    : undefined;
 }

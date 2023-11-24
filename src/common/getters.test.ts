@@ -27,6 +27,7 @@ import { cred, xsd } from "./constants";
 import { mockDefaultCredential } from "./common.mock";
 import {
   getCredentialSubject,
+  getExpirationDate,
   getId,
   getIssuanceDate,
   getIssuer,
@@ -111,6 +112,77 @@ describe("getters", () => {
     expect(() =>
       getIssuanceDate(results as unknown as VerifiableCredential),
     ).toThrow("Found invalid value for date: [not a dateTime]");
+  });
+
+  describe("getExpirationDate", () => {
+    it("returns undefined if there is no expiration date", () => {
+      expect(getExpirationDate(defaultCredential)).toBeUndefined();
+    });
+
+    it("gets the access expiration date", async () => {
+      const expirationDate = new Date(Date.now()).toString();
+      const credential = await verifiableCredentialToDataset({
+        ...mockDefaultCredential(),
+        expirationDate,
+      });
+      expect(getExpirationDate(credential)).toStrictEqual(
+        new Date(expirationDate),
+      );
+    });
+
+    it("errors if the expiration date is a NamedNode", () => {
+      const store = Object.assign(new Store([...defaultCredential]), {
+        id: defaultCredential.id,
+      });
+
+      store.addQuad(
+        namedNode(getId(defaultCredential)),
+        cred.expirationDate,
+        namedNode("http://example.org/this/is/a/date"),
+      );
+
+      expect(() => getExpirationDate(store)).toThrow(
+        "Expected expiration date to be a Literal. Found [http://example.org/this/is/a/date] of type [NamedNode].",
+      );
+    });
+
+    it("errors if there are multiple expiration dates", () => {
+      const store = Object.assign(new Store([...defaultCredential]), {
+        id: defaultCredential.id,
+      });
+
+      store.addQuad(
+        namedNode(getId(defaultCredential)),
+        cred.expirationDate,
+        literal(new Date(1700820377111).toString(), xsd.dateTime),
+      );
+
+      store.addQuad(
+        namedNode(getId(defaultCredential)),
+        cred.expirationDate,
+        literal(new Date(1700820300000).toString(), xsd.dateTime),
+      );
+
+      expect(() => getExpirationDate(store)).toThrow(
+        "Expected 0 or 1 expiration date. Found 2.",
+      );
+    });
+
+    it("errors if the expiration date is a literal without xsd:type", async () => {
+      const store = Object.assign(new Store([...defaultCredential]), {
+        id: defaultCredential.id,
+      });
+
+      store.addQuad(
+        namedNode(getId(defaultCredential)),
+        cred.expirationDate,
+        literal("boo"),
+      );
+
+      expect(() => getExpirationDate(store)).toThrow(
+        "Expected date to be a dateTime; recieved [http://www.w3.org/2001/XMLSchema#string]",
+      );
+    });
   });
 
   it("getIssuer", () => {

@@ -28,6 +28,15 @@ import {
   getVerifiableCredentialApiConfiguration,
   verifiableCredentialToDataset,
 } from "./common/common";
+import {
+  getId,
+  getCredentialSubject,
+  getExpirationDate,
+  getIssuanceDate,
+  getIssuer,
+  isVerifiableCredential as isRdfjsVerifiableCredential,
+  isVerifiablePresentation as isRdfjsVerifiablePresentation,
+} from "./common/getters";
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
 import revokeVerifiableCredential from "./revoke/revoke";
 import { isValidVc, isValidVerifiablePresentation } from "./verify/verify";
@@ -47,6 +56,13 @@ describe("exports", () => {
       "revokeVerifiableCredential",
       "isValidVc",
       "isValidVerifiablePresentation",
+      "getId",
+      "getIssuanceDate",
+      "getIssuer",
+      "getCredentialSubject",
+      "getExpirationDate",
+      "isRdfjsVerifiableCredential",
+      "isRdfjsVerifiablePresentation",
     ]);
     expect(packageExports.issueVerifiableCredential).toBe(
       issueVerifiableCredential,
@@ -75,5 +91,16 @@ describe("exports", () => {
       isValidVerifiablePresentation,
     );
     expect(packageExports.query).toBe(query);
+    expect(packageExports.getId).toBe(getId);
+    expect(packageExports.getIssuanceDate).toBe(getIssuanceDate);
+    expect(packageExports.getIssuer).toBe(getIssuer);
+    expect(packageExports.getExpirationDate).toBe(getExpirationDate);
+    expect(packageExports.getCredentialSubject).toBe(getCredentialSubject);
+    expect(packageExports.isRdfjsVerifiableCredential).toBe(
+      isRdfjsVerifiableCredential,
+    );
+    expect(packageExports.isRdfjsVerifiablePresentation).toBe(
+      isRdfjsVerifiablePresentation,
+    );
   });
 });

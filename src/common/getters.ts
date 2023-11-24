@@ -18,15 +18,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-import type {
-  Literal,
-  DatasetCore,
-  NamedNode,
-  Term,
-  BlankNode,
-} from "@rdfjs/types";
+import type { Literal, DatasetCore, NamedNode, BlankNode } from "@rdfjs/types";
 import { DataFactory } from "n3";
-import { getSingleObject } from "./rdfjs";
+import { getSingleObject, lenientSingle } from "./rdfjs";
 import { cred, xsd, dc, sec, rdf } from "./constants";
 import { isUrl } from "./common";
 
@@ -126,39 +120,38 @@ export function getIssuanceDate(vc: DatasetWithId): Date {
 }
 
 /**
- * Get the expiration date of an Access Grant/Request.
+ * Get the expiration date of a Verifiable Credential.
  *
  * @example
  *
  * ```
- * const date = getExpirationDate(accessGrant);
+ * const date = getExpirationDate(vc);
  * ```
  *
- * @param vc The Access Grant/Request
+ * @param vc The Verifiable Credential
  * @returns The expiration date
  */
 export function getExpirationDate(vc: DatasetWithId): Date | undefined {
-  const expirationDate = getLenin(
-    vc,
-    namedNode(getId(vc)),
-    cred.expirationDate,
-    "Literal",
-    false,
-  );
-  return expirationDate && wrapDate(expirationDate);
-}
+  const res = [
+    ...vc.match(
+      namedNode(getId(vc)),
+      cred.expirationDate,
+      undefined,
+      defaultGraph(),
+    ),
+  ];
 
-/**
- * @internal
- */
-function lenientSingle<T extends Term>(
-  dataset: DatasetCore,
-  termTypes: T["termType"][] = ["NamedNode", "BlankNode"],
-): T | undefined {
-  const array = [...dataset];
-  return array.length === 1 && termTypes.includes(array[0].object.termType)
-    ? (array[0].object as T)
-    : undefined;
+  if (res.length === 0) return undefined;
+
+  if (res.length !== 1)
+    throw new Error(`Expected 0 or 1 expiration date. Found ${res.length}.`);
+
+  if (res[0].object.termType !== "Literal")
+    throw new Error(
+      `Expected expiration date to be a Literal. Found [${res[0].object.value}] of type [${res[0].object.termType}].`,
+    );
+
+  return wrapDate(res[0].object);
 }
 
 /**

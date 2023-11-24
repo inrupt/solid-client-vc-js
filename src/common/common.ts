@@ -157,6 +157,7 @@ export function normalizeVp<T>(vpJson: T): T {
  * schema we expect.
  * @param data The JSON-LD payload
  * @returns true is the payload matches our expectation.
+ * @deprecated Use isRdfjsVerifiableCredential instead
  */
 export function isVerifiableCredential(
   data: unknown | VerifiableCredentialBase,
@@ -213,6 +214,9 @@ export function isUrl(url: string): boolean {
   }
 }
 
+/**
+ * @deprecated Use isRdfjsVerifiableCredential instead
+ */
 export function isVerifiablePresentation(
   vp: unknown | VerifiablePresentation,
 ): vp is VerifiablePresentation {

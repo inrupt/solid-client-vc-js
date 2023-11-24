@@ -44,4 +44,7 @@ export {
   getIssuanceDate,
   getIssuer,
   getCredentialSubject,
+  getExpirationDate,
+  isVerifiableCredential as isRdfjsVerifiableCredential,
+  isVerifiablePresentation as isRdfjsVerifiablePresentation,
 } from "./common/getters";
