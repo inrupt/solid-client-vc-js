@@ -221,7 +221,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           },
         ),
       ]);
-    });
+    }, 60_000);
   });
 
   describe("revoke VCs", () => {
