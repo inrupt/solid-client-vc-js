@@ -32,6 +32,7 @@ import {
   getCredentialSubject,
   getVerifiableCredentialAllFromShape,
   getVerifiableCredentialApiConfiguration,
+  getVerifiableCredential,
   issueVerifiableCredential,
   revokeVerifiableCredential,
 } from "../../src/index";
@@ -267,26 +268,36 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         vcSubject,
       );
 
-      const allDeprecated = await getVerifiableCredentialAllFromShape(
-        derivationService,
-        {
-          "@context": [
-            "https://www.w3.org/2018/credentials/v1",
-            "https://schema.inrupt.com/credentials/v1.jsonld",
-          ],
-          type: ["VerifiableCredential"],
-          credentialSubject: {
-            id: vcSubject,
-            hasConsent: {
-              forPurpose: purpose,
-            },
+      const matcher = {
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://schema.inrupt.com/credentials/v1.jsonld",
+        ],
+        type: ["VerifiableCredential"],
+        credentialSubject: {
+          id: vcSubject,
+          hasConsent: {
+            forPurpose: purpose,
           },
         },
+      }
+
+      const [allDeprecated, allNew] = await Promise.all([getVerifiableCredentialAllFromShape(
+        derivationService,
+        matcher,
         {
           fetch: session.fetch,
           includeExpiredVc: false,
         },
-      );
+      ), getVerifiableCredentialAllFromShape(
+        derivationService,
+        matcher,
+        {
+          fetch: session.fetch,
+          includeExpiredVc: false,
+          returnLegacyJsonld: false,
+        },
+      )]);
 
       expect(allDeprecated).toHaveLength(2);
 
@@ -299,28 +310,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
       expect(getCredentialSubject(allDeprecated[1]).value).toBe(
         vcSubject,
       );
-
-      const allNew = await getVerifiableCredentialAllFromShape(
-        derivationService,
-        {
-          "@context": [
-            "https://www.w3.org/2018/credentials/v1",
-            "https://schema.inrupt.com/credentials/v1.jsonld",
-          ],
-          type: ["VerifiableCredential"],
-          credentialSubject: {
-            id: vcSubject,
-            hasConsent: {
-              forPurpose: purpose,
-            },
-          },
-        },
-        {
-          fetch: session.fetch,
-          includeExpiredVc: false,
-          returnLegacyJsonld: false,
-        },
-      )
 
       expect(allNew).toHaveLength(2);
       
@@ -336,7 +325,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         vcSubject,
       );
 
-
       await expect(
         getVerifiableCredentialAllFromShape(derivationService, credential1, {
           fetch: session.fetch,
@@ -362,6 +350,23 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           returnLegacyJsonld: false,
         }),
       ).resolves.toHaveLength(1);
+
+      const [credential1FetchedLegacy, credential1Fetched] = await Promise.all([getVerifiableCredential(credential1.id, {
+        fetch: session.fetch,
+      }), getVerifiableCredential(credential1.id, {
+        fetch: session.fetch,
+        returnLegacyJsonld: false
+      })]);
+
+      // @ts-expect-error the credentialSubject property should not exist if legacy json is disabled
+      expect(credential1Fetched.credentialSubject).toBe(undefined);
+      expect(getCredentialSubject(credential1Fetched).value).toBe(
+        vcSubject,
+      );
+      expect(credential1FetchedLegacy.credentialSubject.id).toBe(vcSubject);
+      expect(getCredentialSubject(credential1FetchedLegacy).value).toBe(
+        vcSubject,
+      );
 
       await Promise.all([
         revokeVerifiableCredential(statusService, credential1.id, {
