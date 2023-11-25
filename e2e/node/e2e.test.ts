@@ -27,7 +27,7 @@ import {
   getNodeTestingEnvironment,
 } from "@inrupt/internal-test-env";
 import type { Session } from "@inrupt/solid-client-authn-node";
-import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
+import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
 import {
   getVerifiableCredentialAllFromShape,
   getVerifiableCredentialApiConfiguration,
@@ -42,7 +42,10 @@ const validCredentialClaims = {
   ],
   type: ["SolidAccessRequest"],
 };
-const validSubjectClaims = (options?: { resource?: string }) => ({
+const validSubjectClaims = (options?: {
+  resource?: string;
+  purpose?: string;
+}) => ({
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
     "https://schema.inrupt.com/credentials/v1.jsonld",
@@ -50,7 +53,7 @@ const validSubjectClaims = (options?: { resource?: string }) => ({
   hasConsent: {
     mode: "Read",
     forPersonalData: options?.resource ?? "https://example.org/ns/someData",
-    forPurpose: "https://example.org/ns/somePurpose",
+    forPurpose: options?.purpose ?? "https://example.org/ns/somePurpose",
     hasStatus: "ConsentStatusRequested",
     isConsentForDataSubject: "https://some.webid/resource-owner",
   },
@@ -89,7 +92,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
   let statusService: string;
   let verifierService: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     session = await getAuthenticatedSession(env);
 
     if (!session.info.webId) {
@@ -121,7 +124,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
     verifierService = vcConfiguration.verifierService;
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     // Making sure the session is logged out prevents tests from hanging due
     // to the callback refreshing the access token.
     await session.logout();
@@ -162,10 +165,14 @@ describe("End-to-end verifiable credentials tests for environment", () => {
 
   describe("lookup VCs", () => {
     it("returns all VC issued matching a given shape", async () => {
+      const purpose = `http://example.org/some/purpose/${Date.now()}`;
       const [credential1, credential2] = await Promise.all([
         issueVerifiableCredential(
           issuerService,
-          validSubjectClaims({ resource: "https://example.org/some-resource" }),
+          validSubjectClaims({
+            resource: "https://example.org/some-resource",
+            purpose,
+          }),
           validCredentialClaims,
           {
             fetch: session.fetch,
@@ -175,6 +182,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           issuerService,
           validSubjectClaims({
             resource: "https://example.org/another-resource",
+            purpose,
           }),
           validCredentialClaims,
           {
@@ -192,12 +200,19 @@ describe("End-to-end verifiable credentials tests for environment", () => {
               "https://schema.inrupt.com/credentials/v1.jsonld",
             ],
             type: ["VerifiableCredential"],
+            credentialSubject: {
+              id: vcSubject,
+              hasConsent: {
+                forPurpose: purpose,
+              },
+            },
           },
           {
             fetch: session.fetch,
+            includeExpiredVc: false,
           },
         ),
-      ).resolves.not.toHaveLength(0);
+      ).resolves.toHaveLength(2);
 
       await expect(
         getVerifiableCredentialAllFromShape(derivationService, credential1, {
