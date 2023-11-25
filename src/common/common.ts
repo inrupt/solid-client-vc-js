@@ -31,52 +31,88 @@ import {
   getThingAll,
 } from "@inrupt/solid-client";
 import { fetch as uniFetch } from "@inrupt/universal-fetch";
-import type { DatasetCore } from "@rdfjs/types";
+import type { DatasetCore, Quad } from "@rdfjs/types";
+import { DataFactory } from "n3";
 import type { ParseOptions } from "../parser/jsonld";
 import { jsonLdToStore } from "../parser/jsonld";
+import { DatasetWithId } from "./getters";
+import { isVerifiableCredential as isRdfjsVerifiableCredential } from "../common/getters";
+const { namedNode } = DataFactory;
 
 export type Iri = string;
 /**
  * A JSON-LD document is a JSON document including an @context entry. The other
  * fields may contain any value.
+ * @deprecated Use RDFJS API instead
  */
 export type JsonLd = {
   "@context": unknown;
   [property: string]: unknown;
 };
 
+/**
+ * @deprecated Use RDFJS API instead
+ */
 type Proof = {
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   type: string;
   /**
    * ISO-8601 formatted date
    */
   created: string;
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   verificationMethod: string;
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   proofPurpose: string;
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   proofValue: string;
 };
 
 /**
  * A Verifiable Credential JSON-LD document, as specified by the W3C VC HTTP API.
+ * @deprecated Use RDFJS API instead
  */
 export type VerifiableCredentialBase = JsonLd & {
   id: Iri;
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   type: Iri[];
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   issuer: Iri;
   /**
    * ISO-8601 formatted date
+   * @deprecated Use RDFJS API instead
    */
   issuanceDate: string;
   /**
    * Entity the credential makes claim about.
+   * @deprecated Use RDFJS API instead
    */
   credentialSubject: {
+    /**
+     * @deprecated Use RDFJS API instead
+     */
     id: Iri;
     /**
      * The claim set is open, as any RDF graph is suitable for a set of claims.
+     * @deprecated Use RDFJS API instead
      */
     [property: string]: unknown;
   };
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   proof: Proof;
 };
 
@@ -411,10 +447,24 @@ export async function getVerifiableCredentialApiConfiguration(
 /**
  * @hidden
  */
-export async function verifiableCredentialToDataset<T extends JsonLd>(
+export async function verifiableCredentialToDataset<T extends Object & { id: string }>(
   vc: T,
-  options?: ParseOptions,
-): Promise<T & DatasetCore> {
+  options?: ParseOptions & {
+    includeVcProperties: true
+  },
+): Promise<T & DatasetWithId>
+export async function verifiableCredentialToDataset<T extends Object & { id: string }>(
+  vc: T,
+  options?: ParseOptions & {
+    includeVcProperties?: boolean
+  },
+): Promise<DatasetWithId>
+export async function verifiableCredentialToDataset<T extends Object & { id: string }>(
+  vc: T,
+  options?: ParseOptions & {
+    includeVcProperties?: boolean
+  },
+): Promise<DatasetWithId> {
   let store: DatasetCore;
   try {
     store = await jsonLdToStore(vc, options);
@@ -424,20 +474,23 @@ export async function verifiableCredentialToDataset<T extends JsonLd>(
     );
   }
 
+  if (typeof vc.id !== 'string') {
+    throw new Error(`Expected vc.id to be a string, found [${vc.id}] of type [${typeof vc.id}]`)
+  }
+
   return Object.freeze({
-    ...vc,
+    id: vc.id,
+    ...(options?.includeVcProperties && vc),
     // Make this a DatasetCore without polluting the object with
     // all of the properties present in the N3.Store
     [Symbol.iterator]() {
       return store[Symbol.iterator]();
     },
-    has(quad) {
+    has(quad: Quad) {
       return store.has(quad);
     },
-    match(subject, predicate, object, graph) {
-      // We need to cast to DatasetCore because the N3.Store
-      // type uses an internal type for Term rather than the @rdfjs/types Term
-      return store.match(subject, predicate, object, graph);
+    match(...args: Parameters<DatasetCore['match']>) {
+      return store.match(...args);
     },
     add() {
       throw new Error("Cannot mutate this dataset");
@@ -462,6 +515,26 @@ export async function verifiableCredentialToDataset<T extends JsonLd>(
  * @param vcUrl The URL of the VC.
  * @param options Options to customize the function behavior.
  * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: ParseOptions & {
+    fetch?: typeof fetch;
+    returnLegacyJsonld?: true;
+  },
+): Promise<VerifiableCredential>
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
  * @returns The dereferenced VC if valid. Throws otherwise.
  * @since 0.4.0
  */
@@ -469,8 +542,16 @@ export async function getVerifiableCredential(
   vcUrl: UrlString,
   options?: ParseOptions & {
     fetch?: typeof fetch;
+    returnLegacyJsonld?: boolean
   },
-): Promise<VerifiableCredential> {
+): Promise<DatasetWithId>
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: ParseOptions & {
+    fetch?: typeof fetch;
+    returnLegacyJsonld?: boolean
+  },
+): Promise<DatasetWithId> {
   const authFetch = options?.fetch ?? uniFetch;
   const response = await authFetch(vcUrl);
 
@@ -480,18 +561,80 @@ export async function getVerifiableCredential(
     );
   }
 
+  return internal_getVerifiableCredentialFromResponse(vcUrl, response, options)
+}
+
+export async function internal_getVerifiableCredentialFromResponse(
+  vcUrl: UrlString | undefined,
+  response: Response,
+  options?: ParseOptions & {
+    returnLegacyJsonld?: true
+  },
+): Promise<VerifiableCredential>
+export async function internal_getVerifiableCredentialFromResponse(
+  vcUrl: UrlString | undefined,
+  response: Response,
+  options?: ParseOptions & {
+    returnLegacyJsonld?: boolean
+  },
+): Promise<DatasetWithId>
+export async function internal_getVerifiableCredentialFromResponse(
+  vcUrl: UrlString | undefined,
+  response: Response,
+  options?: ParseOptions & {
+    returnLegacyJsonld?: boolean
+  },
+): Promise<DatasetWithId> {
+  const returnLegacy = options?.returnLegacyJsonld !== false;
   let vc: unknown | VerifiableCredentialBase;
   try {
-    vc = normalizeVc(await response.json());
+    vc = await response.json();
+
+    if (typeof vcUrl !== 'string') {
+      if (!isUnknownObject(vc) || !('id' in vc) || typeof vc.id !== 'string') {
+        throw new Error("Cannot establish id of verifiable credential");
+      }
+      vcUrl = vc.id;
+    }
+
+    if (returnLegacy) {
+      vc = normalizeVc(vc);
+    }
   } catch (e) {
     throw new Error(
       `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`,
     );
   }
-  if (!isVerifiableCredential(vc)) {
+
+  if (returnLegacy) {
+    if (!isVerifiableCredential(vc)) {
+      throw new Error(
+        `The value received from [${vcUrl}] is not a Verifiable Credential`,
+      );
+    }
+    return verifiableCredentialToDataset(vc, {
+      allowContextFetching: options?.allowContextFetching,
+      baseIRI: options?.baseIRI,
+      contexts: options?.contexts,
+      includeVcProperties: true,
+    });
+  }
+
+  if (typeof vc !== 'object' || vc === null || !('id' in vc) || typeof vc.id !== 'string') {
+    throw new Error("Verifiable credential is not an object, or does not have an id");
+  }
+
+  const parsedVc = await verifiableCredentialToDataset(vc as { id: string }, {
+    allowContextFetching: options.allowContextFetching,
+    baseIRI: options.baseIRI,
+    contexts: options.contexts,
+    includeVcProperties: false,
+  });
+
+  if (!isRdfjsVerifiableCredential(parsedVc, namedNode(vcUrl))) {
     throw new Error(
       `The value received from [${vcUrl}] is not a Verifiable Credential`,
     );
   }
-  return verifiableCredentialToDataset(vc, options);
+  return parsedVc;
 }

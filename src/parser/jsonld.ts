@@ -193,6 +193,6 @@ export async function jsonLdStringToStore(
  * @param options An optional fetch function for dereferencing remote contexts
  * @returns A store containing the Quads in the JSON-LD response
  */
-export function jsonLdToStore(data: JsonLd, options?: ParseOptions) {
+export function jsonLdToStore(data: unknown, options?: ParseOptions) {
   return jsonLdStringToStore(JSON.stringify(data), options);
 }

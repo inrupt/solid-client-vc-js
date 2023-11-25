@@ -26,6 +26,7 @@ import { verifiableCredentialToDataset } from "./common";
 import { cred, xsd } from "./constants";
 import { mockDefaultCredential } from "./common.mock";
 import {
+  DatasetWithId,
   getCredentialSubject,
   getExpirationDate,
   getId,
@@ -37,19 +38,30 @@ const { quad, namedNode, blankNode, literal } = DataFactory;
 
 describe("getters", () => {
   let defaultCredential: VerifiableCredential;
+  let defaultCredentialNoProperties: DatasetWithId;
 
   beforeAll(async () => {
     defaultCredential = await verifiableCredentialToDataset(
       mockDefaultCredential(),
+      {
+        includeVcProperties: true
+      }
+    );
+    defaultCredentialNoProperties = await verifiableCredentialToDataset(
+      mockDefaultCredential()
     );
   });
 
   it("getId", () => {
     expect(getId(defaultCredential)).toBe(defaultCredential.id);
+    expect(getId(defaultCredentialNoProperties)).toBe(defaultCredential.id);
   });
 
   it("getIssuanceDate", () => {
     expect(getIssuanceDate(defaultCredential)).toStrictEqual(
+      new Date(defaultCredential.issuanceDate),
+    );
+    expect(getIssuanceDate(defaultCredentialNoProperties)).toStrictEqual(
       new Date(defaultCredential.issuanceDate),
     );
   });
@@ -117,6 +129,7 @@ describe("getters", () => {
   describe("getExpirationDate", () => {
     it("returns undefined if there is no expiration date", () => {
       expect(getExpirationDate(defaultCredential)).toBeUndefined();
+      expect(getExpirationDate(defaultCredentialNoProperties)).toBeUndefined();
     });
 
     it("gets the access expiration date", async () => {
@@ -189,6 +202,9 @@ describe("getters", () => {
     expect(getIssuer(defaultCredential)).toStrictEqual(
       defaultCredential.issuer,
     );
+    expect(getIssuer(defaultCredentialNoProperties)).toStrictEqual(
+      defaultCredential.issuer,
+    );
   });
 
   it("getCredentialSubject", () => {
@@ -196,6 +212,11 @@ describe("getters", () => {
       defaultCredential.credentialSubject.id,
     );
     expect(getCredentialSubject(defaultCredential).termType).toBe("NamedNode");
+
+    expect(getCredentialSubject(defaultCredentialNoProperties).value).toStrictEqual(
+      defaultCredential.credentialSubject.id,
+    );
+    expect(getCredentialSubject(defaultCredentialNoProperties).termType).toBe("NamedNode");
   });
 
   it("getCredentialSubject errors if there are multiple credential subjects", () => {

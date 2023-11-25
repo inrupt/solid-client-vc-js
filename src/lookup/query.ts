@@ -32,6 +32,7 @@ import {
   verifiableCredentialToDataset,
 } from "../common/common";
 import type { ParseOptions } from "../parser/jsonld";
+import { DatasetWithId } from "../common/getters";
 
 /**
  * Based on https://w3c-ccg.github.io/vp-request-spec/#query-by-example.
@@ -72,6 +73,18 @@ interface ParsedVerifiablePresentation extends VerifiablePresentation {
 }
 
 /**
+ * @deprecated Use RDFJS API
+ */
+export async function query(
+  queryEndpoint: Iri,
+  vpRequest: VerifiablePresentationRequest,
+  options?: ParseOptions &
+    Partial<{
+      fetch: typeof fallbackFetch;
+      returnLegacyJsonld?: false;
+    }>,
+): Promise<ParsedVerifiablePresentation>
+/**
  * Send a Verifiable Presentation Request to a query endpoint in order to retrieve
  * all Verifiable Credentials matching the query, wrapped in a single Presentation.
  * 
@@ -109,8 +122,18 @@ export async function query(
   options?: ParseOptions &
     Partial<{
       fetch: typeof fallbackFetch;
+      returnLegacyJsonld: false;
     }>,
-): Promise<ParsedVerifiablePresentation> {
+): Promise<DatasetWithId>
+export async function query(
+  queryEndpoint: Iri,
+  vpRequest: VerifiablePresentationRequest,
+  options?: ParseOptions &
+    Partial<{
+      fetch: typeof fallbackFetch;
+      returnLegacyJsonld?: boolean;
+    }>,
+): Promise<ParsedVerifiablePresentation | DatasetWithId> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;
@@ -128,6 +151,17 @@ export async function query(
     );
   }
 
+  if (options?.returnLegacyJsonld === false) {
+    try {
+      return verifiableCredentialToDataset(await response.json());
+    } catch (e) {
+      throw new Error(
+        `The holder [${queryEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`,
+      );
+    }
+  }
+
+  // All code below here should is deprecated 
   let data;
   try {
     data = normalizeVp(await response.json());
@@ -156,7 +190,10 @@ export async function query(
         ...(await Promise.all(
           data.verifiableCredential
             .slice(i, i + 100)
-            .map((vc) => verifiableCredentialToDataset(vc, options)),
+            .map((vc) => verifiableCredentialToDataset(vc, {
+              ...options,
+              includeVcProperties: true
+            })),
         )),
       );
     }
