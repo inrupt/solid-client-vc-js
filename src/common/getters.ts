@@ -18,11 +18,16 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-import type { Literal, DatasetCore, NamedNode, BlankNode, Quad } from "@rdfjs/types";
+import type {
+  BlankNode,
+  DatasetCore,
+  Literal,
+  NamedNode
+} from "@rdfjs/types";
 import { DataFactory } from "n3";
-import { getSingleObject, lenientSingle } from "./rdfjs";
-import { cred, xsd, dc, sec, rdf } from "./constants";
 import { isUrl } from "./common";
+import { cred, dc, rdf, sec, xsd } from "./constants";
+import { getSingleObject, lenientSingle } from "./rdfjs";
 
 const { namedNode, defaultGraph, quad } = DataFactory;
 
@@ -222,7 +227,7 @@ export function isVerifiableCredential(
 
 export function isVerifiablePresentation(
   dataset: DatasetCore,
-  id: NamedNode,
+  id: NamedNode | BlankNode,
 ): boolean {
   for (const { object } of dataset.match(
     id,

@@ -35,8 +35,9 @@ import type { DatasetCore, Quad } from "@rdfjs/types";
 import { DataFactory } from "n3";
 import type { ParseOptions } from "../parser/jsonld";
 import { jsonLdToStore } from "../parser/jsonld";
-import { DatasetWithId } from "./getters";
-import { isVerifiableCredential as isRdfjsVerifiableCredential } from "../common/getters";
+import { isVerifiableCredential as isRdfjsVerifiableCredential } from "./getters";
+import type { DatasetWithId } from "./getters";
+
 const { namedNode } = DataFactory;
 
 export type Iri = string;
@@ -447,22 +448,28 @@ export async function getVerifiableCredentialApiConfiguration(
 /**
  * @hidden
  */
-export async function verifiableCredentialToDataset<T extends Object & { id: string }>(
+export async function verifiableCredentialToDataset<
+  T extends Object & { id?: string },
+>(
   vc: T,
   options?: ParseOptions & {
-    includeVcProperties: true
+    includeVcProperties: true;
   },
-): Promise<T & DatasetWithId>
-export async function verifiableCredentialToDataset<T extends Object & { id: string }>(
+): Promise<T & DatasetWithId>;
+export async function verifiableCredentialToDataset<
+  T extends Object & { id?: string },
+>(
   vc: T,
   options?: ParseOptions & {
-    includeVcProperties?: boolean
+    includeVcProperties?: boolean;
   },
-): Promise<DatasetWithId>
-export async function verifiableCredentialToDataset<T extends Object & { id: string }>(
+): Promise<DatasetWithId>;
+export async function verifiableCredentialToDataset<
+  T extends Object & { id: string },
+>(
   vc: T,
   options?: ParseOptions & {
-    includeVcProperties?: boolean
+    includeVcProperties?: boolean;
   },
 ): Promise<DatasetWithId> {
   let store: DatasetCore;
@@ -474,13 +481,28 @@ export async function verifiableCredentialToDataset<T extends Object & { id: str
     );
   }
 
-  if (typeof vc.id !== 'string') {
-    throw new Error(`Expected vc.id to be a string, found [${vc.id}] of type [${typeof vc.id}]`)
+  if (typeof vc.id !== "string") {
+    throw new Error(
+      `Expected vc.id to be a string, found [${
+        vc.id
+      }] of type [${typeof vc.id}] on ${JSON.stringify(vc, null, 2)}`,
+    );
   }
 
+  return internal_applyDataset(vc, store, options)
+}
+
+export function internal_applyDataset<T extends Object & { id: string }>(
+vc: T,
+store: DatasetCore,
+options?: ParseOptions & {
+  includeVcProperties?: boolean;
+  additionalProperties?: Record<string, unknown>;
+}): DatasetWithId {
   return Object.freeze({
     id: vc.id,
     ...(options?.includeVcProperties && vc),
+    ...options?.additionalProperties,
     // Make this a DatasetCore without polluting the object with
     // all of the properties present in the N3.Store
     [Symbol.iterator]() {
@@ -489,7 +511,7 @@ export async function verifiableCredentialToDataset<T extends Object & { id: str
     has(quad: Quad) {
       return store.has(quad);
     },
-    match(...args: Parameters<DatasetCore['match']>) {
+    match(...args: Parameters<DatasetCore["match"]>) {
       return store.match(...args);
     },
     add() {
@@ -527,7 +549,7 @@ export async function getVerifiableCredential(
     fetch?: typeof fetch;
     returnLegacyJsonld?: true;
   },
-): Promise<VerifiableCredential>
+): Promise<VerifiableCredential>;
 /**
  * Dereference a VC URL, and verify that the resulting content is valid.
  *
@@ -542,14 +564,14 @@ export async function getVerifiableCredential(
   vcUrl: UrlString,
   options?: ParseOptions & {
     fetch?: typeof fetch;
-    returnLegacyJsonld?: boolean
+    returnLegacyJsonld?: boolean;
   },
-): Promise<DatasetWithId>
+): Promise<DatasetWithId>;
 export async function getVerifiableCredential(
   vcUrl: UrlString,
   options?: ParseOptions & {
     fetch?: typeof fetch;
-    returnLegacyJsonld?: boolean
+    returnLegacyJsonld?: boolean;
   },
 ): Promise<DatasetWithId> {
   const authFetch = options?.fetch ?? uniFetch;
@@ -561,28 +583,28 @@ export async function getVerifiableCredential(
     );
   }
 
-  return internal_getVerifiableCredentialFromResponse(vcUrl, response, options)
+  return internal_getVerifiableCredentialFromResponse(vcUrl, response, options);
 }
 
 export async function internal_getVerifiableCredentialFromResponse(
   vcUrl: UrlString | undefined,
   response: Response,
   options?: ParseOptions & {
-    returnLegacyJsonld?: true
+    returnLegacyJsonld?: true;
   },
-): Promise<VerifiableCredential>
+): Promise<VerifiableCredential>;
 export async function internal_getVerifiableCredentialFromResponse(
   vcUrl: UrlString | undefined,
   response: Response,
   options?: ParseOptions & {
-    returnLegacyJsonld?: boolean
+    returnLegacyJsonld?: boolean;
   },
-): Promise<DatasetWithId>
+): Promise<DatasetWithId>;
 export async function internal_getVerifiableCredentialFromResponse(
   vcUrl: UrlString | undefined,
   response: Response,
   options?: ParseOptions & {
-    returnLegacyJsonld?: boolean
+    returnLegacyJsonld?: boolean;
   },
 ): Promise<DatasetWithId> {
   const returnLegacy = options?.returnLegacyJsonld !== false;
@@ -590,8 +612,8 @@ export async function internal_getVerifiableCredentialFromResponse(
   try {
     vc = await response.json();
 
-    if (typeof vcUrl !== 'string') {
-      if (!isUnknownObject(vc) || !('id' in vc) || typeof vc.id !== 'string') {
+    if (typeof vcUrl !== "string") {
+      if (!isUnknownObject(vc) || !("id" in vc) || typeof vc.id !== "string") {
         throw new Error("Cannot establish id of verifiable credential");
       }
       vcUrl = vc.id;
@@ -620,8 +642,15 @@ export async function internal_getVerifiableCredentialFromResponse(
     });
   }
 
-  if (typeof vc !== 'object' || vc === null || !('id' in vc) || typeof vc.id !== 'string') {
-    throw new Error("Verifiable credential is not an object, or does not have an id");
+  if (
+    typeof vc !== "object" ||
+    vc === null ||
+    !("id" in vc) ||
+    typeof vc.id !== "string"
+  ) {
+    throw new Error(
+      "Verifiable credential is not an object, or does not have an id",
+    );
   }
 
   const parsedVc = await verifiableCredentialToDataset(vc as { id: string }, {

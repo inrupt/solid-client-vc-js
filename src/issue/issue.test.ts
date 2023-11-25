@@ -106,7 +106,9 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some.context"] },
         { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
       ),
-    ).rejects.toThrow("Parsing the Verifiable Credential [undefined] as JSON failed: Error: Cannot establish id of verifiable credential");
+    ).rejects.toThrow(
+      "Parsing the Verifiable Credential [undefined] as JSON failed: Error: Cannot establish id of verifiable credential",
+    );
   });
 
   it("returns the VC issued by the target issuer", async () => {
@@ -390,7 +392,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("normalizes the issued VC", async () => {
-    const mockedVc = mockDefaultCredential('http://example.org/my/sample/id');
+    const mockedVc = mockDefaultCredential("http://example.org/my/sample/id");
     // Force unexpected VC shapes to check normalization.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

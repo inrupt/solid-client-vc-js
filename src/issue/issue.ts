@@ -33,7 +33,7 @@ import {
   internal_getVerifiableCredentialFromResponse,
 } from "../common/common";
 import type { ParseOptions } from "../parser/jsonld";
-import { DatasetWithId } from "../common/getters";
+import type { DatasetWithId } from "../common/getters";
 
 type OptionsType = {
   fetch?: typeof fallbackFetch;
@@ -52,7 +52,7 @@ async function internal_issueVerifiableCredential(
     fetch?: typeof fallbackFetch;
     returnLegacyJsonld?: true;
   } & ParseOptions,
-): Promise<VerifiableCredential>
+): Promise<VerifiableCredential>;
 async function internal_issueVerifiableCredential(
   issuerEndpoint: Iri,
   subjectClaims: JsonLd,
@@ -61,7 +61,7 @@ async function internal_issueVerifiableCredential(
     fetch?: typeof fallbackFetch;
     returnLegacyJsonld?: boolean;
   } & ParseOptions,
-): Promise<DatasetWithId>
+): Promise<DatasetWithId>;
 async function internal_issueVerifiableCredential(
   issuerEndpoint: Iri,
   subjectClaims: JsonLd,
@@ -125,7 +125,11 @@ async function internal_issueVerifiableCredential(
     );
   }
 
-  return internal_getVerifiableCredentialFromResponse(undefined, response, options);
+  return internal_getVerifiableCredentialFromResponse(
+    undefined,
+    response,
+    options,
+  );
 }
 
 /**
@@ -136,7 +140,7 @@ async function internal_issueVerifiableCredential(
  * @param subjectId The identifier of the VC claims' subject.
  * @param subjectClaims Claims about the subject that will be attested by the VC.
  * @param credentialClaims Claims about the credential itself, rather than its subject, e.g. credential type or expiration.
- * @param options 
+ * @param options
  * - options.fetch: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * This can be typically used for authentication. Note that if it is omitted, and
  * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
@@ -164,7 +168,7 @@ export async function issueVerifiableCredential(
  * @param subjectId The identifier of the VC claims' subject.
  * @param subjectClaims Claims about the subject that will be attested by the VC.
  * @param credentialClaims Claims about the credential itself, rather than its subject, e.g. credential type or expiration.
- * @param options 
+ * @param options
  * - options.fetch: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * This can be typically used for authentication. Note that if it is omitted, and
  * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session

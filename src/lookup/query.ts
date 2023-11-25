@@ -20,6 +20,7 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
+import { DataFactory } from "n3";
 import type {
   Iri,
   VerifiableCredential,
@@ -27,12 +28,17 @@ import type {
   VerifiablePresentation,
 } from "../common/common";
 import {
+  internal_applyDataset,
   isVerifiablePresentation,
   normalizeVp,
   verifiableCredentialToDataset,
 } from "../common/common";
-import type { ParseOptions } from "../parser/jsonld";
-import { DatasetWithId } from "../common/getters";
+import { jsonLdToStore, type ParseOptions } from "../parser/jsonld";
+import type { DatasetWithId } from "../common/getters";
+import { isRdfjsVerifiableCredential, isRdfjsVerifiablePresentation } from "..";
+import { cred, rdf } from "../common/constants";
+
+const { namedNode, defaultGraph } = DataFactory;
 
 /**
  * Based on https://w3c-ccg.github.io/vp-request-spec/#query-by-example.
@@ -81,9 +87,9 @@ export async function query(
   options?: ParseOptions &
     Partial<{
       fetch: typeof fallbackFetch;
-      returnLegacyJsonld?: false;
+      returnLegacyJsonld?: true;
     }>,
-): Promise<ParsedVerifiablePresentation>
+): Promise<ParsedVerifiablePresentation>;
 /**
  * Send a Verifiable Presentation Request to a query endpoint in order to retrieve
  * all Verifiable Credentials matching the query, wrapped in a single Presentation.
@@ -124,7 +130,7 @@ export async function query(
       fetch: typeof fallbackFetch;
       returnLegacyJsonld: false;
     }>,
-): Promise<DatasetWithId>
+): Promise<{ verifiableCredential?: DatasetWithId[] }>;
 export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
@@ -133,7 +139,10 @@ export async function query(
       fetch: typeof fallbackFetch;
       returnLegacyJsonld?: boolean;
     }>,
-): Promise<ParsedVerifiablePresentation | DatasetWithId> {
+): Promise<
+  | ParsedVerifiablePresentation
+  | { verifiableCredential?: DatasetWithId[] }
+> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;
@@ -151,26 +160,77 @@ export async function query(
     );
   }
 
-  if (options?.returnLegacyJsonld === false) {
-    try {
-      return verifiableCredentialToDataset(await response.json());
-    } catch (e) {
-      throw new Error(
-        `The holder [${queryEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`,
-      );
-    }
-  }
+  // Return to this approach once https://github.com/rubensworks/jsonld-streaming-parser.js/issues/122 is resolved
+  // if (options?.returnLegacyJsonld === false) {
+  //   try {
+  //     const vpJson = await response.json();
+  //     console.log(JSON.stringify(vpJson, null, 2), null, 2)
+  //     const store = await jsonLdToStore(vpJson);
+  //     const vp = [...store.match(null, rdf.type, cred.VerifiablePresentation, defaultGraph())]
 
-  // All code below here should is deprecated 
+  //     if (vp.length !== 1) {
+  //       throw new Error(`Expected exactly 1 Verifiable Presentation. Found ${vp.length}.`)
+  //     }
+
+  //     const [{ subject }] = vp;
+
+  //     if (subject.termType !== 'BlankNode' && subject.termType !== 'NamedNode') {
+  //       throw new Error(`Expected VP to be a Blank Node or Named Node. Found [${subject.value}] of type [${subject.termType}].`)
+  //     }
+
+  //     if (!isRdfjsVerifiablePresentation(store, subject)) {
+  //       throw new Error(
+  //         `The holder [${queryEndpoint}] did not return a Verifiable Presentation: ${JSON.stringify(
+  //           vpJson, null, 2
+  //         )}`,
+  //       );
+  //     }
+      
+  //     // In the future we want to get rid of this and get the verifiableCredential ids from the store
+  //     // the reason we need this for now is because we need the verifiableCredential JSON object for
+  //     // the toJSON method.
+  //     const verifiableCredential: DatasetWithId[] = vpJson.verifiableCredential.map((vc: unknown) => {
+  //       if (vc === null || typeof vc !== 'object') {
+  //         throw new Error(`Verifiable Credential entry is not an object`);
+  //       }
+
+  //       if (!('id' in vc) || typeof vc.id !== 'string') {
+  //         throw new Error(`Verifiable credential is missing a string id`);
+  //       }
+
+  //       const c = internal_applyDataset(vc as { id: string }, store, options)
+        
+  //       if (!isRdfjsVerifiableCredential(store, namedNode(c.id))) {
+  //         throw new Error(`[${c.id}] is not a valid Verifiable Credential`);
+  //       }
+  //     });
+  //     return internal_applyDataset(vpJson, store, {
+  //       ...options,
+  //       additionalProperties: {
+  //         verifiableCredential
+  //       }
+  //     });
+  //   } catch (e) {
+  //     throw new Error(
+  //       `The holder [${queryEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`,
+  //     );
+  //   }
+  // }
+
+  // All code below here should is deprecated
   let data;
   try {
-    data = normalizeVp(await response.json());
+    data = await response.json()
+
+    if (options?.returnLegacyJsonld !== false) {
+      data = normalizeVp(data);
+    }
   } catch (e) {
     throw new Error(
       `The holder [${queryEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`,
     );
   }
-  if (!isVerifiablePresentation(data)) {
+  if (options?.returnLegacyJsonld !== false && !isVerifiablePresentation(data)) {
     throw new Error(
       `The holder [${queryEndpoint}] did not return a Verifiable Presentation: ${JSON.stringify(
         data,
@@ -178,22 +238,32 @@ export async function query(
     );
   }
 
-  if (data.verifiableCredential) {
-    const newVerifiableCredential: NonNullable<
-      ParsedVerifiablePresentation["verifiableCredential"]
-    > = [];
+  if (data.verifiableCredential && Array.isArray(data.verifiableCredential)) {
+    const newVerifiableCredential: Promise<DatasetWithId>[] = [];
     for (let i = 0; i < data.verifiableCredential.length; i += 100) {
       newVerifiableCredential.push(
         // Limit concurrency to avoid memory overflows. For details see
         // https://github.com/inrupt/solid-client-vc-js/pull/849#discussion_r1377400688
         // eslint-disable-next-line no-await-in-loop
         ...(await Promise.all(
-          data.verifiableCredential
-            .slice(i, i + 100)
-            .map((vc) => verifiableCredentialToDataset(vc, {
+          data.verifiableCredential.slice(i, i + 100).map(async (vc: unknown) => {
+            if (typeof vc !== 'object' || vc === null) {
+              throw new Error(`Verifiable Credentail is an invalid object`);
+            }
+            
+            const res = await verifiableCredentialToDataset(vc, {
               ...options,
-              includeVcProperties: true
-            })),
+              includeVcProperties: options?.returnLegacyJsonld !== false,
+            });
+
+            // FIXME: Address the type issue here
+            if (!isRdfjsVerifiableCredential(res, namedNode(res.id))) {
+              throw new Error(`[${res.id}] is not a Valid Verifiable Credential`);
+            }
+
+            return res;
+          }
+          ),
         )),
       );
     }

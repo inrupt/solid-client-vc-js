@@ -20,6 +20,7 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
+import { DataFactory } from "n3";
 import type {
   Iri,
   VerifiableCredential,
@@ -28,7 +29,7 @@ import type {
 import { concatenateContexts, defaultContext } from "../common/common";
 import type { VerifiablePresentationRequest } from "./query";
 import { query } from "./query";
-import { DatasetWithId } from "../common/getters";
+import type { DatasetWithId } from "../common/getters";
 
 const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;
 
@@ -108,7 +109,7 @@ export async function getVerifiableCredentialAllFromShape(
     includeExpiredVc: boolean;
     returnLegacyJsonld?: true;
   }>,
-): Promise<VerifiableCredential[]>
+): Promise<VerifiableCredential[]>;
 /**
  * Look up VCs from a given holder according to a subset of their claims, such as
  * the VC type, or any property associated to the subject in the VC. The holder
@@ -136,7 +137,7 @@ export async function getVerifiableCredentialAllFromShape(
     includeExpiredVc: boolean;
     returnLegacyJsonld: false;
   }>,
-): Promise<DatasetWithId[]>
+): Promise<DatasetWithId[]>;
 export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredentialBase>,
@@ -162,10 +163,19 @@ export async function getVerifiableCredentialAllFromShape(
         options?.includeExpiredVc ?? false,
         // The legacy proprietary format is casted as a VP request to be passed to the `query` function.
       ) as unknown as VerifiablePresentationRequest);
+
+  if (options?.returnLegacyJsonld === false) {
+    const vp = await query(holderEndpoint, vpRequest, {
+      fetch: options?.fetch ?? fallbackFetch,
+      returnLegacyJsonld: false
+    });
+    return vp.verifiableCredential ?? [];
+  }
+
   const vp = await query(holderEndpoint, vpRequest, {
     fetch: options?.fetch ?? fallbackFetch,
   });
-  return vp.verifiableCredential ?? [];
+  return vp?.verifiableCredential ?? [];
 }
 
 export default getVerifiableCredentialAllFromShape;

@@ -91,7 +91,8 @@ describe("isVerifiableCredential", () => {
       ["proofPurpose"],
       ["proofValue"],
     ])("is missing field %s", async (entry) => {
-      if (entry !== 'id') {
+      if (entry !== "id") {
+        // eslint-disable-next-line jest/no-conditional-expect
         expect(
           getters.isVerifiableCredential(
             await verifiableCredentialToDataset(
@@ -105,13 +106,18 @@ describe("isVerifiableCredential", () => {
           ),
         ).toBe(false);
       } else {
-        expect(verifiableCredentialToDataset(
-          mockPartialCredential({
-            ...defaultCredentialClaims,
-            [`${entry}`]: undefined,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          }) as any,
-        )).rejects.toThrow('Expected vc.id to be a string, found [undefined] of type [undefined]');
+        // eslint-disable-next-line jest/no-conditional-expect
+        await expect(
+          verifiableCredentialToDataset(
+            mockPartialCredential({
+              ...defaultCredentialClaims,
+              [`${entry}`]: undefined,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            }) as any,
+          ),
+        ).rejects.toThrow(
+          "Expected vc.id to be a string, found [undefined] of type [undefined]",
+        );
       }
 
       expect(
@@ -204,7 +210,9 @@ describe("isVerifiablePresentation", () => {
       expect(isVerifiablePresentation(mockDefaultPresentation())).toBe(true);
       expect(
         getters.isVerifiablePresentation(
-          await verifiableCredentialToDataset(mockDefaultPresentation() as { id: string }),
+          await verifiableCredentialToDataset(
+            mockDefaultPresentation() as { id: string },
+          ),
           namedNode(mockDefaultPresentation().id!),
         ),
       ).toBe(true);
@@ -214,7 +222,9 @@ describe("isVerifiablePresentation", () => {
       expect(isVerifiablePresentation(mockDefaultPresentation([]))).toBe(true);
       expect(
         getters.isVerifiablePresentation(
-          await verifiableCredentialToDataset(mockDefaultPresentation([]) as { id: string }),
+          await verifiableCredentialToDataset(
+            mockDefaultPresentation([]) as { id: string },
+          ),
           namedNode(mockDefaultPresentation([]).id!),
         ),
       ).toBe(true);
@@ -226,7 +236,9 @@ describe("isVerifiablePresentation", () => {
       expect(isVerifiablePresentation(mockedPresentation)).toBe(true);
       expect(
         getters.isVerifiablePresentation(
-          await verifiableCredentialToDataset(mockedPresentation as { id: string }),
+          await verifiableCredentialToDataset(
+            mockedPresentation as { id: string },
+          ),
           namedNode(mockedPresentation.id!),
         ),
       ).toBe(true);
@@ -312,9 +324,8 @@ describe("isVerifiablePresentation", () => {
       ).toBe(false);
       expect(
         getters.isVerifiablePresentation(
-          // @ts-expect-error we expect that this is not a valid Verifiable Presentation
           await verifiableCredentialToDataset(vp),
-          // @ts-expect-error we expect that this is not a valid Verifiable Presentation
+          // @ts-expect-error id is of type unknown
           namedNode(vp.id),
         ),
       ).toBe(false);
@@ -325,8 +336,9 @@ describe("isVerifiablePresentation", () => {
         {} as VerifiableCredential,
       ]);
 
-      const mockedPresentationAsDataset =
-        await verifiableCredentialToDataset(mockedPresentation as { id: string });
+      const mockedPresentationAsDataset = await verifiableCredentialToDataset(
+        mockedPresentation as { id: string },
+      );
       expect(
         mockedPresentationAsDataset.match(null, cred.verifiableCredential, null)
           .size,
@@ -374,8 +386,9 @@ describe("isVerifiablePresentation", () => {
       mockedPresentation.holder = "some non-URL holder";
       expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
 
-      const presentationAsDataset =
-        await verifiableCredentialToDataset(mockedPresentation as { id: string });
+      const presentationAsDataset = await verifiableCredentialToDataset(
+        mockedPresentation as { id: string },
+      );
       expect(presentationAsDataset.match(null, cred.holder, null).size).toBe(0);
       expect(
         getters.isVerifiablePresentation(

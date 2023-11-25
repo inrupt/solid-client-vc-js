@@ -25,8 +25,8 @@ import type { VerifiableCredential } from "./common";
 import { verifiableCredentialToDataset } from "./common";
 import { cred, xsd } from "./constants";
 import { mockDefaultCredential } from "./common.mock";
+import type { DatasetWithId } from "./getters";
 import {
-  DatasetWithId,
   getCredentialSubject,
   getExpirationDate,
   getId,
@@ -44,11 +44,11 @@ describe("getters", () => {
     defaultCredential = await verifiableCredentialToDataset(
       mockDefaultCredential(),
       {
-        includeVcProperties: true
-      }
+        includeVcProperties: true,
+      },
     );
     defaultCredentialNoProperties = await verifiableCredentialToDataset(
-      mockDefaultCredential()
+      mockDefaultCredential(),
     );
   });
 
@@ -213,10 +213,12 @@ describe("getters", () => {
     );
     expect(getCredentialSubject(defaultCredential).termType).toBe("NamedNode");
 
-    expect(getCredentialSubject(defaultCredentialNoProperties).value).toStrictEqual(
-      defaultCredential.credentialSubject.id,
+    expect(
+      getCredentialSubject(defaultCredentialNoProperties).value,
+    ).toStrictEqual(defaultCredential.credentialSubject.id);
+    expect(getCredentialSubject(defaultCredentialNoProperties).termType).toBe(
+      "NamedNode",
     );
-    expect(getCredentialSubject(defaultCredentialNoProperties).termType).toBe("NamedNode");
   });
 
   it("getCredentialSubject errors if there are multiple credential subjects", () => {
