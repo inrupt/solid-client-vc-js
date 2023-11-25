@@ -30,9 +30,11 @@ import {
 } from "@inrupt/internal-test-env";
 import {
   getVerifiableCredentialAllFromShape,
+  getVerifiableCredentialApiConfiguration,
   issueVerifiableCredential,
   revokeVerifiableCredential,
 } from "../../src/index";
+import { VerifiableCredentialApiConfiguration } from "../../src/common/common";
 
 const validCredentialClaims = {
   "@context": [
@@ -83,6 +85,11 @@ const env = getNodeTestingEnvironment({
 describe("End-to-end verifiable credentials tests for environment", () => {
   let vcSubject: string;
   let session: Session;
+  let issuerService: string;
+  let derivationService: string;
+  let statusService: string;
+  let verifierService: string;
+
   beforeEach(async () => {
     session = await getAuthenticatedSession(env);
 
@@ -92,15 +99,22 @@ describe("End-to-end verifiable credentials tests for environment", () => {
       vcSubject = session.info.webId;
     }
 
-    // The following code snippet doesn't work in Jest, probably because of
-    // https://github.com/standard-things/esm/issues/706 which seems to be
-    // related to https://github.com/facebook/jest/issues/9430. The JSON-LD
-    // module depends on @digitalbazaar/http-client, which uses esm, which
-    // looks like it confuses Jest. Working around this by hard-coding the
-    // endpoints IRIs.
-    // vcConfiguration = await getVerifiableCredentialApiConfiguration(
-    //   vcProvider
-    // );
+    if (typeof env.vcProvider !== 'string') {
+      throw new Error("vcProvider not available in context");
+    }
+
+    const vcConfiguration = await getVerifiableCredentialApiConfiguration(
+      env.vcProvider.toString()
+    );
+
+    if (typeof vcConfiguration.issuerService !== "string" || typeof vcConfiguration.derivationService !== "string" || typeof vcConfiguration.statusService !== "string" || typeof vcConfiguration.verifierService !== "string") {
+      throw new Error("A service endpoint is undefined");
+    }
+
+    issuerService = vcConfiguration.issuerService;
+    derivationService = vcConfiguration.derivationService;
+    statusService = vcConfiguration.statusService;
+    verifierService = vcConfiguration.verifierService;
   });
 
   afterEach(async () => {
@@ -112,7 +126,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
   describe("issue a VC", () => {
     it("Successfully gets a VC from a valid issuer", async () => {
       const credential = await issueVerifiableCredential(
-        new URL("issue", env.vcProvider).href,
+        issuerService,
         validSubjectClaims(),
         validCredentialClaims,
         {
@@ -121,7 +135,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
       );
       expect(credential.credentialSubject.id).toBe(vcSubject);
       await revokeVerifiableCredential(
-        new URL("status", env.vcProvider).href,
+        statusService,
         credential.id,
         {
           fetch: session.fetch,
@@ -135,7 +149,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
     // associated to the preconfigured shape.
     it("throws if the issuer returns an error", async () => {
       const vcPromise = issueVerifiableCredential(
-        new URL("issue", env.vcProvider).href,
+        issuerService,
         invalidCredentialClaims,
         undefined,
         {
@@ -150,7 +164,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
     it("returns all VC issued matching a given shape", async () => {
       const [credential1, credential2] = await Promise.all([
         issueVerifiableCredential(
-          new URL("issue", env.vcProvider).href,
+          issuerService,
           validSubjectClaims({ resource: "https://example.org/some-resource" }),
           validCredentialClaims,
           {
@@ -158,7 +172,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           },
         ),
         issueVerifiableCredential(
-          new URL("issue", env.vcProvider).href,
+          issuerService,
           validSubjectClaims({
             resource: "https://example.org/another-resource",
           }),
@@ -171,7 +185,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
 
       await expect(
         getVerifiableCredentialAllFromShape(
-          new URL("derive", env.vcProvider).href,
+          derivationService,
           {
             "@context": [
               "https://www.w3.org/2018/credentials/v1",
@@ -187,7 +201,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
 
       await expect(
         getVerifiableCredentialAllFromShape(
-          new URL("derive", env.vcProvider).href,
+          derivationService,
           credential1,
           {
             fetch: session.fetch,
@@ -197,7 +211,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
 
       await expect(
         getVerifiableCredentialAllFromShape(
-          new URL("derive", env.vcProvider).href,
+          derivationService,
           credential2,
           {
             fetch: session.fetch,
@@ -207,14 +221,14 @@ describe("End-to-end verifiable credentials tests for environment", () => {
 
       await Promise.all([
         revokeVerifiableCredential(
-          new URL("status", env.vcProvider).href,
+          statusService,
           credential1.id,
           {
             fetch: session.fetch,
           },
         ),
         revokeVerifiableCredential(
-          new URL("status", env.vcProvider).href,
+          statusService,
           credential2.id,
           {
             fetch: session.fetch,
@@ -227,7 +241,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
   describe("revoke VCs", () => {
     it("can revoke a VC", async () => {
       const credential = await issueVerifiableCredential(
-        new URL("issue", env.vcProvider).href,
+        issuerService,
         validSubjectClaims(),
         validCredentialClaims,
         {
@@ -236,7 +250,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
       );
       await expect(
         revokeVerifiableCredential(
-          new URL("status", env.vcProvider).href,
+          statusService,
           credential.id,
           {
             fetch: session.fetch,
@@ -244,7 +258,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         ),
       ).resolves.not.toThrow();
       const verificationResponse = await session.fetch(
-        new URL("verify", env.vcProvider).href,
+        verifierService,
         {
           method: "POST",
           body: JSON.stringify({ verifiableCredential: credential }),
