@@ -70,6 +70,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
       } catch (_e) {}
       expect(mockedFetch).toHaveBeenCalled();
     });
+
     it("uses the provided fetch if any [returnLegacyJsonld: false]", async () => {
       const mockedFetch = jest.fn() as typeof fetch;
       try {

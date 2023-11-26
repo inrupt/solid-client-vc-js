@@ -139,6 +139,17 @@ export async function query(
     }>,
 ): Promise<
   ParsedVerifiablePresentation | { verifiableCredential?: DatasetWithId[] }
+>;
+export async function query(
+  queryEndpoint: Iri,
+  vpRequest: VerifiablePresentationRequest,
+  options?: ParseOptions &
+    Partial<{
+      fetch: typeof fallbackFetch;
+      returnLegacyJsonld?: boolean;
+    }>,
+): Promise<
+  ParsedVerifiablePresentation | { verifiableCredential?: DatasetWithId[] }
 > {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {

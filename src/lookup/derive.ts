@@ -146,10 +146,7 @@ export async function getVerifiableCredentialAllFromShape(
     returnLegacyJsonld?: boolean;
   }>,
 ): Promise<DatasetWithId[]> {
-  const internalOptions = { ...options };
-  if (internalOptions.fetch === undefined) {
-    internalOptions.fetch = fallbackFetch;
-  }
+  const fetchFn = options?.fetch ?? fallbackFetch;
   // The request payload depends on the target endpoint.
   const vpRequest = holderEndpoint.endsWith("/query")
     ? // The target endpoint is spec-compliant, and uses a standard VP request.
@@ -163,16 +160,9 @@ export async function getVerifiableCredentialAllFromShape(
         // The legacy proprietary format is casted as a VP request to be passed to the `query` function.
       ) as unknown as VerifiablePresentationRequest);
 
-  if (options?.returnLegacyJsonld === false) {
-    const vp = await query(holderEndpoint, vpRequest, {
-      fetch: options?.fetch ?? fallbackFetch,
-      returnLegacyJsonld: false,
-    });
-    return vp.verifiableCredential ?? [];
-  }
-
   const vp = await query(holderEndpoint, vpRequest, {
-    fetch: options?.fetch ?? fallbackFetch,
+    fetch: fetchFn,
+    returnLegacyJsonld: options?.returnLegacyJsonld,
   });
   return vp?.verifiableCredential ?? [];
 }
