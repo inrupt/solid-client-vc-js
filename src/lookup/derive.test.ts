@@ -28,6 +28,7 @@ import defaultGetVerifilableCredentialAllFromShape, {
 } from "./derive";
 import type * as QueryModule from "./query";
 import type { VerifiableCredential } from "../common/common";
+import { getCredentialSubject } from "../common/getters";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -69,6 +70,24 @@ describe("getVerifiableCredentialAllFromShape", () => {
       } catch (_e) {}
       expect(mockedFetch).toHaveBeenCalled();
     });
+    it("uses the provided fetch if any [returnLegacyJsonld: false]", async () => {
+      const mockedFetch = jest.fn() as typeof fetch;
+      try {
+        await getVerifiableCredentialAllFromShape(
+          "https://some.endpoint",
+          {
+            "@context": ["https://some.context"],
+            credentialSubject: { id: "https://some.subject/" },
+          },
+          {
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            returnLegacyJsonld: false,
+          },
+        );
+        // eslint-disable-next-line no-empty
+      } catch (_e) {}
+      expect(mockedFetch).toHaveBeenCalled();
+    });
 
     it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
       const mockedFetch = jest.requireMock(
@@ -79,6 +98,24 @@ describe("getVerifiableCredentialAllFromShape", () => {
         "@context": ["https://some.context"],
         credentialSubject: { id: "https://some.subject/" },
       });
+      expect(mockedFetch.fetch).toHaveBeenCalled();
+    });
+
+    it("defaults to an unauthenticated fetch if no fetch is provided [returnLegacyJsonld: false]", async () => {
+      const mockedFetch = jest.requireMock(
+        "@inrupt/universal-fetch",
+      ) as jest.Mocked<typeof UniversalFetch>;
+      mockedFetch.fetch.mockResolvedValue(mockDeriveEndpointDefaultResponse());
+      await getVerifiableCredentialAllFromShape(
+        "https://some.endpoint",
+        {
+          "@context": ["https://some.context"],
+          credentialSubject: { id: "https://some.subject/" },
+        },
+        {
+          returnLegacyJsonld: false,
+        },
+      );
       expect(mockedFetch.fetch).toHaveBeenCalled();
     });
 
@@ -105,6 +142,30 @@ describe("getVerifiableCredentialAllFromShape", () => {
       );
     });
 
+    it("includes the expired VC options if requested [returnLegacyJsonld: false]", async () => {
+      const mockedFetch = jest
+        .fn<(typeof UniversalFetch)["fetch"]>()
+        .mockResolvedValue(mockDeriveEndpointDefaultResponse());
+      await getVerifiableCredentialAllFromShape(
+        "https://some.endpoint",
+        {
+          "@context": ["https://some.context"],
+          credentialSubject: { id: "https://some.subject/" },
+        },
+        {
+          includeExpiredVc: true,
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          returnLegacyJsonld: false,
+        },
+      );
+      expect(mockedFetch).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          body: expect.stringContaining("ExpiredVerifiableCredential"),
+        }),
+      );
+    });
+
     it("builds a legacy VP request from the provided VC shape", async () => {
       const mockedFetch = jest
         .fn<(typeof UniversalFetch)["fetch"]>()
@@ -118,6 +179,38 @@ describe("getVerifiableCredentialAllFromShape", () => {
           credentialSubject: { id: "https://some.subject/" },
         },
         { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+      );
+      expect(spiedQuery).toHaveBeenCalledWith(
+        "https://some.endpoint",
+        expect.objectContaining({
+          verifiableCredential: {
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://some.context",
+            ],
+            credentialSubject: { id: "https://some.subject/" },
+          },
+        }),
+        expect.anything(),
+      );
+    });
+
+    it("builds a legacy VP request from the provided VC shape [returnLegacyJsonld: false]", async () => {
+      const mockedFetch = jest
+        .fn<(typeof UniversalFetch)["fetch"]>()
+        .mockResolvedValue(mockDeriveEndpointDefaultResponse());
+      const queryModule = jest.requireActual("./query") as typeof QueryModule;
+      const spiedQuery = jest.spyOn(queryModule, "query");
+      await getVerifiableCredentialAllFromShape(
+        "https://some.endpoint",
+        {
+          "@context": ["https://some.context"],
+          credentialSubject: { id: "https://some.subject/" },
+        },
+        {
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          returnLegacyJsonld: false,
+        },
       );
       expect(spiedQuery).toHaveBeenCalledWith(
         "https://some.endpoint",
@@ -158,10 +251,43 @@ describe("getVerifiableCredentialAllFromShape", () => {
       );
     });
 
-    it("returns an empty array if the VP contains no VCs", async () => {
+    it("returns the VCs from the obtained VP on a successful response [returnLegacyJsonld: false]", async () => {
       const mockedFetch = jest
         .fn<(typeof UniversalFetch)["fetch"]>()
-        .mockResolvedValue(
+        .mockResolvedValue(mockDeriveEndpointDefaultResponse());
+
+      const vc = await getVerifiableCredentialAllFromShape(
+        "https://some.endpoint",
+        {
+          "@context": ["https://some.context"],
+          credentialSubject: { id: "https://some.webid.provider/strelka" },
+        },
+        {
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          returnLegacyJsonld: false,
+        },
+      );
+
+      expect(vc).toMatchObject(
+        mockDefaultPresentation().verifiableCredential!.map((v) => ({
+          id: v.id,
+        })),
+      );
+
+      expect<string[]>(vc.map((v) => getCredentialSubject(v).value)).toEqual(
+        mockDefaultPresentation().verifiableCredential?.map(
+          () => "https://some.webid.provider/strelka",
+        ),
+      );
+
+      expect(JSON.parse(JSON.stringify(vc))).toEqual(
+        mockDefaultPresentation().verifiableCredential,
+      );
+    });
+
+    it("returns an empty array if the VP contains no VCs", async () => {
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
           new Response(
             JSON.stringify({
               ...mockDefaultPresentation(),
@@ -172,7 +298,7 @@ describe("getVerifiableCredentialAllFromShape", () => {
               statusText: "OK",
             },
           ),
-        );
+      );
       await expect(
         getVerifiableCredentialAllFromShape(
           "https://some.endpoint",
@@ -181,6 +307,19 @@ describe("getVerifiableCredentialAllFromShape", () => {
             credentialSubject: { id: "https://some.subject/" },
           },
           { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        ),
+      ).resolves.toEqual([]);
+      await expect(
+        getVerifiableCredentialAllFromShape(
+          "https://some.endpoint",
+          {
+            "@context": ["https://some.context"],
+            credentialSubject: { id: "https://some.subject/" },
+          },
+          {
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            returnLegacyJsonld: false,
+          },
         ),
       ).resolves.toEqual([]);
     });
