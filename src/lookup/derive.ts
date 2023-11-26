@@ -164,7 +164,7 @@ export async function getVerifiableCredentialAllFromShape(
     fetch: fetchFn,
     returnLegacyJsonld: options?.returnLegacyJsonld,
   });
-  return vp?.verifiableCredential ?? [];
+  return vp.verifiableCredential ?? [];
 }
 
 export default getVerifiableCredentialAllFromShape;

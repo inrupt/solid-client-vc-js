@@ -137,7 +137,7 @@ export const mockDefaultCredential2Proofs = (
 };
 
 export const mockPartialPresentation = (
-  credentials: VerifiableCredentialBase[],
+  credentials?: VerifiableCredentialBase[],
   claims?: Partial<VerifiableClaims>,
 ): Record<string, unknown> => {
   return {

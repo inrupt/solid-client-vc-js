@@ -25,8 +25,10 @@ import type * as UniversalFetch from "@inrupt/universal-fetch";
 import type { QueryByExample } from "./query";
 import { query } from "./query";
 import {
+  defaultVerifiableClaims,
   mockDefaultCredential,
   mockDefaultPresentation,
+  mockPartialPresentation,
 } from "../common/common.mock";
 
 jest.mock("@inrupt/universal-fetch", () => {
@@ -85,6 +87,96 @@ describe("query", () => {
         expect(mockedFetch).toHaveBeenCalled();
       });
     });
+
+    describe("resolves when the VP contains no VCs", () => {
+      let mockedFetch: jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
+
+      beforeEach(() => {
+        mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+          async () =>
+            new Response(
+              JSON.stringify(
+                mockPartialPresentation(undefined, defaultVerifiableClaims),
+              ),
+              {
+                status: 200,
+              },
+            ),
+        ) as jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
+      });
+
+      it("returnLegacyJsonld: true", async () => {
+        await expect(
+          query(
+            "https://some.endpoint/query",
+            { query: [mockRequest] },
+            { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+          ),
+        ).resolves.toMatchObject({
+          id: "https://example.org/ns/someCredentialInstance",
+        });
+        expect(mockedFetch).toHaveBeenCalled();
+      });
+      it("returnLegacyJsonld: false", async () => {
+        await expect(
+          query(
+            "https://some.endpoint/query",
+            { query: [mockRequest] },
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              returnLegacyJsonld: false,
+            },
+          ),
+        ).resolves.toMatchObject({
+          id: "https://example.org/ns/someCredentialInstance",
+        });
+        expect(mockedFetch).toHaveBeenCalled();
+      });
+    });
+
+    it.each([
+      ["null", [null]],
+      ["string", ["not a VC"]],
+      ["empty object", [{}]],
+      [
+        "non empty object missing required VC properties",
+        [
+          {
+            ...mockDefaultCredential(),
+            proof: undefined,
+          },
+        ],
+      ],
+    ])(
+      "errors if the presentation contains invalid verifiable credentials [%s]",
+      async (_, elems) => {
+        const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+          async () =>
+            // @ts-expect-error we are intentionall passing invalid VC types here to test for errors
+            new Response(JSON.stringify(mockDefaultPresentation(elems)), {
+              status: 200,
+            }),
+        ) as jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
+
+        await expect(
+          query(
+            "https://some.endpoint/query",
+            { query: [mockRequest] },
+            { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+          ),
+        ).rejects.toThrow();
+        await expect(
+          query(
+            "https://some.endpoint/query",
+            { query: [mockRequest] },
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              returnLegacyJsonld: false,
+            },
+          ),
+        ).rejects.toThrow();
+      },
+    );
 
     it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
       const mockedFetch = jest.requireMock(
