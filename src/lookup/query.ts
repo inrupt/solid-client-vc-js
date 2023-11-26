@@ -21,6 +21,7 @@
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 import { DataFactory } from "n3";
+import { isRdfjsVerifiableCredential } from "..";
 import type {
   Iri,
   VerifiableCredential,
@@ -28,17 +29,14 @@ import type {
   VerifiablePresentation,
 } from "../common/common";
 import {
-  internal_applyDataset,
   isVerifiablePresentation,
   normalizeVp,
   verifiableCredentialToDataset,
 } from "../common/common";
-import { jsonLdToStore, type ParseOptions } from "../parser/jsonld";
 import type { DatasetWithId } from "../common/getters";
-import { isRdfjsVerifiableCredential, isRdfjsVerifiablePresentation } from "..";
-import { cred, rdf } from "../common/constants";
+import { type ParseOptions } from "../parser/jsonld";
 
-const { namedNode, defaultGraph } = DataFactory;
+const { namedNode } = DataFactory;
 
 /**
  * Based on https://w3c-ccg.github.io/vp-request-spec/#query-by-example.
@@ -140,8 +138,7 @@ export async function query(
       returnLegacyJsonld?: boolean;
     }>,
 ): Promise<
-  | ParsedVerifiablePresentation
-  | { verifiableCredential?: DatasetWithId[] }
+  ParsedVerifiablePresentation | { verifiableCredential?: DatasetWithId[] }
 > {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
@@ -185,7 +182,7 @@ export async function query(
   //         )}`,
   //       );
   //     }
-      
+
   //     // In the future we want to get rid of this and get the verifiableCredential ids from the store
   //     // the reason we need this for now is because we need the verifiableCredential JSON object for
   //     // the toJSON method.
@@ -199,7 +196,7 @@ export async function query(
   //       }
 
   //       const c = internal_applyDataset(vc as { id: string }, store, options)
-        
+
   //       if (!isRdfjsVerifiableCredential(store, namedNode(c.id))) {
   //         throw new Error(`[${c.id}] is not a valid Verifiable Credential`);
   //       }
@@ -220,7 +217,7 @@ export async function query(
   // All code below here should is deprecated
   let data;
   try {
-    data = await response.json()
+    data = await response.json();
 
     if (options?.returnLegacyJsonld !== false) {
       data = normalizeVp(data);
@@ -230,7 +227,10 @@ export async function query(
       `The holder [${queryEndpoint}] did not return a valid JSON response: parsing failed with error ${e}`,
     );
   }
-  if (options?.returnLegacyJsonld !== false && !isVerifiablePresentation(data)) {
+  if (
+    options?.returnLegacyJsonld !== false &&
+    !isVerifiablePresentation(data)
+  ) {
     throw new Error(
       `The holder [${queryEndpoint}] did not return a Verifiable Presentation: ${JSON.stringify(
         data,
@@ -246,24 +246,27 @@ export async function query(
         // https://github.com/inrupt/solid-client-vc-js/pull/849#discussion_r1377400688
         // eslint-disable-next-line no-await-in-loop
         ...(await Promise.all(
-          data.verifiableCredential.slice(i, i + 100).map(async (vc: unknown) => {
-            if (typeof vc !== 'object' || vc === null) {
-              throw new Error(`Verifiable Credentail is an invalid object`);
-            }
-            
-            const res = await verifiableCredentialToDataset(vc, {
-              ...options,
-              includeVcProperties: options?.returnLegacyJsonld !== false,
-            });
+          data.verifiableCredential
+            .slice(i, i + 100)
+            .map(async (vc: unknown) => {
+              if (typeof vc !== "object" || vc === null) {
+                throw new Error(`Verifiable Credentail is an invalid object`);
+              }
 
-            // FIXME: Address the type issue here
-            if (!isRdfjsVerifiableCredential(res, namedNode(res.id))) {
-              throw new Error(`[${res.id}] is not a Valid Verifiable Credential`);
-            }
+              const res = await verifiableCredentialToDataset(vc, {
+                ...options,
+                includeVcProperties: options?.returnLegacyJsonld !== false,
+              });
 
-            return res;
-          }
-          ),
+              // FIXME: Address the type issue here
+              if (!isRdfjsVerifiableCredential(res, namedNode(res.id))) {
+                throw new Error(
+                  `[${res.id}] is not a Valid Verifiable Credential`,
+                );
+              }
+
+              return res;
+            }),
         )),
       );
     }

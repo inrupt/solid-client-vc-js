@@ -445,60 +445,15 @@ export async function getVerifiableCredentialApiConfiguration(
   };
 }
 
-/**
- * @hidden
- */
-export async function verifiableCredentialToDataset<
-  T extends Object & { id?: string },
->(
+// eslint-disable-next-line camelcase
+export function internal_applyDataset<T extends { id: string }>(
   vc: T,
-  options?: ParseOptions & {
-    includeVcProperties: true;
-  },
-): Promise<T & DatasetWithId>;
-export async function verifiableCredentialToDataset<
-  T extends Object & { id?: string },
->(
-  vc: T,
+  store: DatasetCore,
   options?: ParseOptions & {
     includeVcProperties?: boolean;
+    additionalProperties?: Record<string, unknown>;
   },
-): Promise<DatasetWithId>;
-export async function verifiableCredentialToDataset<
-  T extends Object & { id: string },
->(
-  vc: T,
-  options?: ParseOptions & {
-    includeVcProperties?: boolean;
-  },
-): Promise<DatasetWithId> {
-  let store: DatasetCore;
-  try {
-    store = await jsonLdToStore(vc, options);
-  } catch (e) {
-    throw new Error(
-      `Parsing the Verifiable Credential as JSON-LD failed: ${e}`,
-    );
-  }
-
-  if (typeof vc.id !== "string") {
-    throw new Error(
-      `Expected vc.id to be a string, found [${
-        vc.id
-      }] of type [${typeof vc.id}] on ${JSON.stringify(vc, null, 2)}`,
-    );
-  }
-
-  return internal_applyDataset(vc, store, options)
-}
-
-export function internal_applyDataset<T extends Object & { id: string }>(
-vc: T,
-store: DatasetCore,
-options?: ParseOptions & {
-  includeVcProperties?: boolean;
-  additionalProperties?: Record<string, unknown>;
-}): DatasetWithId {
+): DatasetWithId {
   return Object.freeze({
     id: vc.id,
     ...(options?.includeVcProperties && vc),
@@ -532,60 +487,47 @@ options?: ParseOptions & {
 }
 
 /**
- * Dereference a VC URL, and verify that the resulting content is valid.
- *
- * @param vcUrl The URL of the VC.
- * @param options Options to customize the function behavior.
- * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
- * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
- * @returns The dereferenced VC if valid. Throws otherwise.
- * @since 0.4.0
- * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
- * versions of this library.
+ * @hidden
  */
-export async function getVerifiableCredential(
-  vcUrl: UrlString,
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
   options?: ParseOptions & {
-    fetch?: typeof fetch;
-    returnLegacyJsonld?: true;
+    includeVcProperties: true;
   },
-): Promise<VerifiableCredential>;
-/**
- * Dereference a VC URL, and verify that the resulting content is valid.
- *
- * @param vcUrl The URL of the VC.
- * @param options Options to customize the function behavior.
- * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
- * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
- * @returns The dereferenced VC if valid. Throws otherwise.
- * @since 0.4.0
- */
-export async function getVerifiableCredential(
-  vcUrl: UrlString,
+): Promise<T & DatasetWithId>;
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
   options?: ParseOptions & {
-    fetch?: typeof fetch;
-    returnLegacyJsonld?: boolean;
+    includeVcProperties?: boolean;
   },
 ): Promise<DatasetWithId>;
-export async function getVerifiableCredential(
-  vcUrl: UrlString,
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
   options?: ParseOptions & {
-    fetch?: typeof fetch;
-    returnLegacyJsonld?: boolean;
+    includeVcProperties?: boolean;
   },
 ): Promise<DatasetWithId> {
-  const authFetch = options?.fetch ?? uniFetch;
-  const response = await authFetch(vcUrl);
-
-  if (!response.ok) {
+  let store: DatasetCore;
+  try {
+    store = await jsonLdToStore(vc, options);
+  } catch (e) {
     throw new Error(
-      `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`,
+      `Parsing the Verifiable Credential as JSON-LD failed: ${e}`,
     );
   }
 
-  return internal_getVerifiableCredentialFromResponse(vcUrl, response, options);
+  if (typeof vc.id !== "string") {
+    throw new Error(
+      `Expected vc.id to be a string, found [${
+        vc.id
+      }] of type [${typeof vc.id}] on ${JSON.stringify(vc, null, 2)}`,
+    );
+  }
+
+  return internal_applyDataset(vc as { id: string }, store, options);
 }
 
+// eslint-disable-next-line camelcase
 export async function internal_getVerifiableCredentialFromResponse(
   vcUrl: UrlString | undefined,
   response: Response,
@@ -601,7 +543,7 @@ export async function internal_getVerifiableCredentialFromResponse(
   },
 ): Promise<DatasetWithId>;
 export async function internal_getVerifiableCredentialFromResponse(
-  vcUrl: UrlString | undefined,
+  vcUrlInput: UrlString | undefined,
   response: Response,
   options?: ParseOptions & {
     returnLegacyJsonld?: boolean;
@@ -609,6 +551,7 @@ export async function internal_getVerifiableCredentialFromResponse(
 ): Promise<DatasetWithId> {
   const returnLegacy = options?.returnLegacyJsonld !== false;
   let vc: unknown | VerifiableCredentialBase;
+  let vcUrl = vcUrlInput;
   try {
     vc = await response.json();
 
@@ -666,4 +609,59 @@ export async function internal_getVerifiableCredentialFromResponse(
     );
   }
   return parsedVc;
+}
+
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: ParseOptions & {
+    fetch?: typeof fetch;
+    returnLegacyJsonld?: true;
+  },
+): Promise<VerifiableCredential>;
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
+ */
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: ParseOptions & {
+    fetch?: typeof fetch;
+    returnLegacyJsonld?: boolean;
+  },
+): Promise<DatasetWithId>;
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: ParseOptions & {
+    fetch?: typeof fetch;
+    returnLegacyJsonld?: boolean;
+  },
+): Promise<DatasetWithId> {
+  const authFetch = options?.fetch ?? uniFetch;
+  const response = await authFetch(vcUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  return internal_getVerifiableCredentialFromResponse(vcUrl, response, options);
 }

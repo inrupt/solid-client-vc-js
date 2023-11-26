@@ -18,12 +18,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-import type {
-  BlankNode,
-  DatasetCore,
-  Literal,
-  NamedNode
-} from "@rdfjs/types";
+import type { BlankNode, DatasetCore, Literal, NamedNode } from "@rdfjs/types";
 import { DataFactory } from "n3";
 import { isUrl } from "./common";
 import { cred, dc, rdf, sec, xsd } from "./constants";

@@ -30,6 +30,7 @@ import {
   concatenateContexts,
   defaultContext,
   defaultCredentialTypes,
+  // eslint-disable-next-line camelcase
   internal_getVerifiableCredentialFromResponse,
 } from "../common/common";
 import type { ParseOptions } from "../parser/jsonld";

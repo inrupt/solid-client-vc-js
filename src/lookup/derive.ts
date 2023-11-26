@@ -20,7 +20,6 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
-import { DataFactory } from "n3";
 import type {
   Iri,
   VerifiableCredential,
@@ -167,7 +166,7 @@ export async function getVerifiableCredentialAllFromShape(
   if (options?.returnLegacyJsonld === false) {
     const vp = await query(holderEndpoint, vpRequest, {
       fetch: options?.fetch ?? fallbackFetch,
-      returnLegacyJsonld: false
+      returnLegacyJsonld: false,
     });
     return vp.verifiableCredential ?? [];
   }

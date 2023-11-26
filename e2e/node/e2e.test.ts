@@ -260,13 +260,9 @@ describe("End-to-end verifiable credentials tests for environment", () => {
       ]);
 
       expect(credential1.credentialSubject.id).toBe(vcSubject);
-      expect(getCredentialSubject(credential1).value).toBe(
-        vcSubject,
-      );
+      expect(getCredentialSubject(credential1).value).toBe(vcSubject);
       expect(credential2.credentialSubject.id).toBe(vcSubject);
-      expect(getCredentialSubject(credential2).value).toBe(
-        vcSubject,
-      );
+      expect(getCredentialSubject(credential2).value).toBe(vcSubject);
 
       const matcher = {
         "@context": [
@@ -280,50 +276,36 @@ describe("End-to-end verifiable credentials tests for environment", () => {
             forPurpose: purpose,
           },
         },
-      }
+      };
 
-      const [allDeprecated, allNew] = await Promise.all([getVerifiableCredentialAllFromShape(
-        derivationService,
-        matcher,
-        {
+      const [allDeprecated, allNew] = await Promise.all([
+        getVerifiableCredentialAllFromShape(derivationService, matcher, {
           fetch: session.fetch,
           includeExpiredVc: false,
-        },
-      ), getVerifiableCredentialAllFromShape(
-        derivationService,
-        matcher,
-        {
+        }),
+        getVerifiableCredentialAllFromShape(derivationService, matcher, {
           fetch: session.fetch,
           includeExpiredVc: false,
           returnLegacyJsonld: false,
-        },
-      )]);
+        }),
+      ]);
 
       expect(allDeprecated).toHaveLength(2);
 
-
       expect(allDeprecated[0].credentialSubject.id).toBe(vcSubject);
-      expect(getCredentialSubject(allDeprecated[0]).value).toBe(
-        vcSubject,
-      );
+      expect(getCredentialSubject(allDeprecated[0]).value).toBe(vcSubject);
       expect(allDeprecated[1].credentialSubject.id).toBe(vcSubject);
-      expect(getCredentialSubject(allDeprecated[1]).value).toBe(
-        vcSubject,
-      );
+      expect(getCredentialSubject(allDeprecated[1]).value).toBe(vcSubject);
 
       expect(allNew).toHaveLength(2);
-      
-      // @ts-expect-error the credentialSubject property should not exist if legacy json is disabled
-      expect(allNew[0].credentialSubject).toBe(undefined);
-      expect(getCredentialSubject(allNew[0]).value).toBe(
-        vcSubject,
-      );
 
       // @ts-expect-error the credentialSubject property should not exist if legacy json is disabled
-      expect(allNew[1].credentialSubject).toBe(undefined);
-      expect(getCredentialSubject(allNew[1]).value).toBe(
-        vcSubject,
-      );
+      expect(allNew[0].credentialSubject).toBeUndefined();
+      expect(getCredentialSubject(allNew[0]).value).toBe(vcSubject);
+
+      // @ts-expect-error the credentialSubject property should not exist if legacy json is disabled
+      expect(allNew[1].credentialSubject).toBeUndefined();
+      expect(getCredentialSubject(allNew[1]).value).toBe(vcSubject);
 
       await expect(
         getVerifiableCredentialAllFromShape(derivationService, credential1, {
@@ -351,18 +333,19 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         }),
       ).resolves.toHaveLength(1);
 
-      const [credential1FetchedLegacy, credential1Fetched] = await Promise.all([getVerifiableCredential(credential1.id, {
-        fetch: session.fetch,
-      }), getVerifiableCredential(credential1.id, {
-        fetch: session.fetch,
-        returnLegacyJsonld: false
-      })]);
+      const [credential1FetchedLegacy, credential1Fetched] = await Promise.all([
+        getVerifiableCredential(credential1.id, {
+          fetch: session.fetch,
+        }),
+        getVerifiableCredential(credential1.id, {
+          fetch: session.fetch,
+          returnLegacyJsonld: false,
+        }),
+      ]);
 
       // @ts-expect-error the credentialSubject property should not exist if legacy json is disabled
-      expect(credential1Fetched.credentialSubject).toBe(undefined);
-      expect(getCredentialSubject(credential1Fetched).value).toBe(
-        vcSubject,
-      );
+      expect(credential1Fetched.credentialSubject).toBeUndefined();
+      expect(getCredentialSubject(credential1Fetched).value).toBe(vcSubject);
       expect(credential1FetchedLegacy.credentialSubject.id).toBe(vcSubject);
       expect(getCredentialSubject(credential1FetchedLegacy).value).toBe(
         vcSubject,
