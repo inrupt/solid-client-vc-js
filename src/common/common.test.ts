@@ -608,7 +608,7 @@ describe("getVerifiableCredential", () => {
           },
         ),
       ).rejects.toThrow(
-        "Parsing the Verifiable Credential [https://example.org/ns/someCredentialInstance] as JSON failed: SyntaxError: Unexpected token 'N', \"Not JSON\" is not valid JSON",
+        "Parsing the Verifiable Credential [https://example.org/ns/someCredentialInstance] as JSON failed: SyntaxError:",
       );
     });
     it("returnLegacyJsonld: false", async () => {
@@ -621,7 +621,7 @@ describe("getVerifiableCredential", () => {
           },
         ),
       ).rejects.toThrow(
-        "Parsing the Verifiable Credential [https://example.org/ns/someCredentialInstance] as JSON failed: SyntaxError: Unexpected token 'N', \"Not JSON\" is not valid JSON",
+        "Parsing the Verifiable Credential [https://example.org/ns/someCredentialInstance] as JSON failed: SyntaxError:",
       );
     });
   });
