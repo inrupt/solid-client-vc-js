@@ -26,6 +26,7 @@ export type {
   VerifiableCredential,
   VerifiableCredentialBase,
 } from "./common/common";
+export type { DatasetWithId } from "./common/getters";
 export {
   isVerifiableCredential,
   isVerifiablePresentation,

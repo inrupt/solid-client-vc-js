@@ -533,6 +533,7 @@ export async function internal_getVerifiableCredentialFromResponse(
   response: Response,
   options?: ParseOptions & {
     returnLegacyJsonld?: true;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<VerifiableCredential>;
 export async function internal_getVerifiableCredentialFromResponse(
@@ -547,6 +548,7 @@ export async function internal_getVerifiableCredentialFromResponse(
   response: Response,
   options?: ParseOptions & {
     returnLegacyJsonld?: boolean;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<DatasetWithId> {
   const returnLegacy = options?.returnLegacyJsonld !== false;
@@ -577,7 +579,10 @@ export async function internal_getVerifiableCredentialFromResponse(
         `The value received from [${vcUrl}] is not a Verifiable Credential`,
       );
     }
-    return verifiableCredentialToDataset(vc, {
+    if (options?.normalize) {
+      vc = options.normalize(vc as VerifiableCredentialBase);
+    }
+    return verifiableCredentialToDataset(vc as VerifiableCredentialBase, {
       allowContextFetching: options?.allowContextFetching,
       baseIRI: options?.baseIRI,
       contexts: options?.contexts,
@@ -603,7 +608,7 @@ export async function internal_getVerifiableCredentialFromResponse(
     includeVcProperties: false,
   });
 
-  if (!isRdfjsVerifiableCredential(parsedVc, namedNode(vcUrl))) {
+  if (!isRdfjsVerifiableCredential(parsedVc, namedNode(parsedVc.id))) {
     throw new Error(
       `The value received from [${vcUrl}] is not a Verifiable Credential`,
     );
@@ -628,6 +633,7 @@ export async function getVerifiableCredential(
   options?: ParseOptions & {
     fetch?: typeof fetch;
     returnLegacyJsonld?: true;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<VerifiableCredential>;
 /**
@@ -652,6 +658,7 @@ export async function getVerifiableCredential(
   options?: ParseOptions & {
     fetch?: typeof fetch;
     returnLegacyJsonld?: boolean;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<DatasetWithId> {
   const authFetch = options?.fetch ?? uniFetch;
