@@ -44,7 +44,7 @@ import {
   mockPartialCredential,
   mockPartialPresentation,
 } from "./common.mock";
-import { cred } from "./constants";
+import { cred, rdf } from "./constants";
 
 const { namedNode, quad, blankNode } = DataFactory;
 
@@ -1189,6 +1189,49 @@ describe("getVerifiableCredential", () => {
           },
         ),
       ).resolves.toMatchObject(mockCredential);
+    });
+
+    it("can apply normalization of the response before parsing and returning it", async () => {
+      (uniFetch as jest.Mock<typeof uniFetch>).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            "@context": {},
+          }),
+          {
+            headers: new Headers([["content-type", "application/ld+json"]]),
+          },
+        ),
+      );
+
+      const res = await getVerifiableCredential(
+        "https://example.org/ns/someCredentialInstance",
+        {
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          allowContextFetching: true,
+          normalize: (data) => ({
+            ...data,
+            type: [...data.type, "http://example.org/my/custom/added/type"],
+          }),
+        },
+      );
+
+      expect(res).toMatchObject({
+        ...mockCredential,
+        type: [
+          ...mockDefaultCredential().type,
+          "http://example.org/my/custom/added/type",
+        ],
+      });
+
+      expect(
+        res.has(
+          quad(
+            namedNode("https://example.org/ns/someCredentialInstance"),
+            rdf.type,
+            namedNode("http://example.org/my/custom/added/type"),
+          ),
+        ),
+      ).toBe(true);
     });
 
     it("resolves if allowContextFetching is enabled and the context can be fetched [returnLegacyJsonld: false]", async () => {
