@@ -50,7 +50,7 @@ export function getId(vc: DatasetWithId): string {
  * @example
  *
  * ```
- * const date = getCredentialSubject(vc);
+ * const subject = getCredentialSubject(vc);
  * ```
  *
  * @param vc The Verifiable Credential
