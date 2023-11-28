@@ -71,7 +71,7 @@ export function getCredentialSubject(vc: DatasetWithId): NamedNode {
  * @example
  *
  * ```
- * const date = getIssuer(vc);
+ * const issuer = getIssuer(vc);
  * ```
  *
  * @param vc The Verifiable Credential
