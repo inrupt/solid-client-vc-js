@@ -86,6 +86,7 @@ export async function query(
     Partial<{
       fetch: typeof fallbackFetch;
       returnLegacyJsonld?: true;
+      normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
     }>,
 ): Promise<ParsedVerifiablePresentation>;
 /**
@@ -127,6 +128,7 @@ export async function query(
     Partial<{
       fetch: typeof fallbackFetch;
       returnLegacyJsonld: false;
+      normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
     }>,
 ): Promise<{ verifiableCredential?: DatasetWithId[] }>;
 export async function query(
@@ -136,6 +138,7 @@ export async function query(
     Partial<{
       fetch: typeof fallbackFetch;
       returnLegacyJsonld?: boolean;
+      normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
     }>,
 ): Promise<
   ParsedVerifiablePresentation | { verifiableCredential?: DatasetWithId[] }
@@ -147,6 +150,7 @@ export async function query(
     Partial<{
       fetch: typeof fallbackFetch;
       returnLegacyJsonld?: boolean;
+      normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
     }>,
 ): Promise<
   ParsedVerifiablePresentation | { verifiableCredential?: DatasetWithId[] }
@@ -259,9 +263,13 @@ export async function query(
         ...(await Promise.all(
           data.verifiableCredential
             .slice(i, i + 100)
-            .map(async (vc: unknown) => {
+            .map(async (vc: VerifiableCredentialBase) => {
               if (typeof vc !== "object" || vc === null) {
                 throw new Error(`Verifiable Credentail is an invalid object`);
+              }
+
+              if (options?.normalize) {
+                vc = options.normalize(vc);
               }
 
               const res = await verifiableCredentialToDataset(vc, {

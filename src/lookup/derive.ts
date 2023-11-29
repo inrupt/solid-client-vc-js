@@ -107,6 +107,7 @@ export async function getVerifiableCredentialAllFromShape(
     fetch: typeof fallbackFetch;
     includeExpiredVc: boolean;
     returnLegacyJsonld?: true;
+    normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
   }>,
 ): Promise<VerifiableCredential[]>;
 /**
@@ -144,6 +145,7 @@ export async function getVerifiableCredentialAllFromShape(
     fetch: typeof fallbackFetch;
     includeExpiredVc: boolean;
     returnLegacyJsonld?: boolean;
+    normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
   }>,
 ): Promise<DatasetWithId[]> {
   const fetchFn = options?.fetch ?? fallbackFetch;
@@ -163,6 +165,7 @@ export async function getVerifiableCredentialAllFromShape(
   const vp = await query(holderEndpoint, vpRequest, {
     fetch: fetchFn,
     returnLegacyJsonld: options?.returnLegacyJsonld,
+    normalize: options?.normalize
   });
   return vp.verifiableCredential ?? [];
 }

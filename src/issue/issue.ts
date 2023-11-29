@@ -25,7 +25,7 @@
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
-import type { Iri, JsonLd, VerifiableCredential } from "../common/common";
+import type { Iri, JsonLd, VerifiableCredential, VerifiableCredentialBase } from "../common/common";
 import {
   concatenateContexts,
   defaultContext,
@@ -159,6 +159,7 @@ export async function issueVerifiableCredential(
   options?: {
     fetch?: typeof fallbackFetch;
     returnLegacyJsonld?: true;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<VerifiableCredential>;
 /**
@@ -185,6 +186,7 @@ export async function issueVerifiableCredential(
   options?: {
     fetch?: typeof fallbackFetch;
     returnLegacyJsonld?: boolean;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<DatasetWithId>;
 /**
@@ -198,6 +200,7 @@ export async function issueVerifiableCredential(
   options?: {
     fetch?: typeof fallbackFetch;
     returnLegacyJsonld?: true;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<VerifiableCredential>;
 /**
