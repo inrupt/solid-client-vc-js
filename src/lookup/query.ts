@@ -77,7 +77,7 @@ interface ParsedVerifiablePresentation extends VerifiablePresentation {
 }
 
 /**
- * @deprecated Use RDFJS API
+ * @deprecated Use RDFJS API instead of relying on the JSON structure by setting `returnLegacyJsonld` to false
  */
 export async function query(
   queryEndpoint: Iri,
