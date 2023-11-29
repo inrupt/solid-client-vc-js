@@ -35,10 +35,11 @@ import type { DatasetCore, Quad } from "@rdfjs/types";
 import { DataFactory } from "n3";
 import type { ParseOptions } from "../parser/jsonld";
 import { jsonLdToStore } from "../parser/jsonld";
-import { isVerifiableCredential as isRdfjsVerifiableCredential } from "./getters";
-import type { DatasetWithId } from "./getters";
+import isRdfjsVerifiableCredential from "./isRdfjsVerifiableCredential";
 
 const { namedNode } = DataFactory;
+
+export type DatasetWithId = DatasetCore & { id: string };
 
 export type Iri = string;
 /**

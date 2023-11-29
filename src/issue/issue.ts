@@ -30,6 +30,7 @@ import type {
   JsonLd,
   VerifiableCredential,
   VerifiableCredentialBase,
+  DatasetWithId,
 } from "../common/common";
 import {
   concatenateContexts,
@@ -39,7 +40,6 @@ import {
   internal_getVerifiableCredentialFromResponse,
 } from "../common/common";
 import type { ParseOptions } from "../parser/jsonld";
-import type { DatasetWithId } from "../common/getters";
 
 type OptionsType = {
   fetch?: typeof fallbackFetch;

@@ -21,11 +21,10 @@
 
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { Store, DataFactory } from "n3";
-import type { VerifiableCredential } from "./common";
+import type { VerifiableCredential, DatasetWithId } from "./common";
 import { verifiableCredentialToDataset } from "./common";
 import { cred, xsd } from "./constants";
 import { mockDefaultCredential } from "./common.mock";
-import type { DatasetWithId } from "./getters";
 import {
   getCredentialSubject,
   getExpirationDate,

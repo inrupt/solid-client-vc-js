@@ -24,11 +24,11 @@ import type {
   Iri,
   VerifiableCredential,
   VerifiableCredentialBase,
+  DatasetWithId,
 } from "../common/common";
 import { concatenateContexts, defaultContext } from "../common/common";
 import type { VerifiablePresentationRequest } from "./query";
 import { query } from "./query";
-import type { DatasetWithId } from "../common/getters";
 
 const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;
 

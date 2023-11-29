@@ -20,13 +20,11 @@
 //
 import type { BlankNode, DatasetCore, Literal, NamedNode } from "@rdfjs/types";
 import { DataFactory } from "n3";
-import { isUrl } from "./common";
+import { type DatasetWithId } from "./common";
 import { cred, dc, rdf, sec, xsd } from "./constants";
 import { getSingleObject, lenientSingle } from "./rdfjs";
 
-const { namedNode, defaultGraph, quad } = DataFactory;
-
-export type DatasetWithId = DatasetCore & { id: string };
+const { namedNode, defaultGraph } = DataFactory;
 
 /**
  * Get the ID (URL) of a Verifiable Credential.
@@ -157,7 +155,7 @@ export function getExpirationDate(vc: DatasetWithId): Date | undefined {
 /**
  * @internal
  */
-function isDate(literal?: Literal): boolean {
+export function isDate(literal?: Literal): boolean {
   return (
     !!literal &&
     literal.datatype.equals(xsd.dateTime) &&
@@ -165,7 +163,7 @@ function isDate(literal?: Literal): boolean {
   );
 }
 
-function isValidProof(
+export function isValidProof(
   dataset: DatasetCore,
   proof: NamedNode | BlankNode,
 ): boolean {
@@ -189,63 +187,5 @@ function isValidProof(
     lenientSingle<NamedNode>(dataset.match(null, rdf.type, null, proof), [
       "NamedNode",
     ]) !== undefined
-  );
-}
-
-export function isVerifiableCredential(
-  dataset: DatasetCore,
-  id: NamedNode,
-): boolean {
-  const proof = lenientSingle<NamedNode | BlankNode>(
-    dataset.match(id, sec.proof, null, defaultGraph()),
-  );
-  return (
-    !!proof &&
-    isValidProof(dataset, proof) &&
-    !!lenientSingle<NamedNode>(
-      dataset.match(id, cred.issuer, null, defaultGraph()),
-      ["NamedNode"],
-    ) &&
-    isDate(
-      lenientSingle<Literal>(
-        dataset.match(id, cred.issuanceDate, null, defaultGraph()),
-        ["Literal"],
-      ),
-    ) &&
-    !!lenientSingle<NamedNode>(
-      dataset.match(id, cred.credentialSubject, null, defaultGraph()),
-      ["NamedNode"],
-    ) &&
-    dataset.has(quad(id, rdf.type, cred.VerifiableCredential, defaultGraph()))
-  );
-}
-
-export function isVerifiablePresentation(
-  dataset: DatasetCore,
-  id: NamedNode | BlankNode,
-): boolean {
-  for (const { object } of dataset.match(
-    id,
-    cred.verifiableCredential,
-    null,
-    defaultGraph(),
-  )) {
-    if (
-      object.termType !== "NamedNode" ||
-      !isVerifiableCredential(dataset, object)
-    ) {
-      return false;
-    }
-  }
-
-  const holder = [...dataset.match(id, cred.holder, null, defaultGraph())];
-  return (
-    (holder.length === 0 ||
-      (holder.length === 1 &&
-        holder[0].object.termType === "NamedNode" &&
-        isUrl(holder[0].object.value))) &&
-    // dataset.has(quad(id, rdf.type, cred.VerifiablePresentation, defaultGraph()))
-    // FIXME: Replace with the above condition
-    dataset.match(id, rdf.type, null, defaultGraph()).size >= 1
   );
 }

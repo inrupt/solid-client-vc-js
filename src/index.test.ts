@@ -34,13 +34,13 @@ import {
   getExpirationDate,
   getIssuanceDate,
   getIssuer,
-  isVerifiableCredential as isRdfjsVerifiableCredential,
-  isVerifiablePresentation as isRdfjsVerifiablePresentation,
 } from "./common/getters";
 import getVerifiableCredentialAllFromShape from "./lookup/derive";
 import revokeVerifiableCredential from "./revoke/revoke";
 import { isValidVc, isValidVerifiablePresentation } from "./verify/verify";
 import { query } from "./lookup/query";
+import isRdfjsVerifiableCredential from "./common/isRdfjsVerifiableCredential";
+import isRdfjsVerifiablePresentation from "./common/isRdfjsVerifiablePresentation";
 
 describe("exports", () => {
   it("includes all of the expected functions", () => {

@@ -20,10 +20,10 @@
 //
 import type * as UniversalFetch from "@inrupt/universal-fetch";
 import { Response, fetch as uniFetch } from "@inrupt/universal-fetch";
-import { describe, expect, it, jest, beforeEach } from "@jest/globals";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import type { IJsonLdContext } from "jsonld-context-parser";
 import { DataFactory, Store } from "n3";
 import { isomorphic } from "rdf-isomorphic";
-import type { IJsonLdContext } from "jsonld-context-parser";
 import { jsonLdStringToStore } from "../parser/jsonld";
 import type { VerifiableCredential } from "./common";
 import {
@@ -34,7 +34,6 @@ import {
   normalizeVc,
   verifiableCredentialToDataset,
 } from "./common";
-import * as getters from "./getters";
 import {
   defaultCredentialClaims,
   defaultVerifiableClaims,
@@ -45,6 +44,8 @@ import {
   mockPartialPresentation,
 } from "./common.mock";
 import { cred, rdf } from "./constants";
+import isRdfjsVerifiableCredential from "./isRdfjsVerifiableCredential";
+import isRdfjsVerifiablePresentation from "./isRdfjsVerifiablePresentation";
 
 const { namedNode, quad, blankNode } = DataFactory;
 
@@ -71,7 +72,7 @@ describe("isVerifiableCredential", () => {
   it("returns true if all the expected fields are present in the credential", async () => {
     expect(isVerifiableCredential(mockDefaultCredential())).toBe(true);
     expect(
-      getters.isVerifiableCredential(
+      isRdfjsVerifiableCredential(
         await verifiableCredentialToDataset(mockDefaultCredential()),
         namedNode(mockDefaultCredential().id),
       ),
@@ -94,7 +95,7 @@ describe("isVerifiableCredential", () => {
       if (entry !== "id") {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(
-          getters.isVerifiableCredential(
+          isRdfjsVerifiableCredential(
             await verifiableCredentialToDataset(
               mockPartialCredential({
                 ...defaultCredentialClaims,
@@ -138,7 +139,7 @@ describe("isVerifiableCredential", () => {
         }
       ).credentialSubject;
       expect(
-        getters.isVerifiableCredential(
+        isRdfjsVerifiableCredential(
           await verifiableCredentialToDataset(mockedCredential),
           namedNode(mockDefaultCredential().id),
         ),
@@ -158,7 +159,7 @@ describe("isVerifiableCredential", () => {
 
     it("has an unexpected date format for the issuance", async () => {
       expect(
-        getters.isVerifiableCredential(
+        isRdfjsVerifiableCredential(
           await verifiableCredentialToDataset(
             mockPartialCredential({
               ...defaultCredentialClaims,
@@ -181,7 +182,7 @@ describe("isVerifiableCredential", () => {
 
     it("has an unexpected date format for the proof creation", async () => {
       expect(
-        getters.isVerifiableCredential(
+        isRdfjsVerifiableCredential(
           await verifiableCredentialToDataset(
             mockPartialCredential({
               ...defaultCredentialClaims,
@@ -209,7 +210,7 @@ describe("isVerifiablePresentation", () => {
     it("has all the expected fields are present in the credential", async () => {
       expect(isVerifiablePresentation(mockDefaultPresentation())).toBe(true);
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           await verifiableCredentialToDataset(
             mockDefaultPresentation() as { id: string },
           ),
@@ -221,7 +222,7 @@ describe("isVerifiablePresentation", () => {
     it("has no associated credentials", async () => {
       expect(isVerifiablePresentation(mockDefaultPresentation([]))).toBe(true);
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           await verifiableCredentialToDataset(
             mockDefaultPresentation([]) as { id: string },
           ),
@@ -235,7 +236,7 @@ describe("isVerifiablePresentation", () => {
       mockedPresentation.holder = "https://some.holder";
       expect(isVerifiablePresentation(mockedPresentation)).toBe(true);
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           await verifiableCredentialToDataset(
             mockedPresentation as { id: string },
           ),
@@ -299,7 +300,7 @@ describe("isVerifiablePresentation", () => {
       };
       expect(isVerifiablePresentation(vp)).toBe(true);
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           await verifiableCredentialToDataset(vp),
           namedNode(vp.id),
         ),
@@ -323,7 +324,7 @@ describe("isVerifiablePresentation", () => {
         ),
       ).toBe(false);
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           await verifiableCredentialToDataset(vp),
           // @ts-expect-error id is of type unknown
           namedNode(vp.id),
@@ -345,7 +346,7 @@ describe("isVerifiablePresentation", () => {
       ).toBe(0);
       expect(isVerifiablePresentation(mockedPresentation)).toBe(false);
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           mockedPresentationAsDataset,
           namedNode(mockedPresentation.id!),
         ),
@@ -353,7 +354,7 @@ describe("isVerifiablePresentation", () => {
 
       // Should return false when we artifically add a blank node to the dataset
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           new Store([
             ...mockedPresentationAsDataset,
             quad(
@@ -367,7 +368,7 @@ describe("isVerifiablePresentation", () => {
       ).toBe(false);
       // Should return false when we artifically add a named node with invalid url to the dataset
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           new Store([
             ...mockedPresentationAsDataset,
             quad(
@@ -391,7 +392,7 @@ describe("isVerifiablePresentation", () => {
       );
       expect(presentationAsDataset.match(null, cred.holder, null).size).toBe(0);
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           presentationAsDataset,
           namedNode(mockedPresentation.id!),
         ),
@@ -399,7 +400,7 @@ describe("isVerifiablePresentation", () => {
 
       // Should return false when we artifically add a blank node to the dataset
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           new Store([
             ...presentationAsDataset,
             quad(namedNode(mockedPresentation.id!), cred.holder, blankNode()),
@@ -409,7 +410,7 @@ describe("isVerifiablePresentation", () => {
       ).toBe(false);
       // Should return false when we artifically add a named node with invalid url to the dataset
       expect(
-        getters.isVerifiablePresentation(
+        isRdfjsVerifiablePresentation(
           new Store([
             ...presentationAsDataset,
             quad(

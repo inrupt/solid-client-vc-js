@@ -26,7 +26,7 @@ export type {
   VerifiableCredential,
   VerifiableCredentialBase,
 } from "./common/common";
-export type { DatasetWithId } from "./common/getters";
+export type { DatasetWithId } from "./common/common";
 export {
   isVerifiableCredential,
   isVerifiablePresentation,
@@ -51,6 +51,6 @@ export {
   getIssuer,
   getCredentialSubject,
   getExpirationDate,
-  isVerifiableCredential as isRdfjsVerifiableCredential,
-  isVerifiablePresentation as isRdfjsVerifiablePresentation,
 } from "./common/getters";
+export { default as isRdfjsVerifiableCredential } from "./common/isRdfjsVerifiableCredential";
+export { default as isRdfjsVerifiablePresentation } from "./common/isRdfjsVerifiablePresentation";

@@ -21,19 +21,19 @@
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 import { DataFactory } from "n3";
-import { isRdfjsVerifiableCredential } from "..";
+import isRdfjsVerifiableCredential from "../common/isRdfjsVerifiableCredential";
 import type {
   Iri,
   VerifiableCredential,
   VerifiableCredentialBase,
   VerifiablePresentation,
+  DatasetWithId,
 } from "../common/common";
 import {
   isVerifiablePresentation,
   normalizeVp,
   verifiableCredentialToDataset,
 } from "../common/common";
-import type { DatasetWithId } from "../common/getters";
 import { type ParseOptions } from "../parser/jsonld";
 
 const { namedNode } = DataFactory;
