@@ -98,17 +98,46 @@ function buildQueryByExample(
  * @returns A list of VCs matching the given VC shape. The list may be empty if
  * the holder does not hold any matching VC.
  * @since 0.1.0
- * @deprecated set options.includeExpiredVc to false and use RDFJS API instead
  */
 export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredentialBase>,
-  options?: Partial<{
-    fetch: typeof fallbackFetch;
-    includeExpiredVc: boolean;
+  options: {
+    fetch?: typeof fallbackFetch;
+    includeExpiredVc?: boolean;
+    returnLegacyJsonld: false;
+  },
+): Promise<DatasetWithId[]>;
+/**
+ * Look up VCs from a given holder according to a subset of their claims, such as
+ * the VC type, or any property associated to the subject in the VC. The holder
+ * is expected to implement the [W3C VC Holder HTTP API](https://w3c-ccg.github.io/vc-api/holder.html).
+ *
+ * @param holderEndpoint The `/derive` endpoint of the holder.
+ * @param vcShape The subset of claims you expect the matching VCs to contain.
+ * @param options Optional parameter:
+ * - `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * This can be typically used for authentication. Note that if it is omitted, and
+ * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
+ * is picked up.
+ * - `options.includeExpiredVc`: include expired VC matching the shape in the
+ * result set.
+ * - `options.returnLegacyJsonld`: : Include the normalized JSON-LD in the response
+ * @returns A list of VCs matching the given VC shape. The list may be empty if
+ * the holder does not hold any matching VC.
+ * @since 0.1.0
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function getVerifiableCredentialAllFromShape(
+  holderEndpoint: Iri,
+  vcShape: Partial<VerifiableCredentialBase>,
+  options?: {
+    fetch?: typeof fallbackFetch;
+    includeExpiredVc?: boolean;
     returnLegacyJsonld?: true;
     normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
-  }>,
+  },
 ): Promise<VerifiableCredential[]>;
 /**
  * Look up VCs from a given holder according to a subset of their claims, such as
@@ -128,25 +157,28 @@ export async function getVerifiableCredentialAllFromShape(
  * @returns A list of VCs matching the given VC shape. The list may be empty if
  * the holder does not hold any matching VC.
  * @since 0.1.0
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
  */
 export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredentialBase>,
-  options?: Partial<{
-    fetch: typeof fallbackFetch;
-    includeExpiredVc: boolean;
-    returnLegacyJsonld: false;
-  }>,
+  options?: {
+    fetch?: typeof fallbackFetch;
+    includeExpiredVc?: boolean;
+    returnLegacyJsonld?: boolean;
+    normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
 ): Promise<DatasetWithId[]>;
 export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredentialBase>,
-  options?: Partial<{
-    fetch: typeof fallbackFetch;
-    includeExpiredVc: boolean;
+  options?: {
+    fetch?: typeof fallbackFetch;
+    includeExpiredVc?: boolean;
     returnLegacyJsonld?: boolean;
     normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
-  }>,
+  },
 ): Promise<DatasetWithId[]> {
   const fetchFn = options?.fetch ?? fallbackFetch;
   // The request payload depends on the target endpoint.

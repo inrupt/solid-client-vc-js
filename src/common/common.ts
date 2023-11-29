@@ -531,11 +531,26 @@ export async function verifiableCredentialToDataset<T extends { id?: string }>(
 export async function internal_getVerifiableCredentialFromResponse(
   vcUrl: UrlString | undefined,
   response: Response,
+  options: ParseOptions & {
+    returnLegacyJsonld: false;
+  },
+): Promise<DatasetWithId>;
+/**
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function internal_getVerifiableCredentialFromResponse(
+  vcUrl: UrlString | undefined,
+  response: Response,
   options?: ParseOptions & {
     returnLegacyJsonld?: true;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<VerifiableCredential>;
+/**
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
 export async function internal_getVerifiableCredentialFromResponse(
   vcUrl: UrlString | undefined,
   response: Response,
@@ -564,6 +579,8 @@ export async function internal_getVerifiableCredentialFromResponse(
       vcUrl = vc.id;
     }
 
+    // If you're wondering why this is not inside the if (returnLegacy) condition outside this try/catch statement
+    // see https://github.com/inrupt/solid-client-vc-js/pull/849#discussion_r1405853022
     if (returnLegacy) {
       vc = normalizeVc(vc);
     }
@@ -591,6 +608,8 @@ export async function internal_getVerifiableCredentialFromResponse(
   }
 
   if (
+    // This is needed to make typescript happy;
+    // the compiler infers the type to be `null | undefined | {}` when it reaches this line.
     typeof vc !== "object" ||
     vc === null ||
     !("id" in vc) ||
@@ -625,6 +644,24 @@ export async function internal_getVerifiableCredentialFromResponse(
  * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
  * @returns The dereferenced VC if valid. Throws otherwise.
  * @since 0.4.0
+ */
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options: ParseOptions & {
+    fetch?: typeof fetch;
+    returnLegacyJsonld: false;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<DatasetWithId>;
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
  * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
  * versions of this library.
  */
@@ -645,12 +682,15 @@ export async function getVerifiableCredential(
  * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
  * @returns The dereferenced VC if valid. Throws otherwise.
  * @since 0.4.0
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
  */
 export async function getVerifiableCredential(
   vcUrl: UrlString,
   options?: ParseOptions & {
     fetch?: typeof fetch;
     returnLegacyJsonld?: boolean;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<DatasetWithId>;
 export async function getVerifiableCredential(

@@ -76,19 +76,7 @@ interface ParsedVerifiablePresentation extends VerifiablePresentation {
   verifiableCredential?: VerifiableCredential[];
 }
 
-/**
- * @deprecated Use RDFJS API instead of relying on the JSON structure by setting `returnLegacyJsonld` to false
- */
-export async function query(
-  queryEndpoint: Iri,
-  vpRequest: VerifiablePresentationRequest,
-  options?: ParseOptions &
-    Partial<{
-      fetch: typeof fallbackFetch;
-      returnLegacyJsonld?: true;
-      normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
-    }>,
-): Promise<ParsedVerifiablePresentation>;
+
 /**
  * Send a Verifiable Presentation Request to a query endpoint in order to retrieve
  * all Verifiable Credentials matching the query, wrapped in a single Presentation.
@@ -124,13 +112,29 @@ export async function query(
 export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
-  options?: ParseOptions &
-    Partial<{
+  options: ParseOptions &
+    {
       fetch: typeof fallbackFetch;
       returnLegacyJsonld: false;
       normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
-    }>,
+    },
 ): Promise<{ verifiableCredential?: DatasetWithId[] }>;
+/**
+ * @deprecated Use RDFJS API instead of relying on the JSON structure by setting `returnLegacyJsonld` to false
+ */
+export async function query(
+  queryEndpoint: Iri,
+  vpRequest: VerifiablePresentationRequest,
+  options?: ParseOptions &
+    Partial<{
+      fetch: typeof fallbackFetch;
+      returnLegacyJsonld?: true;
+      normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
+    }>,
+): Promise<ParsedVerifiablePresentation>;
+/**
+ * @deprecated Use RDFJS API instead of relying on the JSON structure by setting `returnLegacyJsonld` to false
+ */
 export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
