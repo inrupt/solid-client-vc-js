@@ -197,7 +197,7 @@ export async function getVerifiableCredentialAllFromShape(
   const vp = await query(holderEndpoint, vpRequest, {
     fetch: fetchFn,
     returnLegacyJsonld: options?.returnLegacyJsonld,
-    normalize: options?.normalize
+    normalize: options?.normalize,
   });
   return vp.verifiableCredential ?? [];
 }

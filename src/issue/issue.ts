@@ -25,7 +25,12 @@
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
-import type { Iri, JsonLd, VerifiableCredential, VerifiableCredentialBase } from "../common/common";
+import type {
+  Iri,
+  JsonLd,
+  VerifiableCredential,
+  VerifiableCredentialBase,
+} from "../common/common";
 import {
   concatenateContexts,
   defaultContext,

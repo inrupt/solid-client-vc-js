@@ -76,7 +76,6 @@ interface ParsedVerifiablePresentation extends VerifiablePresentation {
   verifiableCredential?: VerifiableCredential[];
 }
 
-
 /**
  * Send a Verifiable Presentation Request to a query endpoint in order to retrieve
  * all Verifiable Credentials matching the query, wrapped in a single Presentation.
@@ -112,12 +111,11 @@ interface ParsedVerifiablePresentation extends VerifiablePresentation {
 export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
-  options: ParseOptions &
-    {
-      fetch: typeof fallbackFetch;
-      returnLegacyJsonld: false;
-      normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
-    },
+  options: ParseOptions & {
+    fetch: typeof fallbackFetch;
+    returnLegacyJsonld: false;
+    normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
 ): Promise<{ verifiableCredential?: DatasetWithId[] }>;
 /**
  * @deprecated Use RDFJS API instead of relying on the JSON structure by setting `returnLegacyJsonld` to false
@@ -267,7 +265,8 @@ export async function query(
         ...(await Promise.all(
           data.verifiableCredential
             .slice(i, i + 100)
-            .map(async (vc: VerifiableCredentialBase) => {
+            .map(async (_vc: VerifiableCredentialBase) => {
+              let vc = _vc;
               if (typeof vc !== "object" || vc === null) {
                 throw new Error(`Verifiable Credentail is an invalid object`);
               }

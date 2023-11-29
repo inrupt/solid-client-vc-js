@@ -354,5 +354,41 @@ describe("query", () => {
         ],
       ).toBeUndefined();
     });
+
+    it("applies additional normalisation to the vc's according to the normalize function", async () => {
+      const mockedVc = mockDefaultCredential();
+      // Force unexpected VC shapes to check normalization.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      mockedVc.proof["https://w3id.org/security#proofValue"] =
+        mockedVc.proof.proofValue;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      delete mockedVc.proof.proofValue;
+      const mockedFetch = jest
+        .fn<(typeof UniversalFetch)["fetch"]>()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
+            status: 200,
+          }),
+        );
+      const resultVp = await query(
+        "https://example.org/query",
+        { query: [mockRequest] },
+        {
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          normalize(vc) {
+            return {
+              ...vc,
+              type: [...vc.type, "http://example.org/my/extra/type"],
+            };
+          },
+        },
+      );
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      expect(resultVp.verifiableCredential![0].type).toContain(
+        "http://example.org/my/extra/type",
+      );
+    });
   });
 });
