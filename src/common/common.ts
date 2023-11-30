@@ -633,7 +633,10 @@ export async function internal_getVerifiableCredentialFromResponse(
     includeVcProperties: false,
   });
 
-  if (!options.skipValidation && !isRdfjsVerifiableCredential(parsedVc, namedNode(parsedVc.id))) {
+  if (
+    !options.skipValidation &&
+    !isRdfjsVerifiableCredential(parsedVc, namedNode(parsedVc.id))
+  ) {
     throw new Error(
       `The value received from [${vcUrl}] is not a Verifiable Credential`,
     );
