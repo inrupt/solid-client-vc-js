@@ -534,6 +534,7 @@ export async function internal_getVerifiableCredentialFromResponse(
   response: Response,
   options: ParseOptions & {
     returnLegacyJsonld: false;
+    skipValidation?: boolean;
   },
 ): Promise<DatasetWithId>;
 /**
@@ -545,6 +546,7 @@ export async function internal_getVerifiableCredentialFromResponse(
   response: Response,
   options?: ParseOptions & {
     returnLegacyJsonld?: true;
+    skipValidation?: boolean;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<VerifiableCredential>;
@@ -557,6 +559,8 @@ export async function internal_getVerifiableCredentialFromResponse(
   response: Response,
   options?: ParseOptions & {
     returnLegacyJsonld?: boolean;
+    skipValidation?: boolean;
+    noVerify?: boolean;
   },
 ): Promise<DatasetWithId>;
 export async function internal_getVerifiableCredentialFromResponse(
@@ -564,6 +568,7 @@ export async function internal_getVerifiableCredentialFromResponse(
   response: Response,
   options?: ParseOptions & {
     returnLegacyJsonld?: boolean;
+    skipValidation?: boolean;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<DatasetWithId> {
@@ -592,7 +597,7 @@ export async function internal_getVerifiableCredentialFromResponse(
   }
 
   if (returnLegacy) {
-    if (!isVerifiableCredential(vc)) {
+    if (!options?.skipValidation && !isVerifiableCredential(vc)) {
       throw new Error(
         `The value received from [${vcUrl}] is not a Verifiable Credential`,
       );
@@ -628,7 +633,7 @@ export async function internal_getVerifiableCredentialFromResponse(
     includeVcProperties: false,
   });
 
-  if (!isRdfjsVerifiableCredential(parsedVc, namedNode(parsedVc.id))) {
+  if (!options.skipValidation && !isRdfjsVerifiableCredential(parsedVc, namedNode(parsedVc.id))) {
     throw new Error(
       `The value received from [${vcUrl}] is not a Verifiable Credential`,
     );
@@ -650,6 +655,7 @@ export async function getVerifiableCredential(
   vcUrl: UrlString,
   options: ParseOptions & {
     fetch?: typeof fetch;
+    skipValidation?: boolean;
     returnLegacyJsonld: false;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
@@ -670,6 +676,7 @@ export async function getVerifiableCredential(
   vcUrl: UrlString,
   options?: ParseOptions & {
     fetch?: typeof fetch;
+    skipValidation?: boolean;
     returnLegacyJsonld?: true;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
@@ -690,6 +697,7 @@ export async function getVerifiableCredential(
   vcUrl: UrlString,
   options?: ParseOptions & {
     fetch?: typeof fetch;
+    skipValidation?: boolean;
     returnLegacyJsonld?: boolean;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
@@ -698,6 +706,7 @@ export async function getVerifiableCredential(
   vcUrl: UrlString,
   options?: ParseOptions & {
     fetch?: typeof fetch;
+    skipValidation?: boolean;
     returnLegacyJsonld?: boolean;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
