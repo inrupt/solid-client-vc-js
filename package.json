@@ -62,7 +62,6 @@
     "@rdfjs/dataset": "2.0.1",
     "@rdfjs/types": "^1.1.0",
     "@rushstack/eslint-patch": "^1.1.4",
-    "@types/content-type": "^1.1.5",
     "@types/dotenv-flow": "^3.1.1",
     "@types/jest": "^29.2.2",
     "@types/md5": "^2.3.4",
@@ -89,7 +88,6 @@
   "dependencies": {
     "@inrupt/solid-client": "^1.25.2",
     "@inrupt/universal-fetch": "^1.0.1",
-    "content-type": "^1.0.5",
     "event-emitter-promisify": "^1.1.0",
     "jsonld-context-parser": "^2.4.0",
     "jsonld-streaming-parser": "^3.3.0",
