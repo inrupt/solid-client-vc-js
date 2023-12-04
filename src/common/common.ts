@@ -528,6 +528,14 @@ export async function verifiableCredentialToDataset<T extends { id?: string }>(
   return internal_applyDataset(vc as { id: string }, store, options);
 }
 
+function hasId(vc: unknown): vc is { id: string } {
+  return (
+    typeof vc === "object" &&
+    vc !== null &&
+    typeof (vc as { id: unknown }).id === "string"
+  );
+}
+
 // eslint-disable-next-line camelcase
 export async function internal_getVerifiableCredentialFromResponse(
   vcUrl: UrlString | undefined,
@@ -613,20 +621,12 @@ export async function internal_getVerifiableCredentialFromResponse(
     });
   }
 
-  if (
-    // This is needed to make typescript happy;
-    // the compiler infers the type to be `null | undefined | {}` when it reaches this line.
-    typeof vc !== "object" ||
-    vc === null ||
-    !("id" in vc) ||
-    typeof vc.id !== "string"
-  ) {
+  if (!hasId(vc)) {
     throw new Error(
       "Verifiable credential is not an object, or does not have an id",
     );
   }
-
-  const parsedVc = await verifiableCredentialToDataset(vc as { id: string }, {
+  const parsedVc = await verifiableCredentialToDataset(vc, {
     allowContextFetching: options.allowContextFetching,
     baseIRI: options.baseIRI,
     contexts: options.contexts,
