@@ -62,7 +62,7 @@ jest.mock("@inrupt/universal-fetch", () => {
 });
 
 describe("normalizeVc", () => {
-  it("returns the same object", () => {
+  it("returns the same object when normalization is impossible", () => {
     const obj = {};
     expect(normalizeVc(obj)).toEqual(obj);
   });
