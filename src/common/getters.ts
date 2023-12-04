@@ -127,7 +127,7 @@ export function getIssuanceDate(vc: DatasetWithId): Date {
  * ```
  *
  * @param vc The Verifiable Credential
- * @returns The expiration date
+ * @returns The expiration date, or undefined if none is found.
  */
 export function getExpirationDate(vc: DatasetWithId): Date | undefined {
   const res = [
