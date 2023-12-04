@@ -523,29 +523,21 @@ describe("getVerifiableCredential", () => {
         ) as jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
     });
 
-    it("returnLegacyJsonld: true", async () => {
-      await getVerifiableCredential(
-        "https://example.org/ns/someCredentialInstance",
-        {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        },
-      );
-      expect(mockedFetch).toHaveBeenCalledWith(
-        "https://example.org/ns/someCredentialInstance",
-      );
-    });
-    it("returnLegacyJsonld: false", async () => {
-      await getVerifiableCredential(
-        "https://example.org/ns/someCredentialInstance",
-        {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-          returnLegacyJsonld: false,
-        },
-      );
-      expect(mockedFetch).toHaveBeenCalledWith(
-        "https://example.org/ns/someCredentialInstance",
-      );
-    });
+    it.each([[true], [false]])(
+      "returnLegacyJsonld: %s",
+      async (returnLegacyJsonld) => {
+        await getVerifiableCredential(
+          "https://example.org/ns/someCredentialInstance",
+          {
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            returnLegacyJsonld,
+          },
+        );
+        expect(mockedFetch).toHaveBeenCalledWith(
+          "https://example.org/ns/someCredentialInstance",
+        );
+      },
+    );
   });
 
   describe("throws if the VC ID cannot be dereferenced", () => {
@@ -562,31 +554,22 @@ describe("getVerifiableCredential", () => {
         ) as jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
     });
 
-    it("returnLegacyJsonld: true", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-          },
-        ),
-      ).rejects.toThrow(
-        "Fetching the Verifiable Credential [https://example.org/ns/someCredentialInstance] failed: 401 Unauthenticated",
-      );
-    });
-    it("returnLegacyJsonld: false", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-            returnLegacyJsonld: false,
-          },
-        ),
-      ).rejects.toThrow(
-        "Fetching the Verifiable Credential [https://example.org/ns/someCredentialInstance] failed: 401 Unauthenticated",
-      );
-    });
+    it.each([[true], [false]])(
+      "returnLegacyJsonld: %s",
+      async (returnLegacyJsonld) => {
+        await expect(
+          getVerifiableCredential(
+            "https://example.org/ns/someCredentialInstance",
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              returnLegacyJsonld,
+            },
+          ),
+        ).rejects.toThrow(
+          "Fetching the Verifiable Credential [https://example.org/ns/someCredentialInstance] failed: 401 Unauthenticated",
+        );
+      },
+    );
   });
 
   describe("throws if the dereferenced data is invalid JSON", () => {
@@ -600,31 +583,22 @@ describe("getVerifiableCredential", () => {
       >;
     });
 
-    it("returnLegacyJsonld: true", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-          },
-        ),
-      ).rejects.toThrow(
-        "Parsing the Verifiable Credential [https://example.org/ns/someCredentialInstance] as JSON failed: SyntaxError:",
-      );
-    });
-    it("returnLegacyJsonld: false", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-            returnLegacyJsonld: false,
-          },
-        ),
-      ).rejects.toThrow(
-        "Parsing the Verifiable Credential [https://example.org/ns/someCredentialInstance] as JSON failed: SyntaxError:",
-      );
-    });
+    it.each([[true], [false]])(
+      "returnLegacyJsonld: %s",
+      async (returnLegacyJsonld) => {
+        await expect(
+          getVerifiableCredential(
+            "https://example.org/ns/someCredentialInstance",
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              returnLegacyJsonld,
+            },
+          ),
+        ).rejects.toThrow(
+          "Parsing the Verifiable Credential [https://example.org/ns/someCredentialInstance] as JSON failed: SyntaxError:",
+        );
+      },
+    );
   });
 
   describe("throws if the dereferenced data is not a VC", () => {
@@ -638,31 +612,24 @@ describe("getVerifiableCredential", () => {
         ) as jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
     });
 
-    it("returnLegacyJsonld: true", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-          },
-        ),
-      ).rejects.toThrow(
-        "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-      );
-    });
-    it("returnLegacyJsonld: false", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-            returnLegacyJsonld: false,
-          },
-        ),
-      ).rejects.toThrow(
-        "Verifiable credential is not an object, or does not have an id",
-      );
-    });
+    it.each([[true], [false]])(
+      "returnLegacyJsonld: %s",
+      async (returnLegacyJsonld) => {
+        await expect(
+          getVerifiableCredential(
+            "https://example.org/ns/someCredentialInstance",
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              returnLegacyJsonld,
+            },
+          ),
+        ).rejects.toThrow(
+          returnLegacyJsonld
+            ? "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential"
+            : "Verifiable credential is not an object, or does not have an id",
+        );
+      },
+    );
   });
 
   it.skip("throws if the dereferenced data has an unsupported content type", async () => {
@@ -679,273 +646,262 @@ describe("getVerifiableCredential", () => {
     ).rejects.toThrow(/unsupported Content-Type/);
   });
 
-  it("throws if the dereferenced data is empty", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(JSON.stringify({}), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-    );
-
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        returnLegacyJsonld: false,
-      }),
-    ).rejects.toThrow(
-      "Verifiable credential is not an object, or does not have an id",
-    );
-  });
-
-  it("throws if the vc is a blank node", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(
-          JSON.stringify({
-            "@type": "https://www.w3.org/2018/credentials#VerifiableCredential",
+  it.each([[true], [false]])(
+    "throws if the dereferenced data is emptyreturnLegacyJsonld: [returnLegacyJsonld: %s]",
+    async (returnLegacyJsonld) => {
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(JSON.stringify({}), {
+            headers: new Headers([["content-type", "application/json"]]),
           }),
+      );
+
+      await expect(
+        getVerifiableCredential(
+          "https://example.org/ns/someCredentialInstance",
           {
-            headers: new Headers([["content-type", "application/json"]]),
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            returnLegacyJsonld,
           },
         ),
-    );
+      ).rejects.toThrow(
+        returnLegacyJsonld
+          ? "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential"
+          : "Verifiable credential is not an object, or does not have an id",
+      );
+    },
+  );
 
-    await expect(
-      getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        returnLegacyJsonld: false,
-      }),
-    ).rejects.toThrow(
-      "Verifiable credential is not an object, or does not have an id",
-    );
-  });
+  it.each([[true], [false]])(
+    "throws if the vc is a blank node: [returnLegacyJsonld: %s]",
+    async (returnLegacyJsonld) => {
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(
+            JSON.stringify({
+              "@type":
+                "https://www.w3.org/2018/credentials#VerifiableCredential",
+            }),
+            {
+              headers: new Headers([["content-type", "application/json"]]),
+            },
+          ),
+      );
 
-  it("throws if the vc has a type that is a literal", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(
-          JSON.stringify({
-            "@context": "https://www.w3.org/2018/credentials/v1",
-            "@id": "http://example.org/my/vc",
-            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": [
-              {
-                "@id":
-                  "https://www.w3.org/2018/credentials#VerifiableCredential",
-              },
-              "str",
-            ],
+      await expect(
+        getVerifiableCredential("https://some.vc", {
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          returnLegacyJsonld,
+        }),
+      ).rejects.toThrow(
+        returnLegacyJsonld
+          ? "The value received from [https://some.vc] is not a Verifiable Credential"
+          : "Verifiable credential is not an object, or does not have an id",
+      );
+    },
+  );
+
+  it.each([[true], [false]])(
+    "throws if the vc has a type that is a literal: [returnLegacyJsonld: %s]",
+    async (returnLegacyJsonld) => {
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(
+            JSON.stringify({
+              "@context": "https://www.w3.org/2018/credentials/v1",
+              "@id": "http://example.org/my/vc",
+              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": [
+                {
+                  "@id":
+                    "https://www.w3.org/2018/credentials#VerifiableCredential",
+                },
+                "str",
+              ],
+            }),
+            {
+              headers: new Headers([["content-type", "application/json"]]),
+            },
+          ),
+      );
+
+      await expect(
+        getVerifiableCredential("https://some.vc", {
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          returnLegacyJsonld,
+        }),
+      ).rejects.toThrow(
+        returnLegacyJsonld
+          ? "The value received from [https://some.vc] is not a Verifiable Credential"
+          : "Verifiable credential is not an object, or does not have an id",
+      );
+    },
+  );
+
+  it.each([[true], [false]])(
+    "throws if the dereferenced data has 2 vcs: [returnLegacyJsonld: %s]",
+    async (returnLegacyJsonld) => {
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(
+            JSON.stringify([
+              mockDefaultCredential(),
+              mockDefaultCredential("http://example.org/mockVC2"),
+            ]),
+            {
+              headers: new Headers([["content-type", "application/json"]]),
+            },
+          ),
+      );
+
+      await expect(
+        getVerifiableCredential("https://some.vc", {
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          returnLegacyJsonld,
+        }),
+      ).rejects.toThrow(
+        returnLegacyJsonld
+          ? "The value received from [https://some.vc] is not a Verifiable Credential"
+          : "Verifiable credential is not an object, or does not have an id",
+      );
+    },
+  );
+
+  it.each([[true], [false]])(
+    "throws if the dereferenced data has 2 proofs: [returnLegacyJsonld: %s]",
+    async (returnLegacyJsonld) => {
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(JSON.stringify(mockDefaultCredential2Proofs()), {
+            headers: new Headers([["content-type", "application/json"]]),
           }),
-          {
+      );
+
+      await expect(
+        getVerifiableCredential("https://some.vc", {
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          returnLegacyJsonld,
+        }),
+      ).rejects.toThrow(
+        "The value received from [https://some.vc] is not a Verifiable Credential",
+      );
+    },
+  );
+
+  it.each([[true], [false]])(
+    "throws if the date field is not a valid xsd:dateTime:  [returnLegacyJsonld: %s]",
+    async (returnLegacyJsonld) => {
+      const mocked = mockDefaultCredential();
+      mocked.issuanceDate = "http://example.org/not/a/date";
+
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(JSON.stringify(mocked), {
             headers: new Headers([["content-type", "application/json"]]),
+          }),
+      );
+
+      await expect(
+        getVerifiableCredential(
+          "https://example.org/ns/someCredentialInstance",
+          {
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            returnLegacyJsonld,
           },
         ),
-    );
+      ).rejects.toThrow(
+        "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
+      );
+    },
+  );
 
-    await expect(
-      getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential",
-    );
-  });
+  it.each([[true], [false]])(
+    "throws if the date field is a string: [returnLegacyJsonld: %s]",
+    async (returnLegacyJsonld) => {
+      const mocked = mockDefaultCredential();
+      // @ts-expect-error issuanceDate is required on the VC type
+      delete mocked.issuanceDate;
+      mocked["https://www.w3.org/2018/credentials#issuanceDate"] =
+        "http://example.org/not/a/date";
 
-  it("throws if the dereferenced data has 2 vcs", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(
-          JSON.stringify([
-            mockDefaultCredential(),
-            mockDefaultCredential("http://example.org/mockVC2"),
-          ]),
-          {
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(JSON.stringify(mocked), {
             headers: new Headers([["content-type", "application/json"]]),
+          }),
+      );
+
+      await expect(
+        getVerifiableCredential(
+          "https://example.org/ns/someCredentialInstance",
+          {
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            returnLegacyJsonld,
           },
         ),
-    );
+      ).rejects.toThrow(
+        "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
+      );
+    },
+  );
 
-    await expect(
-      getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        returnLegacyJsonld: false,
-      }),
-    ).rejects.toThrow(
-      "Verifiable credential is not an object, or does not have an id",
-    );
-  });
+  it.each([[true], [false]])(
+    "throws if the date field is an IRI: [returnLegacyJsonld: %s]",
+    async (returnLegacyJsonld) => {
+      const mocked = mockDefaultCredential();
+      // @ts-expect-error issuanceDate is required on the VC type
+      delete mocked.issuanceDate;
+      mocked["https://www.w3.org/2018/credentials#issuanceDate"] = {
+        "@id": "http://example.org/not/a/date",
+      };
 
-  it("throws if the dereferenced data has 2 proofs", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(JSON.stringify(mockDefaultCredential2Proofs()), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-    );
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(JSON.stringify(mocked), {
+            headers: new Headers([["content-type", "application/json"]]),
+          }),
+      );
 
-    await expect(
-      getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://some.vc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        returnLegacyJsonld: false,
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://some.vc] is not a Verifiable Credential",
-    );
-  });
+      await expect(
+        getVerifiableCredential(
+          "https://example.org/ns/someCredentialInstance",
+          {
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            returnLegacyJsonld,
+          },
+        ),
+      ).rejects.toThrow(
+        "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
+      );
+    },
+  );
 
-  it("throws if the date field is not a valid xsd:dateTime", async () => {
-    const mocked = mockDefaultCredential();
-    mocked.issuanceDate = "http://example.org/not/a/date";
+  it.each([[true], [false]])(
+    "throws if the issuer is a string: [returnLegacyJsonld: %s]",
+    async (returnLegacyJsonld) => {
+      const mocked = mockDefaultCredential();
+      // @ts-expect-error issuer is of type string on the VC type
+      mocked.issuer = { "@value": "my string" };
 
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(JSON.stringify(mocked), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-    );
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(JSON.stringify(mocked), {
+            headers: new Headers([["content-type", "application/json"]]),
+          }),
+      );
 
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        returnLegacyJsonld: false,
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-  });
-
-  it("throws if the date field is a string", async () => {
-    const mocked = mockDefaultCredential();
-    // @ts-expect-error issuanceDate is required on the VC type
-    delete mocked.issuanceDate;
-    mocked["https://www.w3.org/2018/credentials#issuanceDate"] =
-      "http://example.org/not/a/date";
-
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(JSON.stringify(mocked), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-    );
-
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        returnLegacyJsonld: false,
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-  });
-
-  it("throws if the date field is an IRI", async () => {
-    const mocked = mockDefaultCredential();
-    // @ts-expect-error issuanceDate is required on the VC type
-    delete mocked.issuanceDate;
-    mocked["https://www.w3.org/2018/credentials#issuanceDate"] = {
-      "@id": "http://example.org/not/a/date",
-    };
-
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(JSON.stringify(mocked), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-    );
-
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        returnLegacyJsonld: false,
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-  });
-
-  it("throws if the issuer is a string", async () => {
-    const mocked = mockDefaultCredential();
-    // @ts-expect-error issuer is of type string on the VC type
-    mocked.issuer = { "@value": "my string" };
-
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(JSON.stringify(mocked), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-    );
-
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        returnLegacyJsonld: false,
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-  });
+      await expect(
+        getVerifiableCredential(
+          "https://example.org/ns/someCredentialInstance",
+          {
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            returnLegacyJsonld,
+          },
+        ),
+      ).rejects.toThrow(
+        "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
+      );
+    },
+  );
 
   it("should handle credential subjects with multiple objects", async () => {
     const mocked = mockDefaultCredential();
@@ -1044,34 +1000,33 @@ describe("getVerifiableCredential", () => {
     expect(JSON.parse(JSON.stringify(vcNoLegacy))).toEqual(mocked);
   });
 
-  it("throws if there are 2 proof values", async () => {
-    const mocked = mockDefaultCredential();
-    // @ts-expect-error proofValue is a string not string[] in VC type
-    mocked.proof.proofValue = [mocked.proof.proofValue, "abc"];
+  it.each([[true], [false]])(
+    "throws if there are 2 proof values",
+    async (returnLegacyJsonld) => {
+      const mocked = mockDefaultCredential();
+      // @ts-expect-error proofValue is a string not string[] in VC type
+      mocked.proof.proofValue = [mocked.proof.proofValue, "abc"];
 
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-      async () =>
-        new Response(JSON.stringify(mocked), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-    );
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(JSON.stringify(mocked), {
+            headers: new Headers([["content-type", "application/json"]]),
+          }),
+      );
 
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-    await expect(
-      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        returnLegacyJsonld: false,
-      }),
-    ).rejects.toThrow(
-      "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
-    );
-  });
+      await expect(
+        getVerifiableCredential(
+          "https://example.org/ns/someCredentialInstance",
+          {
+            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            returnLegacyJsonld,
+          },
+        ),
+      ).rejects.toThrow(
+        "The value received from [https://example.org/ns/someCredentialInstance] is not a Verifiable Credential",
+      );
+    },
+  );
 
   it("returns the fetched VC and the redirect URL", async () => {
     const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
@@ -1142,55 +1097,55 @@ describe("getVerifiableCredential", () => {
         );
     });
 
-    it("errors if the context contains an IRI that is not cached", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-          },
-        ),
-      ).rejects.toThrow(
-        "Unexpected context requested [http://example.org/my/sample/context]",
-      );
-    });
+    it.each([[true], [false]])(
+      "errors if the context contains an IRI that is not cached: [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        await expect(
+          getVerifiableCredential(
+            "https://example.org/ns/someCredentialInstance",
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              returnLegacyJsonld,
+            },
+          ),
+        ).rejects.toThrow(
+          "Unexpected context requested [http://example.org/my/sample/context]",
+        );
+      },
+    );
 
-    it("errors if the context contains an IRI that is not cached [returnLegacyJsonld: false]", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-            returnLegacyJsonld: false,
-          },
-        ),
-      ).rejects.toThrow(
-        "Unexpected context requested [http://example.org/my/sample/context]",
-      );
-    });
+    it.each([[true], [false]])(
+      "resolves if allowContextFetching is enabled and the context can be fetched: [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        (uniFetch as jest.Mock<typeof uniFetch>).mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              "@context": {},
+            }),
+            {
+              headers: new Headers([["content-type", "application/ld+json"]]),
+            },
+          ),
+        );
 
-    it("resolves if allowContextFetching is enabled and the context can be fetched", async () => {
-      (uniFetch as jest.Mock<typeof uniFetch>).mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            "@context": {},
-          }),
-          {
-            headers: new Headers([["content-type", "application/ld+json"]]),
-          },
-        ),
-      );
-
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-            allowContextFetching: true,
-          },
-        ),
-      ).resolves.toMatchObject(mockCredential);
-    });
+        await expect(
+          getVerifiableCredential(
+            "https://example.org/ns/someCredentialInstance",
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              allowContextFetching: true,
+              returnLegacyJsonld,
+            },
+          ),
+        ).resolves.toMatchObject(
+          returnLegacyJsonld
+            ? mockCredential
+            : {
+                id: "https://example.org/ns/someCredentialInstance",
+              },
+        );
+      },
+    );
 
     it("can apply normalization of the response before parsing and returning it", async () => {
       (uniFetch as jest.Mock<typeof uniFetch>).mockResolvedValueOnce(
@@ -1261,41 +1216,31 @@ describe("getVerifiableCredential", () => {
       });
     });
 
-    it("resolves if the context is cached", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-            allowContextFetching: true,
-            contexts: {
-              "http://example.org/my/sample/context": {
-                "@context": {},
+    it.each([[true], [false]])(
+      "resolves if the context is cached: [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        await expect(
+          getVerifiableCredential(
+            "https://example.org/ns/someCredentialInstance",
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              allowContextFetching: true,
+              returnLegacyJsonld,
+              contexts: {
+                "http://example.org/my/sample/context": {
+                  "@context": {},
+                },
               },
             },
-          },
-        ),
-      ).resolves.toMatchObject(mockCredential);
-    });
-
-    it("resolves if the context is cached [returnLegacyJsonld: false]", async () => {
-      await expect(
-        getVerifiableCredential(
-          "https://example.org/ns/someCredentialInstance",
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-            allowContextFetching: true,
-            returnLegacyJsonld: false,
-            contexts: {
-              "http://example.org/my/sample/context": {
-                "@context": {},
+          ),
+        ).resolves.toMatchObject(
+          returnLegacyJsonld
+            ? mockCredential
+            : {
+                id: "https://example.org/ns/someCredentialInstance",
               },
-            },
-          },
-        ),
-      ).resolves.toMatchObject({
-        id: "https://example.org/ns/someCredentialInstance",
-      });
-    });
+        );
+      },
+    );
   });
 });
