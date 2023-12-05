@@ -447,16 +447,17 @@ export async function getVerifiableCredentialApiConfiguration(
 }
 
 // eslint-disable-next-line camelcase
-export function internal_applyDataset<T extends { id: string }>(
+export function internal_applyDataset<T extends { id?: string }>(
   vc: T,
   store: DatasetCore,
   options?: ParseOptions & {
     includeVcProperties?: boolean;
     additionalProperties?: Record<string, unknown>;
+    requireId?: boolean;
   },
-): DatasetWithId {
+): DatasetCore {
   return Object.freeze({
-    id: vc.id,
+    ...(options?.requireId !== false && { id: vc.id }),
     ...(options?.includeVcProperties && vc),
     ...options?.additionalProperties,
     // Make this a DatasetCore without polluting the object with
@@ -494,20 +495,42 @@ export async function verifiableCredentialToDataset<T extends { id?: string }>(
   vc: T,
   options?: ParseOptions & {
     includeVcProperties: true;
+    additionalProperties?: Record<string, unknown>;
+    requireId?: true;
   },
 ): Promise<T & DatasetWithId>;
 export async function verifiableCredentialToDataset<T extends { id?: string }>(
   vc: T,
   options?: ParseOptions & {
     includeVcProperties?: boolean;
+    additionalProperties?: Record<string, unknown>;
+    requireId?: true;
   },
 ): Promise<DatasetWithId>;
 export async function verifiableCredentialToDataset<T extends { id?: string }>(
   vc: T,
+  options: ParseOptions & {
+    includeVcProperties: true;
+    additionalProperties?: Record<string, unknown>;
+    requireId: false;
+  },
+): Promise<T & DatasetCore>;
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
+  options: ParseOptions & {
+    includeVcProperties?: boolean;
+    additionalProperties?: Record<string, unknown>;
+    requireId: false;
+  },
+): Promise<DatasetCore>;
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
   options?: ParseOptions & {
     includeVcProperties?: boolean;
+    additionalProperties?: Record<string, unknown>;
+    requireId?: boolean;
   },
-): Promise<DatasetWithId> {
+): Promise<DatasetCore> {
   let store: DatasetCore;
   try {
     store = await jsonLdToStore(vc, options);
@@ -517,7 +540,7 @@ export async function verifiableCredentialToDataset<T extends { id?: string }>(
     );
   }
 
-  if (typeof vc.id !== "string") {
+  if (options?.requireId !== false && typeof vc.id !== "string") {
     throw new Error(
       `Expected vc.id to be a string, found [${
         vc.id

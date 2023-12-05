@@ -166,3 +166,58 @@ export const mockDefaultPresentation = (
     defaultVerifiableClaims,
   ) as VerifiablePresentation;
 };
+
+export const mockAnonymousDefaultPresentation = (
+  vc: VerifiableCredentialBase[] = [mockDefaultCredential()],
+): VerifiablePresentation => {
+  return mockPartialPresentation(vc, {
+    ...defaultVerifiableClaims,
+    id: undefined,
+  }) as VerifiablePresentation;
+};
+
+export const mockAccessGrant = () => ({
+  "@context": ["https://www.w3.org/2018/credentials/v1"],
+  type: "VerifiablePresentation",
+  holder: "https://vc.inrupt.com",
+  verifiableCredential: [
+    {
+      id: "https://example.org/ns/someCredentialInstance",
+      type: ["SolidAccessRequest", "VerifiableCredential"],
+      proof: {
+        type: "Ed25519Signature2020",
+        created: "2023-12-05T00:11:29.159Z",
+        domain: "solid",
+        proofPurpose: "assertionMethod",
+        proofValue: "z4pPdpe9iQyFm2opvCJeoiW61Kajx8LqZQUFYLd",
+        verificationMethod: "https://example.org/verificationMethod/keys/1",
+      },
+      credentialStatus: {
+        id: "https://vc.inrupt.com/status/At3i#0",
+        type: "RevocationList2020Status",
+        revocationListCredential: "https://vc.inrupt.com/status/At3i",
+        revocationListIndex: "0",
+      },
+      credentialSubject: {
+        id: "https://some.webid.provider/strelka",
+        hasConsent: {
+          mode: "Read",
+          forPersonalData: "https://example.org/another-resource",
+          forPurpose: "http://example.org/some/purpose/1701735088943",
+          hasStatus: "ConsentStatusRequested",
+          isConsentForDataSubject: "https://some.webid/resource-owner",
+        },
+      },
+      issuanceDate: "1960-08-19T16:08:31Z",
+      issuer: "https://some.vc.issuer/in-ussr",
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://schema.inrupt.com/credentials/v1.jsonld",
+        "https://w3id.org/security/data-integrity/v1",
+        "https://w3id.org/vc-revocation-list-2020/v1",
+        "https://w3id.org/vc/status-list/2021/v1",
+        "https://w3id.org/security/suites/ed25519-2020/v1",
+      ],
+    },
+  ],
+});

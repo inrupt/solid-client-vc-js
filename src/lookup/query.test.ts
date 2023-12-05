@@ -22,14 +22,19 @@
 import { jest, it, describe, expect, beforeEach } from "@jest/globals";
 import { Response } from "@inrupt/universal-fetch";
 import type * as UniversalFetch from "@inrupt/universal-fetch";
+import { DataFactory } from "n3";
 import type { QueryByExample } from "./query";
 import { query } from "./query";
 import {
   defaultVerifiableClaims,
+  mockAccessGrant,
   mockDefaultCredential,
   mockDefaultPresentation,
   mockPartialPresentation,
 } from "../common/common.mock";
+import { cred, rdf } from "../common/constants";
+
+const { namedNode } = DataFactory;
 
 jest.mock("@inrupt/universal-fetch", () => {
   const fetchModule = jest.requireActual(
@@ -134,7 +139,7 @@ describe("query", () => {
       });
     });
 
-    it.each([
+    describe.each([
       ["null", [null]],
       ["string", ["not a VC"]],
       ["empty object", [{}]],
@@ -149,7 +154,7 @@ describe("query", () => {
       ],
     ])(
       "errors if the presentation contains invalid verifiable credentials [%s]",
-      async (_, elems) => {
+      (_, elems) => {
         const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
           async () =>
             // @ts-expect-error we are intentionall passing invalid VC types here to test for errors
@@ -158,138 +163,172 @@ describe("query", () => {
             }),
         ) as jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
 
-        await expect(
+        it.each([[true], [false]])(
+          "[returnLegacyJsonld: %s]",
+          async (returnLegacyJsonld) => {
+            await expect(
+              query(
+                "https://some.endpoint/query",
+                { query: [mockRequest] },
+                {
+                  fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+                  returnLegacyJsonld,
+                },
+              ),
+            ).rejects.toThrow();
+          },
+        );
+      },
+    );
+
+    it.each([
+      [{ returnLegacyJsonld: true }],
+      [{ returnLegacyJsonld: false }],
+      [undefined],
+    ])(
+      "defaults to an unauthenticated fetch if no fetch is provided [args: %s]",
+      async (arg?: { returnLegacyJsonld?: boolean }) => {
+        const mockedFetch = jest.requireMock(
+          "@inrupt/universal-fetch",
+        ) as jest.Mocked<typeof UniversalFetch>;
+        mockedFetch.fetch.mockResolvedValueOnce(
+          new Response(JSON.stringify(mockDefaultPresentation()), {
+            status: 200,
+          }),
+        );
+        await query(
+          "https://some.endpoint/query",
+          { query: [mockRequest] },
+          arg,
+        );
+        expect(mockedFetch.fetch).toHaveBeenCalled();
+      },
+    );
+
+    it.each([[true], [false]])(
+      "throws if the given endpoint returns an error [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+          async () =>
+            new Response(undefined, {
+              status: 404,
+            }),
+        );
+        await expect(() =>
           query(
-            "https://some.endpoint/query",
-            { query: [mockRequest] },
-            { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
-          ),
-        ).rejects.toThrow();
-        await expect(
-          query(
-            "https://some.endpoint/query",
+            "https://example.org/query",
             { query: [mockRequest] },
             {
               fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-              returnLegacyJsonld: false,
+              returnLegacyJsonld,
             },
           ),
         ).rejects.toThrow();
       },
     );
 
-    it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
-      const mockedFetch = jest.requireMock(
-        "@inrupt/universal-fetch",
-      ) as jest.Mocked<typeof UniversalFetch>;
-      mockedFetch.fetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultPresentation()), {
-          status: 200,
-        }),
-      );
-      await query("https://some.endpoint/query", { query: [mockRequest] });
-      expect(mockedFetch.fetch).toHaveBeenCalled();
-    });
+    it.each([[true], [false]])(
+      "throws if the endpoint responds with a non-JSON payload [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+          async () =>
+            new Response("Not JSON", {
+              status: 200,
+            }),
+        );
+        await expect(() =>
+          query(
+            "https://example.org/query",
+            { query: [mockRequest] },
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              returnLegacyJsonld,
+            },
+          ),
+        ).rejects.toThrow();
+      },
+    );
 
-    it("throws if the given endpoint returns an error", async () => {
-      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-        async () =>
-          new Response(undefined, {
-            status: 404,
-          }),
-      );
-      await expect(() =>
-        query(
-          "https://example.org/query",
-          { query: [mockRequest] },
-          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
-        ),
-      ).rejects.toThrow();
-      await expect(() =>
-        query(
-          "https://example.org/query",
+    it.each([[true], [false]])(
+      "throws if the endpoint responds with a non-VP payload [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        await expect(() =>
+          query(
+            "https://example.org/query",
+            { query: [mockRequest] },
+            {
+              fetch: async () =>
+                new Response(JSON.stringify({ json: "but not a VP" }), {
+                  status: 200,
+                }),
+              returnLegacyJsonld,
+            },
+          ),
+        ).rejects.toThrow();
+      },
+    );
+
+    it.each([[true], [false]])(
+      "posts a request with the appropriate media type [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        const mockedFetch = jest
+          .fn<(typeof UniversalFetch)["fetch"]>()
+          .mockResolvedValueOnce(
+            new Response(JSON.stringify(mockDefaultPresentation()), {
+              status: 200,
+            }),
+          );
+        await query(
+          "https://some.endpoint/query",
           { query: [mockRequest] },
           {
             fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-            returnLegacyJsonld: false,
+            returnLegacyJsonld,
           },
-        ),
-      ).rejects.toThrow();
-    });
-
-    it("throws if the endpoint responds with a non-JSON payload", async () => {
-      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-        async () =>
-          new Response("Not JSON", {
-            status: 200,
-          }),
-      );
-      await expect(() =>
-        query(
-          "https://example.org/query",
-          { query: [mockRequest] },
-          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
-        ),
-      ).rejects.toThrow();
-      await expect(() =>
-        query(
-          "https://example.org/query",
-          { query: [mockRequest] },
-          {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-            returnLegacyJsonld: false,
-          },
-        ),
-      ).rejects.toThrow();
-    });
-
-    it("throws if the endpoint responds with a non-VP payload", async () => {
-      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
-        async () =>
-          new Response(JSON.stringify({ json: "but not a VP" }), {
-            status: 200,
-          }),
-      );
-      await expect(() =>
-        query(
-          "https://example.org/query",
-          { query: [mockRequest] },
-          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
-        ),
-      ).rejects.toThrow();
-      // FIXME: Re-enable this
-      // await expect(() =>
-      //   query(
-      //     "https://example.org/query",
-      //     { query: [mockRequest] },
-      //     { fetch: mockedFetch as (typeof UniversalFetch)["fetch"], returnLegacyJsonld: false },
-      //   ),
-      // ).rejects.toThrow();
-    });
-
-    it("posts a request with the appropriate media type", async () => {
-      const mockedFetch = jest
-        .fn<(typeof UniversalFetch)["fetch"]>()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockDefaultPresentation()), {
-            status: 200,
+        );
+        expect(mockedFetch).toHaveBeenCalledWith(
+          "https://some.endpoint/query",
+          expect.objectContaining({
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "POST",
           }),
         );
-      await query(
-        "https://some.endpoint/query",
-        { query: [mockRequest] },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
-      );
-      expect(mockedFetch).toHaveBeenCalledWith(
-        "https://some.endpoint/query",
-        expect.objectContaining({
-          headers: {
-            "Content-Type": "application/json",
-          },
-          method: "POST",
-        }),
-      );
-    });
+      },
+    );
+
+    it.each([[true], [false]])(
+      "errors if no presentations exist [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        const mockedFetch = jest
+          .fn<(typeof UniversalFetch)["fetch"]>()
+          .mockResolvedValueOnce(
+            new Response(JSON.stringify([]), {
+              status: 200,
+            }),
+          );
+        await expect(
+          query(
+            "https://some.endpoint/query",
+            { query: [mockRequest] },
+            {
+              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              returnLegacyJsonld,
+            },
+          ),
+        ).rejects.toThrow();
+        expect(mockedFetch).toHaveBeenCalledWith(
+          "https://some.endpoint/query",
+          expect.objectContaining({
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "POST",
+          }),
+        );
+      },
+    );
 
     it("returns the VP sent by the endpoint", async () => {
       const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
@@ -317,6 +356,52 @@ describe("query", () => {
       expect(JSON.parse(JSON.stringify(vpNoLegacy))).toEqual(
         mockDefaultPresentation(),
       );
+    });
+
+    it("returns the VP sent by the endpoint [using mock access grant]", async () => {
+      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        async () =>
+          new Response(JSON.stringify(mockAccessGrant()), {
+            status: 200,
+          }),
+      );
+
+      const vp = await query(
+        "https://example.org/query",
+        { query: [mockRequest] },
+        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+      );
+      const vpNoLegacy = await query(
+        "https://example.org/query",
+        { query: [mockRequest] },
+        {
+          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          returnLegacyJsonld: false,
+        },
+      );
+      expect(vp).toMatchObject(mockAccessGrant());
+      expect(JSON.parse(JSON.stringify(vp))).toEqual(mockAccessGrant());
+      expect(JSON.parse(JSON.stringify(vpNoLegacy))).toEqual(mockAccessGrant());
+
+      expect(vp.holder).toBe("https://vc.inrupt.com");
+      expect(vp.type).toBe("VerifiablePresentation");
+      // @ts-expect-error the `holder` property does not exist in the newer version of the API
+      expect(vpNoLegacy.holder).toBeUndefined();
+      // @ts-expect-error the `type` property does not exist in the newer version of the API
+      expect(vpNoLegacy.type).toBeUndefined();
+
+      expect(
+        vp.match(
+          null,
+          rdf.type,
+          namedNode(
+            "https://www.w3.org/2018/credentials#VerifiablePresentation",
+          ),
+        ).size,
+      ).toBe(1);
+      expect(
+        vp.match(null, cred.holder, namedNode("https://vc.inrupt.com")).size,
+      ).toBe(1);
     });
 
     it("normalizes the VP sent by the endpoint", async () => {
