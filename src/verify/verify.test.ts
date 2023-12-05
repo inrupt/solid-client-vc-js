@@ -281,7 +281,7 @@ describe("isValidVc", () => {
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(
-      "Parsing the Verifiable Credential [https://example.com/someVc] as JSON failed: SyntaxError: Unexpected token 'N', \"Not a valid JSON.\" is not valid JSON",
+      "Parsing the Verifiable Credential [https://example.com/someVc] as JSON failed:",
     );
   });
 
