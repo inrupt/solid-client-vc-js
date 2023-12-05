@@ -517,10 +517,10 @@ export async function verifiableCredentialToDataset<T extends { id?: string }>(
 ): Promise<T & DatasetCore>;
 export async function verifiableCredentialToDataset<T extends { id?: string }>(
   vc: T,
-  options: ParseOptions & {
+  options?: ParseOptions & {
     includeVcProperties?: boolean;
     additionalProperties?: Record<string, unknown>;
-    requireId: false;
+    requireId?: boolean;
   },
 ): Promise<DatasetCore>;
 export async function verifiableCredentialToDataset<T extends { id?: string }>(
@@ -551,7 +551,7 @@ export async function verifiableCredentialToDataset<T extends { id?: string }>(
   return internal_applyDataset(vc as { id: string }, store, options);
 }
 
-function hasId(vc: unknown): vc is { id: string } {
+export function hasId(vc: unknown): vc is { id: string } {
   return (
     typeof vc === "object" &&
     vc !== null &&

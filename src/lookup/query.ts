@@ -20,26 +20,27 @@
 //
 
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
+import type { DatasetCore } from "@rdfjs/types";
 import { DataFactory } from "n3";
-import type { BlankNode, DatasetCore, NamedNode } from "@rdfjs/types";
-import isRdfjsVerifiableCredential from "../common/isRdfjsVerifiableCredential";
 import type {
+  DatasetWithId,
   Iri,
   VerifiableCredential,
   VerifiableCredentialBase,
   VerifiablePresentation,
-  DatasetWithId,
 } from "../common/common";
 import {
   isVerifiablePresentation,
   normalizeVp,
   verifiableCredentialToDataset,
 } from "../common/common";
+import isRdfjsVerifiableCredential from "../common/isRdfjsVerifiableCredential";
+import isRdfjsVerifiablePresentation, {
+  getVpSubject,
+} from "../common/isRdfjsVerifiablePresentation";
 import { type ParseOptions } from "../parser/jsonld";
-import isRdfjsVerifiablePresentation from "../common/isRdfjsVerifiablePresentation";
-import { cred, rdf } from "../common/constants";
 
-const { namedNode, defaultGraph } = DataFactory;
+const { namedNode } = DataFactory;
 
 /**
  * Based on https://w3c-ccg.github.io/vp-request-spec/#query-by-example.
@@ -75,11 +76,15 @@ export type VerifiablePresentationRequest = {
   domain?: string;
 };
 
-interface ParsedVerifiablePresentation
+export interface ParsedVerifiablePresentation
   extends VerifiablePresentation,
     DatasetCore {
   verifiableCredential: VerifiableCredential[];
 }
+
+export type MinimalPresentation = {
+  verifiableCredential: DatasetWithId[];
+} & DatasetCore;
 
 /**
  * Send a Verifiable Presentation Request to a query endpoint in order to retrieve
@@ -117,23 +122,22 @@ export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
   options: ParseOptions & {
-    fetch: typeof fallbackFetch;
+    fetch?: typeof fallbackFetch;
     returnLegacyJsonld: false;
     normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
-): Promise<{ verifiableCredential?: DatasetWithId[] } & DatasetCore>;
+): Promise<MinimalPresentation>;
 /**
  * @deprecated Use RDFJS API instead of relying on the JSON structure by setting `returnLegacyJsonld` to false
  */
 export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
-  options?: ParseOptions &
-    Partial<{
-      fetch: typeof fallbackFetch;
-      returnLegacyJsonld?: true;
-      normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
-    }>,
+  options?: ParseOptions & {
+    fetch?: typeof fallbackFetch;
+    returnLegacyJsonld?: true;
+    normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
 ): Promise<ParsedVerifiablePresentation>;
 /**
  * @deprecated Use RDFJS API instead of relying on the JSON structure by setting `returnLegacyJsonld` to false
@@ -141,16 +145,12 @@ export async function query(
 export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
-  options?: ParseOptions &
-    Partial<{
-      fetch: typeof fallbackFetch;
-      returnLegacyJsonld?: boolean;
-      normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
-    }>,
-): Promise<
-  | ParsedVerifiablePresentation
-  | ({ verifiableCredential: DatasetWithId[] } & DatasetCore)
->;
+  options?: ParseOptions & {
+    fetch?: typeof fallbackFetch;
+    returnLegacyJsonld?: boolean;
+    normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<ParsedVerifiablePresentation | MinimalPresentation>;
 export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
@@ -160,10 +160,7 @@ export async function query(
       returnLegacyJsonld?: boolean;
       normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
     }> = {},
-): Promise<
-  | ParsedVerifiablePresentation
-  | ({ verifiableCredential: DatasetWithId[] } & DatasetCore)
-> {
+): Promise<ParsedVerifiablePresentation | MinimalPresentation> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
     internalOptions.fetch = fallbackFetch;
@@ -250,7 +247,7 @@ export async function query(
     data = (await verifiableCredentialToDataset<VerifiablePresentation>(
       rawData,
       {
-        includeVcProperties: options?.returnLegacyJsonld !== false,
+        includeVcProperties: options.returnLegacyJsonld !== false,
         additionalProperties:
           typeof rawData.id === "string" ? { id: rawData.id } : {},
         requireId: false,
@@ -263,30 +260,11 @@ export async function query(
     );
   }
 
-  let subject: BlankNode | NamedNode;
-  if (typeof data.id === "string") {
-    subject = namedNode(data.id);
-  } else {
-    const presentations = [
-      ...data.match(
-        null,
-        rdf.type,
-        cred.VerifiablePresentation,
-        defaultGraph(),
-      ),
-    ];
-    if (presentations.length !== 1) {
-      throw new Error(
-        `Expected exactly one Verifiable Presentation. Found ${presentations.length}.`,
-      );
-    }
-
-    subject = presentations[0].subject as BlankNode | NamedNode;
-  }
-
+  const subject =
+    typeof data.id === "string" ? namedNode(data.id) : getVpSubject(data);
   if (
     options.returnLegacyJsonld === false
-      ? !isRdfjsVerifiablePresentation(data, subject as BlankNode | NamedNode)
+      ? !isRdfjsVerifiablePresentation(data, subject)
       : !isVerifiablePresentation(data)
   ) {
     throw new Error(
@@ -324,7 +302,6 @@ export async function query(
                 includeVcProperties: options.returnLegacyJsonld !== false,
               });
 
-              // FIXME: Address the type issue here
               if (!isRdfjsVerifiableCredential(res, namedNode(res.id))) {
                 throw new Error(
                   `[${res.id}] is not a Valid Verifiable Credential`,

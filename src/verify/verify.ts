@@ -26,25 +26,47 @@
 import type { UrlString } from "@inrupt/solid-client";
 import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
+import type { DatasetCore } from "@rdfjs/types";
+import { DataFactory } from "n3";
 import type {
+  DatasetWithId,
   VerifiableCredentialBase,
   VerifiablePresentation,
 } from "../common/common";
 import {
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
-  isVerifiableCredential,
-  isVerifiablePresentation,
+  hasId,
+  verifiableCredentialToDataset,
 } from "../common/common";
+import { getId, getIssuer } from "../common/getters";
+import isRdfjsVerifiableCredential from "../common/isRdfjsVerifiableCredential";
+import isRdfjsVerifiablePresentation, {
+  getHolder,
+  getVpSubject,
+} from "../common/isRdfjsVerifiablePresentation";
+import type {
+  MinimalPresentation,
+  ParsedVerifiablePresentation,
+} from "../lookup/query";
 import type { ParseOptions } from "../parser/jsonld";
 
+const { namedNode } = DataFactory;
+
 async function dereferenceVc(
-  vc: VerifiableCredentialBase | URL | UrlString,
-  options?: ParseOptions,
-): Promise<VerifiableCredentialBase> {
+  vc: VerifiableCredentialBase | DatasetWithId | URL | UrlString,
+  options?: ParseOptions & {
+    requireId?: boolean;
+  },
+): Promise<DatasetCore> {
   // This test passes for both URL and UrlString
   if (!vc.toString().startsWith("http")) {
-    return vc as VerifiableCredentialBase;
+    if (typeof (vc as DatasetCore).match === "function") {
+      return vc as DatasetCore;
+    }
+    return verifiableCredentialToDataset(vc as VerifiableCredentialBase, {
+      requireId: true,
+    });
   }
   return getVerifiableCredential(vc.toString(), options);
 }
@@ -68,7 +90,7 @@ async function dereferenceVc(
  * @since 0.3.0
  */
 export async function isValidVc(
-  vc: VerifiableCredentialBase | URL | UrlString,
+  vc: VerifiableCredentialBase | DatasetWithId | URL | UrlString,
   options?: Partial<{
     fetch?: typeof fetch;
     verificationEndpoint?: UrlString;
@@ -79,7 +101,10 @@ export async function isValidVc(
 
   const vcObject = await dereferenceVc(vc, options);
 
-  if (!isVerifiableCredential(vcObject)) {
+  if (
+    !hasId(vcObject) ||
+    !isRdfjsVerifiableCredential(vcObject, namedNode(getId(vcObject)))
+  ) {
     throw new Error(
       `The request to [${vc}] returned an unexpected response: ${JSON.stringify(
         vcObject,
@@ -92,12 +117,14 @@ export async function isValidVc(
   // Discover the consent endpoint from the resource part of the Access Grant.
   const verifierEndpoint =
     options?.verificationEndpoint ??
-    (await getVerifiableCredentialApiConfiguration(vcObject.issuer))
+    (await getVerifiableCredentialApiConfiguration(getIssuer(vcObject)))
       .verifierService;
 
   if (verifierEndpoint === undefined) {
     throw new Error(
-      `The VC service provider ${vcObject.issuer} does not advertize for a verifier service in its .well-known/vc-configuration document`,
+      `The VC service provider ${getIssuer(
+        vcObject,
+      )} does not advertize for a verifier service in its .well-known/vc-configuration document`,
     );
   }
 
@@ -129,6 +156,25 @@ export async function isValidVc(
   }
 }
 
+async function asDataset(
+  data: DatasetCore | VerifiablePresentation,
+  requireId: true,
+): Promise<DatasetWithId>;
+async function asDataset(
+  data: DatasetCore | VerifiablePresentation,
+  requireId: boolean,
+): Promise<DatasetCore>;
+async function asDataset(
+  data: DatasetCore | VerifiablePresentation,
+  requireId: boolean,
+): Promise<DatasetCore> {
+  return typeof (data as DatasetCore).match === "function"
+    ? (data as DatasetCore)
+    : verifiableCredentialToDataset(data as VerifiablePresentation, {
+        requireId,
+      });
+}
+
 /**
  * Verify that a VP is valid and content has not ben tampered with.
  *
@@ -146,7 +192,10 @@ export async function isValidVc(
  */
 export async function isValidVerifiablePresentation(
   verificationEndpoint: string | null,
-  verifiablePresentation: VerifiablePresentation,
+  verifiablePresentation:
+    | VerifiablePresentation
+    | MinimalPresentation
+    | ParsedVerifiablePresentation,
   options: Partial<{
     fetch: typeof fetch;
     domain: string;
@@ -154,28 +203,51 @@ export async function isValidVerifiablePresentation(
   }> = {},
 ): Promise<{ checks: string[]; warnings: string[]; errors: string[] }> {
   const fetcher = options.fetch ?? fallbackFetch;
+  const dataset = await asDataset(verifiablePresentation, false);
+  const subject = getVpSubject(dataset);
 
-  if (!isVerifiablePresentation(verifiablePresentation)) {
+  if (!isRdfjsVerifiablePresentation(dataset, subject)) {
     throw new Error(
-      `The request to [${verifiablePresentation}] returned an unexpected response: ${JSON.stringify(
-        verifiablePresentation,
+      `The request to [${dataset}] returned an unexpected response: ${JSON.stringify(
+        dataset,
         null,
         "  ",
       )}`,
     );
   }
 
+  if (verifiablePresentation.verifiableCredential) {
+    const datasets = await Promise.all(
+      verifiablePresentation.verifiableCredential.map(async (vc) => {
+        const vcDataset = await asDataset(vc, true);
+        return isRdfjsVerifiableCredential(
+          vcDataset,
+          namedNode(getId(vcDataset)),
+        );
+      }),
+    );
+    if (datasets.some((vc) => vc === false)) {
+      throw new Error(
+        `The request to [${dataset}] returned an unexpected response: ${JSON.stringify(
+          dataset,
+          null,
+          "  ",
+        )}`,
+      );
+    }
+  }
+
   const verifierEndpoint =
     verificationEndpoint ??
-    (
-      await getVerifiableCredentialApiConfiguration(
-        verifiablePresentation.holder as string,
-      )
-    ).verifierService;
+    (await getVerifiableCredentialApiConfiguration(getHolder(dataset, subject)))
+      .verifierService;
 
   if (verifierEndpoint === undefined) {
     throw new Error(
-      `The VC service provider ${verifiablePresentation.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`,
+      `The VC service provider ${getHolder(
+        dataset,
+        subject,
+      )} does not advertize for a verifier service in its .well-known/vc-configuration document`,
     );
   }
 
@@ -185,7 +257,7 @@ export async function isValidVerifiablePresentation(
     },
     method: "POST",
     body: JSON.stringify({
-      verifiablePresentation,
+      verifiablePresentation: dataset,
       options: {
         domain: options.domain,
         challenge: options.challenge,

@@ -26,6 +26,42 @@ import isRdfjsVerifiableCredential from "./isRdfjsVerifiableCredential";
 
 const { defaultGraph } = DataFactory;
 
+export function getHolder(
+  dataset: DatasetCore,
+  id: NamedNode | BlankNode,
+): string {
+  const holder = [...dataset.match(id, cred.holder, null, defaultGraph())];
+  if (
+    holder.length === 1 &&
+    holder[0].object.termType === "NamedNode" &&
+    isUrl(holder[0].object.value)
+  ) {
+    return holder[0].object.value;
+  }
+
+  throw new Error("Could not find a valid holder");
+}
+
+export function getVpSubject(data: DatasetCore) {
+  const presentations = [
+    ...data.match(null, rdf.type, cred.VerifiablePresentation, defaultGraph()),
+  ];
+  if (presentations.length !== 1) {
+    throw new Error(
+      `Expected exactly one Verifiable Presentation. Found ${presentations.length}.`,
+    );
+  }
+
+  const { subject } = presentations[0];
+  if (subject.termType !== "BlankNode" && subject.termType !== "NamedNode") {
+    throw new Error(
+      `Expected VP subject to be NamedNode or BlankNode. Instead found [${subject.value}] with termType [${subject.termType}]`,
+    );
+  }
+
+  return subject;
+}
+
 export default function isRdfjsVerifiablePresentation(
   dataset: DatasetCore,
   id: NamedNode | BlankNode,

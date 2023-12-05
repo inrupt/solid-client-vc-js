@@ -26,6 +26,14 @@ import { isValidProof, isDate } from "./getters";
 
 const { defaultGraph, quad } = DataFactory;
 
+/**
+ * Verifies that a given JSON-LD payload conforms to the Verifiable Credential
+ * schema we expect.
+ * @param data The JSON-LD payload as an RDFJS dataset
+ * @param id The id of the VerifiableCredential as a Named Node
+ * @returns true is the payload matches our expectation.
+ * @deprecated Use isRdfjsVerifiableCredential instead
+ */
 export default function isRdfjsVerifiableCredential(
   dataset: DatasetCore,
   id: NamedNode,

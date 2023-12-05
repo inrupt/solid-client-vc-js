@@ -90,6 +90,7 @@ function hashContext(
   return typeof context === "string" ? md5(context) : cmap(context).toString();
 }
 
+// This is a workaround until https://github.com/rubensworks/jsonld-context-parser.js/pull/70 is closed
 export class CachingContextParser extends ContextParser {
   private cachedParsing: Record<string, Promise<JsonLdContextNormalized>> = {};
 
