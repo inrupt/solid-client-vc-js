@@ -559,6 +559,9 @@ export function hasId(vc: unknown): vc is { id: string } {
   );
 }
 
+/**
+ * @hidden
+ */
 // eslint-disable-next-line camelcase
 export async function internal_getVerifiableCredentialFromResponse(
   vcUrl: UrlString | undefined,
