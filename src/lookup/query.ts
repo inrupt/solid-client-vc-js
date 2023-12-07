@@ -76,6 +76,9 @@ export type VerifiablePresentationRequest = {
   domain?: string;
 };
 
+/**
+ * @hidden
+ */
 export interface ParsedVerifiablePresentation
   extends VerifiablePresentation,
     DatasetCore {
