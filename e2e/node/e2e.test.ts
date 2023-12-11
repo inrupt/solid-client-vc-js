@@ -43,6 +43,7 @@ const validCredentialClaims = {
   type: ["SolidAccessRequest"],
   "http://example.org/my/filtering/property":
     "http://example.org/my/filtering/object",
+  expirationDate: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
 };
 const validSubjectClaims = (options?: {
   resource?: string;
