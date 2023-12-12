@@ -566,8 +566,13 @@ describe("isValidVerifiable Presentation", () => {
       await jsonLdStringToStore(JSON.stringify(MOCK_VP)),
       { verifiableCredential: [] },
     );
-    for (const quad of MOCK_VP_NO_ID.match(null, rdf.type, null, null)) {
-      MOCK_VP_NO_ID.delete(quad);
+    for (const quadToDelete of MOCK_VP_NO_ID.match(
+      null,
+      rdf.type,
+      null,
+      null,
+    )) {
+      MOCK_VP_NO_ID.delete(quadToDelete);
     }
 
     await expect(
