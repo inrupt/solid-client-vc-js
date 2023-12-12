@@ -52,6 +52,9 @@ const validCredentialClaims = {
     "https://schema.inrupt.com/credentials/v1.jsonld",
   ],
   type: ["SolidAccessRequest"],
+  "http://example.org/my/filtering/property":
+    "http://example.org/my/filtering/object",
+  expirationDate: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
 };
 const validSubjectClaims = (options?: {
   resource?: string;
@@ -346,7 +349,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           },
         ),
       ]);
-
+      
       expect(credential1.credentialSubject.id).toBe(vcSubject);
       expect(getCredentialSubject(credential1).value).toBe(vcSubject);
       expect(credential2.credentialSubject.id).toBe(vcSubject);
@@ -394,6 +397,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           } as unknown as VerifiablePresentationRequest,
           {
             fetch: session.fetch,
+            includeExpiredVc: false,
           },
         ),
         query(
