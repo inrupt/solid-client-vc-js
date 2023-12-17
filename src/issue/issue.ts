@@ -23,8 +23,6 @@
  * @module issue
  */
 
-import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
-
 import type {
   Iri,
   JsonLd,
@@ -42,7 +40,7 @@ import {
 import type { ParseOptions } from "../parser/jsonld";
 
 type OptionsType = {
-  fetch?: typeof fallbackFetch;
+  fetch?: typeof fetch;
   returnLegacyJsonld?: boolean;
 };
 
@@ -55,7 +53,7 @@ async function internal_issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims: JsonLd,
   options: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld: false;
   } & ParseOptions,
 ): Promise<DatasetWithId>;
@@ -68,7 +66,7 @@ async function internal_issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld?: true;
   } & ParseOptions,
 ): Promise<VerifiableCredential>;
@@ -81,7 +79,7 @@ async function internal_issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld?: boolean;
   } & ParseOptions,
 ): Promise<DatasetWithId>;
@@ -90,13 +88,13 @@ async function internal_issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld?: boolean;
   } & ParseOptions,
 ): Promise<DatasetWithId> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
-    internalOptions.fetch = fallbackFetch;
+    internalOptions.fetch = fetch;
   }
 
   // credentialClaims should contain all the claims, but not the context.
@@ -177,7 +175,7 @@ export async function issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims: JsonLd,
   options: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld: false;
   },
 ): Promise<DatasetWithId>;
@@ -205,7 +203,7 @@ export async function issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld?: true;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
@@ -234,7 +232,7 @@ export async function issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld?: boolean;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
@@ -248,7 +246,7 @@ export async function issueVerifiableCredential(
   subjectClaims: JsonLd,
   credentialClaims?: JsonLd,
   options?: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld?: true;
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },

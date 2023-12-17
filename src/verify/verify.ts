@@ -24,7 +24,6 @@
  */
 
 import type { UrlString } from "@inrupt/solid-client";
-import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 
 import type { DatasetCore } from "@rdfjs/types";
 import { DataFactory } from "n3";
@@ -97,7 +96,7 @@ export async function isValidVc(
   }> &
     ParseOptions,
 ): Promise<{ checks: string[]; warnings: string[]; errors: string[] }> {
-  const fetcher = options?.fetch ?? fallbackFetch;
+  const fetcher = options?.fetch ?? fetch;
 
   const vcObject = await dereferenceVc(vc, options);
 
@@ -202,7 +201,7 @@ export async function isValidVerifiablePresentation(
     challenge: string;
   }> = {},
 ): Promise<{ checks: string[]; warnings: string[]; errors: string[] }> {
-  const fetcher = options.fetch ?? fallbackFetch;
+  const fetcher = options.fetch ?? fetch;
   const dataset = await asDataset(verifiablePresentation, false);
   const subject = getVpSubject(dataset);
 

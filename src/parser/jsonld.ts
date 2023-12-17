@@ -20,7 +20,6 @@
 //
 
 /* eslint-disable max-classes-per-file */
-import { fetch as defaultFetch } from "@inrupt/universal-fetch";
 import { promisifyEventEmitter } from "event-emitter-promisify";
 import type {
   IJsonLdContext,
@@ -46,7 +45,7 @@ export class CachedFetchDocumentLoader extends FetchDocumentLoader {
     private readonly allowContextFetching = false,
     ...args: ConstructorParameters<typeof FetchDocumentLoader>
   ) {
-    super(args[0] ?? defaultFetch);
+    super(args[0] ?? fetch);
     this.contexts = { ...contexts, ...cachedContexts, ...CONTEXTS };
   }
 
@@ -144,14 +143,14 @@ export class CachedJsonLdParser extends JsonLdParser {
       reusableDocumentLoader ??= new CachedFetchDocumentLoader(
         undefined,
         undefined,
-        defaultFetch,
+        fetch,
       );
       documentLoader = reusableDocumentLoader;
     } else {
       documentLoader = new CachedFetchDocumentLoader(
         options.contexts,
         options.allowContextFetching,
-        defaultFetch,
+        fetch,
       );
     }
 

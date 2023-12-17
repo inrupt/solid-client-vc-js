@@ -19,7 +19,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 import type {
   Iri,
   VerifiableCredential,
@@ -103,7 +102,7 @@ export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredentialBase>,
   options: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     includeExpiredVc?: boolean;
     returnLegacyJsonld: false;
   },
@@ -133,7 +132,7 @@ export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredentialBase>,
   options?: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     includeExpiredVc?: boolean;
     returnLegacyJsonld?: true;
     normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
@@ -164,7 +163,7 @@ export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredentialBase>,
   options?: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     includeExpiredVc?: boolean;
     returnLegacyJsonld?: boolean;
     normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
@@ -174,13 +173,13 @@ export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
   vcShape: Partial<VerifiableCredentialBase>,
   options?: {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     includeExpiredVc?: boolean;
     returnLegacyJsonld?: boolean;
     normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<DatasetWithId[]> {
-  const fetchFn = options?.fetch ?? fallbackFetch;
+  const fetchFn = options?.fetch ?? fetch;
   // The request payload depends on the target endpoint.
   const vpRequest = holderEndpoint.endsWith("/query")
     ? // The target endpoint is spec-compliant, and uses a standard VP request.

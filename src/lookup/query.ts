@@ -19,7 +19,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 import type { DatasetCore } from "@rdfjs/types";
 import { DataFactory } from "n3";
 import type {
@@ -125,7 +124,7 @@ export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
   options: ParseOptions & {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld: false;
     normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
@@ -137,7 +136,7 @@ export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
   options?: ParseOptions & {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld?: true;
     normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
@@ -149,7 +148,7 @@ export async function query(
   queryEndpoint: Iri,
   vpRequest: VerifiablePresentationRequest,
   options?: ParseOptions & {
-    fetch?: typeof fallbackFetch;
+    fetch?: typeof fetch;
     returnLegacyJsonld?: boolean;
     normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
@@ -159,14 +158,14 @@ export async function query(
   vpRequest: VerifiablePresentationRequest,
   options: ParseOptions &
     Partial<{
-      fetch: typeof fallbackFetch;
+      fetch: typeof fetch;
       returnLegacyJsonld?: boolean;
       normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
     }> = {},
 ): Promise<ParsedVerifiablePresentation | MinimalPresentation> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
-    internalOptions.fetch = fallbackFetch;
+    internalOptions.fetch = fetch;
   }
   const response = await internalOptions.fetch(queryEndpoint, {
     headers: {

@@ -19,12 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, it, describe, expect, beforeEach } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
-import type * as UniversalFetch from "@inrupt/universal-fetch";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { DataFactory } from "n3";
-import type { QueryByExample } from "./query";
-import { query } from "./query";
 import {
   defaultVerifiableClaims,
   mockAccessGrant,
@@ -33,19 +29,10 @@ import {
   mockPartialPresentation,
 } from "../common/common.mock";
 import { cred, rdf } from "../common/constants";
+import type { QueryByExample } from "./query";
+import { query } from "./query";
 
 const { namedNode } = DataFactory;
-
-jest.mock("@inrupt/universal-fetch", () => {
-  const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch",
-  ) as typeof UniversalFetch;
-  return {
-    ...fetchModule,
-    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
-  };
-});
-
 const mockRequest: QueryByExample = {
   type: "QueryByExample",
   credentialQuery: [
@@ -59,24 +46,34 @@ const mockRequest: QueryByExample = {
 };
 
 describe("query", () => {
+  let spiedFetch: jest.Spied<typeof fetch>;
+
+  beforeEach(() => {
+    spiedFetch = jest.spyOn(globalThis, "fetch");
+
+    spiedFetch.mockImplementation(() => {
+      throw new Error("Unexpected fetch call");
+    });
+  });
+
   describe("by example", () => {
     describe("uses the provided fetch if any", () => {
-      let mockedFetch: jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
+      let mockedFetch: jest.MockedFunction<typeof fetch>;
 
       beforeEach(() => {
-        mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        mockedFetch = jest.fn<typeof fetch>(
           async () =>
             new Response(JSON.stringify(mockDefaultPresentation()), {
               status: 200,
             }),
-        ) as jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
+        ) as jest.MockedFunction<typeof fetch>;
       });
 
       it("returnLegacyJsonld: true", async () => {
         await query(
           "https://some.endpoint/query",
           { query: [mockRequest] },
-          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+          { fetch: mockedFetch },
         );
         expect(mockedFetch).toHaveBeenCalled();
       });
@@ -85,7 +82,7 @@ describe("query", () => {
           "https://some.endpoint/query",
           { query: [mockRequest] },
           {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            fetch: mockedFetch,
             returnLegacyJsonld: false,
           },
         );
@@ -94,10 +91,10 @@ describe("query", () => {
     });
 
     describe("resolves when the VP contains no VCs", () => {
-      let mockedFetch: jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
+      let mockedFetch: jest.MockedFunction<typeof fetch>;
 
       beforeEach(() => {
-        mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        mockedFetch = jest.fn<typeof fetch>(
           async () =>
             new Response(
               JSON.stringify(
@@ -107,7 +104,7 @@ describe("query", () => {
                 status: 200,
               },
             ),
-        ) as jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
+        ) as jest.MockedFunction<typeof fetch>;
       });
 
       it("returnLegacyJsonld: true", async () => {
@@ -115,7 +112,7 @@ describe("query", () => {
           query(
             "https://some.endpoint/query",
             { query: [mockRequest] },
-            { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+            { fetch: mockedFetch },
           ),
         ).resolves.toMatchObject({
           id: "https://example.org/ns/someCredentialInstance",
@@ -128,7 +125,7 @@ describe("query", () => {
             "https://some.endpoint/query",
             { query: [mockRequest] },
             {
-              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              fetch: mockedFetch,
               returnLegacyJsonld: false,
             },
           ),
@@ -155,13 +152,13 @@ describe("query", () => {
     ])(
       "errors if the presentation contains invalid verifiable credentials [%s]",
       (_, elems) => {
-        const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        const mockedFetch = jest.fn<typeof fetch>(
           async () =>
             // @ts-expect-error we are intentionall passing invalid VC types here to test for errors
             new Response(JSON.stringify(mockDefaultPresentation(elems)), {
               status: 200,
             }),
-        ) as jest.MockedFunction<(typeof UniversalFetch)["fetch"]>;
+        ) as jest.MockedFunction<typeof fetch>;
 
         it.each([[true], [false]])(
           "[returnLegacyJsonld: %s]",
@@ -171,7 +168,7 @@ describe("query", () => {
                 "https://some.endpoint/query",
                 { query: [mockRequest] },
                 {
-                  fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+                  fetch: mockedFetch,
                   returnLegacyJsonld,
                 },
               ),
@@ -188,10 +185,7 @@ describe("query", () => {
     ])(
       "defaults to an unauthenticated fetch if no fetch is provided [args: %s]",
       async (arg?: { returnLegacyJsonld?: boolean }) => {
-        const mockedFetch = jest.requireMock(
-          "@inrupt/universal-fetch",
-        ) as jest.Mocked<typeof UniversalFetch>;
-        mockedFetch.fetch.mockResolvedValueOnce(
+        spiedFetch.mockResolvedValueOnce(
           new Response(JSON.stringify(mockDefaultPresentation()), {
             status: 200,
           }),
@@ -201,14 +195,14 @@ describe("query", () => {
           { query: [mockRequest] },
           arg,
         );
-        expect(mockedFetch.fetch).toHaveBeenCalled();
+        expect(spiedFetch).toHaveBeenCalled();
       },
     );
 
     it.each([[true], [false]])(
       "throws if the given endpoint returns an error [returnLegacyJsonld: %s]",
       async (returnLegacyJsonld) => {
-        const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        const mockedFetch = jest.fn<typeof fetch>(
           async () =>
             new Response(undefined, {
               status: 404,
@@ -219,7 +213,7 @@ describe("query", () => {
             "https://example.org/query",
             { query: [mockRequest] },
             {
-              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              fetch: mockedFetch,
               returnLegacyJsonld,
             },
           ),
@@ -230,7 +224,7 @@ describe("query", () => {
     it.each([[true], [false]])(
       "throws if the endpoint responds with a non-JSON payload [returnLegacyJsonld: %s]",
       async (returnLegacyJsonld) => {
-        const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+        const mockedFetch = jest.fn<typeof fetch>(
           async () =>
             new Response("Not JSON", {
               status: 200,
@@ -241,7 +235,7 @@ describe("query", () => {
             "https://example.org/query",
             { query: [mockRequest] },
             {
-              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              fetch: mockedFetch,
               returnLegacyJsonld,
             },
           ),
@@ -271,18 +265,16 @@ describe("query", () => {
     it.each([[true], [false]])(
       "posts a request with the appropriate media type [returnLegacyJsonld: %s]",
       async (returnLegacyJsonld) => {
-        const mockedFetch = jest
-          .fn<(typeof UniversalFetch)["fetch"]>()
-          .mockResolvedValueOnce(
-            new Response(JSON.stringify(mockDefaultPresentation()), {
-              status: 200,
-            }),
-          );
+        const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+          new Response(JSON.stringify(mockDefaultPresentation()), {
+            status: 200,
+          }),
+        );
         await query(
           "https://some.endpoint/query",
           { query: [mockRequest] },
           {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            fetch: mockedFetch,
             returnLegacyJsonld,
           },
         );
@@ -301,19 +293,17 @@ describe("query", () => {
     it.each([[true], [false]])(
       "errors if no presentations exist [returnLegacyJsonld: %s]",
       async (returnLegacyJsonld) => {
-        const mockedFetch = jest
-          .fn<(typeof UniversalFetch)["fetch"]>()
-          .mockResolvedValueOnce(
-            new Response(JSON.stringify([]), {
-              status: 200,
-            }),
-          );
+        const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+          new Response(JSON.stringify([]), {
+            status: 200,
+          }),
+        );
         await expect(
           query(
             "https://some.endpoint/query",
             { query: [mockRequest] },
             {
-              fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+              fetch: mockedFetch,
               returnLegacyJsonld,
             },
           ),
@@ -331,7 +321,7 @@ describe("query", () => {
     );
 
     it("returns the VP sent by the endpoint", async () => {
-      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+      const mockedFetch = jest.fn<typeof fetch>(
         async () =>
           new Response(JSON.stringify(mockDefaultPresentation()), {
             status: 200,
@@ -341,13 +331,13 @@ describe("query", () => {
       const vp = await query(
         "https://example.org/query",
         { query: [mockRequest] },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       );
       const vpNoLegacy = await query(
         "https://example.org/query",
         { query: [mockRequest] },
         {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          fetch: mockedFetch,
           returnLegacyJsonld: false,
         },
       );
@@ -359,7 +349,7 @@ describe("query", () => {
     });
 
     it("returns the VP sent by the endpoint [using mock access grant]", async () => {
-      const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>(
+      const mockedFetch = jest.fn<typeof fetch>(
         async () =>
           new Response(JSON.stringify(mockAccessGrant()), {
             status: 200,
@@ -369,13 +359,13 @@ describe("query", () => {
       const vp = await query(
         "https://example.org/query",
         { query: [mockRequest] },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       );
       const vpNoLegacy = await query(
         "https://example.org/query",
         { query: [mockRequest] },
         {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          fetch: mockedFetch,
           returnLegacyJsonld: false,
         },
       );
@@ -414,17 +404,15 @@ describe("query", () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       delete mockedVc.proof.proofValue;
-      const mockedFetch = jest
-        .fn<(typeof UniversalFetch)["fetch"]>()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
-            status: 200,
-          }),
-        );
+      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+        new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
+          status: 200,
+        }),
+      );
       const resultVp = await query(
         "https://example.org/query",
         { query: [mockRequest] },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(resultVp.verifiableCredential![0].proof.proofValue).toBe(
@@ -450,18 +438,16 @@ describe("query", () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       delete mockedVc.proof.proofValue;
-      const mockedFetch = jest
-        .fn<(typeof UniversalFetch)["fetch"]>()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
-            status: 200,
-          }),
-        );
+      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+        new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
+          status: 200,
+        }),
+      );
       const resultVp = await query(
         "https://example.org/query",
         { query: [mockRequest] },
         {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          fetch: mockedFetch,
           normalize(vc) {
             return {
               ...vc,

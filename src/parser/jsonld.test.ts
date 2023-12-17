@@ -19,8 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type * as UniversalFetch from "@inrupt/universal-fetch";
-import { describe, expect, it, jest } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import { DataFactory as DF } from "n3";
 import { isomorphic } from "rdf-isomorphic";
 import {
@@ -28,16 +27,6 @@ import {
   CachingContextParser,
   jsonLdToStore,
 } from "./jsonld";
-
-jest.mock("@inrupt/universal-fetch", () => {
-  const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch",
-  ) as typeof UniversalFetch;
-  return {
-    ...fetchModule,
-    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
-  };
-});
 
 const data = {
   "@context": "https://www.w3.org/2018/credentials/v1",

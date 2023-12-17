@@ -19,8 +19,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type * as UniversalFetch from "@inrupt/universal-fetch";
-import { Response } from "@inrupt/universal-fetch";
 import { describe, expect, it, jest } from "@jest/globals";
 import { mocked } from "jest-mock";
 import { DataFactory, Store } from "n3";
@@ -57,14 +55,9 @@ jest.mock("../common/common", () => {
     getVerifiableCredentialApiConfiguration: jest.fn(),
   };
 });
-jest.mock("@inrupt/universal-fetch", () => {
-  const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch",
-  ) as typeof UniversalFetch;
-  return {
-    ...fetchModule,
-    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
-  };
+
+const spiedFetch = jest.spyOn(globalThis, "fetch").mockImplementation(() => {
+  throw new Error("Unexpected fetch call");
 });
 
 const MOCK_VC = {
@@ -102,11 +95,7 @@ describe("isValidVc", () => {
   const MOCK_VERIFY_RESPONSE = { checks: [], warning: [], errors: [] };
 
   it("falls back to an unauthenticated fetch if none is provided", async () => {
-    const mockedFetch = jest.requireMock(
-      "@inrupt/universal-fetch",
-    ) as jest.Mocked<typeof UniversalFetch>;
-
-    mockedFetch.fetch.mockResolvedValueOnce(
+    spiedFetch.mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
@@ -115,17 +104,12 @@ describe("isValidVc", () => {
       verificationEndpoint: MOCK_VERIFY_ENDPOINT,
     });
 
-    expect(mockedFetch.fetch).toHaveBeenCalled();
+    expect(spiedFetch).toHaveBeenCalled();
   });
 
   it("discovers the verification endpoint if none is provided", async () => {
-    // Use the fetch fallback on purpose to check that no option may be passed
-    // to the function.
-    const mockedFetch = jest.requireMock(
-      "@inrupt/universal-fetch",
-    ) as jest.Mocked<typeof UniversalFetch>;
     // First, the VC is fetche
-    mockedFetch.fetch
+    spiedFetch
       .mockResolvedValueOnce(
         new Response(JSON.stringify(MOCK_VC), { status: 200 }),
       )
@@ -148,14 +132,14 @@ describe("isValidVc", () => {
   });
 
   it("uses the provided fetch if any", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
     );
 
     await isValidVc(MOCK_VC, {
-      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+      fetch: mockedFetch,
       verificationEndpoint: MOCK_VERIFY_ENDPOINT,
     });
 
@@ -163,7 +147,7 @@ describe("isValidVc", () => {
   });
 
   it("uses the provided fetch if any on RDFJS input", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
@@ -174,7 +158,7 @@ describe("isValidVc", () => {
         id: MOCK_VC.id,
       }),
       {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+        fetch: mockedFetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       },
     );
@@ -189,14 +173,14 @@ describe("isValidVc", () => {
       specCompliant: {},
     });
 
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
     );
 
     await isValidVc(MOCK_VC, {
-      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+      fetch: mockedFetch,
     });
 
     expect(mockedFetch).toHaveBeenCalledWith(
@@ -222,7 +206,7 @@ describe("isValidVc", () => {
       );
 
     await isValidVc("https://example.com/someVc", {
-      fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+      fetch: mockedFetch as typeof fetch,
       verificationEndpoint: MOCK_VERIFY_ENDPOINT,
     });
 
@@ -243,7 +227,7 @@ describe("isValidVc", () => {
       );
     await expect(
       isValidVc("https://example.com/someVc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(
@@ -261,8 +245,7 @@ describe("isValidVc", () => {
       isValidVc(
         { ...MOCK_VC, id: undefined as unknown as string },
         {
-          fetch:
-            mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+          fetch: mockedFetch as typeof fetch,
           verificationEndpoint: MOCK_VERIFY_ENDPOINT,
         },
       ),
@@ -277,7 +260,7 @@ describe("isValidVc", () => {
       .mockResolvedValueOnce(new Response("Not a valid JSON."));
     await expect(
       isValidVc("https://example.com/someVc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(
@@ -295,7 +278,7 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc("https://example.com/someVc", {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(
@@ -304,14 +287,14 @@ describe("isValidVc", () => {
   });
 
   it("uses the provided verification endpoint if any", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
     );
 
     await isValidVc(MOCK_VC, {
-      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+      fetch: mockedFetch,
       verificationEndpoint: "https://some.verification.api",
     });
     expect(mockedFetch).toHaveBeenCalledWith(
@@ -342,7 +325,7 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc(MOCK_VC, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+        fetch: mockedFetch,
       }),
     ).rejects.toThrow(
       `The VC service provider ${MOCK_VC.issuer} does not advertize for a verifier service in its .well-known/vc-configuration document`,
@@ -350,7 +333,7 @@ describe("isValidVc", () => {
   });
 
   it("throws if the verification endpoint returns an error", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(undefined, {
         status: 400,
         statusText: "Bad request",
@@ -359,7 +342,7 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc(MOCK_VC, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
@@ -372,14 +355,14 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc(MOCK_VC, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
         verificationEndpoint: MOCK_VERIFY_ENDPOINT,
       }),
     ).rejects.toThrow(/Parsing.*consent\.example\.com/);
   });
 
   it("returns the validation result from the access endpoint", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
@@ -387,7 +370,7 @@ describe("isValidVc", () => {
 
     await expect(
       isValidVc(MOCK_VC, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+        fetch: mockedFetch,
         verificationEndpoint: "https://some.verification.api",
       }),
     ).resolves.toEqual({ checks: [], errors: [], warning: [] });
@@ -404,11 +387,7 @@ describe("isValidVerifiable Presentation", () => {
   const MOCK_VERIFY_RESPONSE = { checks: [], warning: [], errors: [] };
 
   it("falls back to the embedded fetch if none is provided", async () => {
-    const mockedFetch = jest.requireMock(
-      "@inrupt/universal-fetch",
-    ) as jest.Mocked<typeof UniversalFetch>;
-    // mocked(isVerifi).mockReturnValueOnce(true);
-    mockedFetch.fetch.mockResolvedValueOnce(
+    spiedFetch.mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
@@ -417,18 +396,18 @@ describe("isValidVerifiable Presentation", () => {
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP),
     ).resolves.toMatchObject({ errors: [] });
 
-    expect(mockedFetch.fetch).toHaveBeenCalled();
+    expect(spiedFetch).toHaveBeenCalled();
   });
 
   it("uses the provided fetch if any", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
     );
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+      fetch: mockedFetch,
       domain: "domain",
       challenge: "challenge",
     });
@@ -438,14 +417,14 @@ describe("isValidVerifiable Presentation", () => {
 
   it("sends the given vp to the verify endpoint", async () => {
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
     );
 
     await isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+      fetch: mockedFetch,
       domain: "domain",
       challenge: "challenge",
     });
@@ -462,7 +441,7 @@ describe("isValidVerifiable Presentation", () => {
   });
 
   it("uses the provided verification endpoint if any", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
@@ -473,7 +452,7 @@ describe("isValidVerifiable Presentation", () => {
       "https://some.verification.api",
       MOCK_VP,
       {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+        fetch: mockedFetch,
       },
     );
     expect(mockedFetch).toHaveBeenCalledWith(
@@ -493,16 +472,14 @@ describe("isValidVerifiable Presentation", () => {
     });
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
 
-    const mockedFetch = jest
-      .fn<(typeof UniversalFetch)["fetch"]>()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
-          status: 200,
-        }),
-      );
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
+        status: 200,
+      }),
+    );
 
     await isValidVerifiablePresentation(null, MOCK_VP, {
-      fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+      fetch: mockedFetch,
     });
     expect(mockedDiscovery).toHaveBeenCalledWith(MOCK_VP.holder);
   });
@@ -513,7 +490,7 @@ describe("isValidVerifiable Presentation", () => {
       specCompliant: {},
     });
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
@@ -521,7 +498,7 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(null, MOCK_VP, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+        fetch: mockedFetch,
       }),
     ).rejects.toThrow(
       `The VC service provider ${MOCK_VP.holder} does not advertize for a verifier service in its .well-known/vc-configuration document`,
@@ -529,7 +506,7 @@ describe("isValidVerifiable Presentation", () => {
   });
 
   it("throws if passed VP is not a verifiable presentation [because the VC has no id]", async () => {
-    const mockedFetch = jest.fn(global.fetch);
+    const mockedFetch = jest.fn<typeof fetch>();
     mocked(isVerifiablePresentation).mockReturnValueOnce(false);
 
     const MOCK_VP_NO_ID = {
@@ -544,7 +521,7 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP_NO_ID, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
       }),
     ).rejects.toThrow(
       `Expected vc.id to be a string, found [undefined] of type [undefined] on ${JSON.stringify(
@@ -559,7 +536,7 @@ describe("isValidVerifiable Presentation", () => {
   });
 
   it("throws if passed VP is not a verifiable presentation [because it is the wrong type]", async () => {
-    const mockedFetch = jest.fn(global.fetch);
+    const mockedFetch = jest.fn<typeof fetch>();
     mocked(isVerifiablePresentation).mockReturnValueOnce(false);
 
     const MOCK_VP_NO_ID = Object.assign(
@@ -577,13 +554,13 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP_NO_ID, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
       }),
     ).rejects.toThrow("Expected exactly one Verifiable Presentation. Found 0.");
   });
 
   it("throws if passed VP is not a verifiable presentation [because it has too many holders]", async () => {
-    const mockedFetch = jest.fn(global.fetch);
+    const mockedFetch = jest.fn<typeof fetch>();
     mocked(isVerifiablePresentation).mockReturnValueOnce(false);
 
     const MOCK_VP_EXTRA_HOLDER = Object.assign(
@@ -606,8 +583,7 @@ describe("isValidVerifiable Presentation", () => {
         MOCK_VERIFY_ENDPOINT,
         MOCK_VP_EXTRA_HOLDER,
         {
-          fetch:
-            mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+          fetch: mockedFetch as typeof fetch,
         },
       ),
     ).rejects.toThrow(
@@ -616,7 +592,7 @@ describe("isValidVerifiable Presentation", () => {
   });
 
   it("throws if passed VP is not a verifiable presentation [included VC is missing type]", async () => {
-    const mockedFetch = jest.fn(global.fetch);
+    const mockedFetch = jest.fn<typeof fetch>();
     mocked(isVerifiablePresentation).mockReturnValueOnce(false);
 
     const VC_STORE = await jsonLdStringToStore(JSON.stringify(MOCK_VC));
@@ -633,8 +609,7 @@ describe("isValidVerifiable Presentation", () => {
         MOCK_VERIFY_ENDPOINT,
         MOCK_VP_EXTRA_HOLDER,
         {
-          fetch:
-            mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+          fetch: mockedFetch as typeof fetch,
         },
       ),
     ).rejects.toThrow(
@@ -642,7 +617,7 @@ describe("isValidVerifiable Presentation", () => {
     );
     await expect(
       isValidVc(Object.assign(VC_STORE, { id: MOCK_VC.id }), {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
       }),
     ).rejects.toThrow(
       "The request to [[object Object]] returned an unexpected response",
@@ -650,7 +625,7 @@ describe("isValidVerifiable Presentation", () => {
   });
 
   it("throws if passed VP is not a verifiable presentation [because it has an invalid subject]", async () => {
-    const mockedFetch = jest.fn(global.fetch);
+    const mockedFetch = jest.fn<typeof fetch>();
     mocked(isVerifiablePresentation).mockReturnValueOnce(false);
 
     const MOCK_VP_NO_TYPE = new Store([
@@ -661,7 +636,7 @@ describe("isValidVerifiable Presentation", () => {
     await expect(
       // @ts-expect-error the vp is also missing the verifiableCredential property
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP_NO_TYPE, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
       }),
     ).rejects.toThrow(
       "Expected VP subject to be NamedNode or BlankNode. Instead found [vp subpect] with termType [Literal]",
@@ -669,7 +644,7 @@ describe("isValidVerifiable Presentation", () => {
   });
 
   it("throws if response is not valid JSON", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(`some non-JSON response`, {
         status: 200,
       }),
@@ -678,7 +653,7 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
       }),
     ).rejects.toThrow(
       `Parsing the response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] as JSON failed:`,
@@ -686,7 +661,7 @@ describe("isValidVerifiable Presentation", () => {
   });
 
   it("throws if the verification endpoint returns an error", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(undefined, {
         status: 400,
         statusText: "Bad request",
@@ -696,13 +671,13 @@ describe("isValidVerifiable Presentation", () => {
 
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
       }),
     ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
   });
 
   it("returns the validation result from the verification endpoint", async () => {
-    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(MOCK_VERIFY_RESPONSE), {
         status: 200,
       }),
@@ -710,7 +685,7 @@ describe("isValidVerifiable Presentation", () => {
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
     await expect(
       isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"] as typeof fetch,
+        fetch: mockedFetch as typeof fetch,
       }),
     ).resolves.toEqual({ checks: [], errors: [], warning: [] });
   });

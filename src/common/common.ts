@@ -30,7 +30,6 @@ import {
   getSolidDataset,
   getThingAll,
 } from "@inrupt/solid-client";
-import { fetch as uniFetch } from "@inrupt/universal-fetch";
 import type { DatasetCore, Quad } from "@rdfjs/types";
 import { DataFactory } from "n3";
 import type { ParseOptions } from "../parser/jsonld";
@@ -740,7 +739,7 @@ export async function getVerifiableCredential(
     normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
   },
 ): Promise<DatasetWithId> {
-  const authFetch = options?.fetch ?? uniFetch;
+  const authFetch = options?.fetch ?? fetch;
   const response = await authFetch(vcUrl);
 
   if (!response.ok) {

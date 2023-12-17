@@ -87,7 +87,6 @@
   },
   "dependencies": {
     "@inrupt/solid-client": "^1.25.2",
-    "@inrupt/universal-fetch": "^1.0.1",
     "event-emitter-promisify": "^1.1.0",
     "jsonld-context-parser": "^2.4.0",
     "jsonld-streaming-parser": "^3.3.0",
