@@ -20,12 +20,22 @@
 //
 
 export { default as issueVerifiableCredential } from "./issue/issue";
-export type { Iri, JsonLd, VerifiableCredential } from "./common/common";
+export type {
+  Iri,
+  JsonLd,
+  VerifiableCredential,
+  VerifiableCredentialBase,
+} from "./common/common";
+export type { DatasetWithId } from "./common/common";
 export {
   isVerifiableCredential,
   isVerifiablePresentation,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
+  /**
+   * @hidden @deprecated
+   */
+  verifiableCredentialToDataset,
 } from "./common/common";
 export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
 export { query } from "./lookup/query";
@@ -35,3 +45,12 @@ export type {
 } from "./lookup/query";
 export { revokeVerifiableCredential } from "./revoke/revoke";
 export { isValidVc, isValidVerifiablePresentation } from "./verify/verify";
+export {
+  getId,
+  getIssuanceDate,
+  getIssuer,
+  getCredentialSubject,
+  getExpirationDate,
+} from "./common/getters";
+export { default as isRdfjsVerifiableCredential } from "./common/isRdfjsVerifiableCredential";
+export { default as isRdfjsVerifiablePresentation } from "./common/isRdfjsVerifiablePresentation";

@@ -29,8 +29,6 @@ import {
 import type * as SolidClient from "@inrupt/solid-client";
 import { getVerifiableCredentialApiConfiguration } from "./common";
 
-jest.mock("@inrupt/universal-fetch");
-
 jest.mock("@inrupt/solid-client", () => {
   const solidClientModule = jest.requireActual<typeof SolidClient>(
     "@inrupt/solid-client",

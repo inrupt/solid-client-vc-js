@@ -20,20 +20,12 @@
 //
 
 import { jest, it, describe, expect } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
-import type * as UniversalFetch from "@inrupt/universal-fetch";
 import defaultRevokeVerifiableCredential, {
   revokeVerifiableCredential,
 } from "./revoke";
 
-jest.mock("@inrupt/universal-fetch", () => {
-  const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch",
-  ) as typeof UniversalFetch;
-  return {
-    ...fetchModule,
-    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
-  };
+const spiedFetch = jest.spyOn(globalThis, "fetch").mockImplementation(() => {
+  throw new Error("Unexpected fetch call");
 });
 
 describe("revokeVerifiableCredential", () => {
@@ -47,7 +39,7 @@ describe("revokeVerifiableCredential", () => {
         "https://some.endpoint",
         "https://some.example#credential",
         {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          fetch: mockedFetch,
         },
       );
       // eslint-disable-next-line no-empty
@@ -56,9 +48,6 @@ describe("revokeVerifiableCredential", () => {
   });
 
   it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
-    const mockedFetch = jest.requireMock(
-      "@inrupt/universal-fetch",
-    ) as jest.Mocked<typeof UniversalFetch>;
     try {
       await revokeVerifiableCredential(
         "https://some.endpoint",
@@ -66,41 +55,37 @@ describe("revokeVerifiableCredential", () => {
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
-    expect(mockedFetch.fetch).toHaveBeenCalled();
+    expect(spiedFetch).toHaveBeenCalled();
   });
 
   it("throws if the issuer returns an error", async () => {
-    const mockedFetch = jest
-      .fn<(typeof UniversalFetch)["fetch"]>()
-      .mockResolvedValue(
-        new Response(undefined, {
-          status: 400,
-          statusText: "Bad request",
-        }),
-      );
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      }),
+    );
     await expect(
       revokeVerifiableCredential(
         "https://some.endpoint",
         "https://some.example#credential",
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       ),
     ).rejects.toThrow(/some.endpoint.*400.*Bad request/);
   });
 
   it("sends an appropriate revocation request to the issuer", async () => {
-    const mockedFetch = jest
-      .fn<(typeof UniversalFetch)["fetch"]>()
-      .mockResolvedValue(
-        new Response(undefined, {
-          status: 200,
-          statusText: "OK",
-        }),
-      );
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        status: 200,
+        statusText: "OK",
+      }),
+    );
     await revokeVerifiableCredential(
       "https://some.endpoint",
       "https://some.example#credential",
       {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+        fetch: mockedFetch,
       },
     );
     expect(mockedFetch).toHaveBeenCalledWith(

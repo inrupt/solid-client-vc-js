@@ -134,7 +134,14 @@ export default function VerifiableCredential({
     const credential = await issueVerifiableCredential(
       new URL("issue", vcProvider).href,
       issueInvalid ? validCredentialClaims : invalidCredentialClaims,
-      undefined,
+      {
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://schema.inrupt.com/credentials/v1.jsonld",
+        ],
+        type: ["SolidAccessRequest"],
+        expirationDate: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+      },
       {
         fetch: session.fetch,
       },
