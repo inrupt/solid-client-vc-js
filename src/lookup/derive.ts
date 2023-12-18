@@ -19,8 +19,12 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
-import type { Iri, VerifiableCredential } from "../common/common";
+import type {
+  Iri,
+  VerifiableCredential,
+  VerifiableCredentialBase,
+  DatasetWithId,
+} from "../common/common";
 import { concatenateContexts, defaultContext } from "../common/common";
 import type { VerifiablePresentationRequest } from "./query";
 import { query } from "./query";
@@ -36,7 +40,7 @@ const INCLUDE_EXPIRED_VC_OPTION = "ExpiredVerifiableCredential" as const;
  * @returns A legacy object expected by the /derive endpoint of the ESS 2.0 VC service
  */
 function buildLegacyQuery(
-  vcShape: Partial<VerifiableCredential>,
+  vcShape: Partial<VerifiableCredentialBase>,
   includeExpiredVc: boolean,
 ) {
   // credentialClaims should contain all the claims, but not the context.
@@ -59,7 +63,7 @@ function buildLegacyQuery(
  * @returns A Query by Example VP Request based on the provided example.
  */
 function buildQueryByExample(
-  vcShape: Partial<VerifiableCredential>,
+  vcShape: Partial<VerifiableCredentialBase>,
 ): VerifiablePresentationRequest {
   return {
     query: [
@@ -89,22 +93,93 @@ function buildQueryByExample(
  * is picked up.
  * - `options.includeExpiredVc`: include expired VC matching the shape in the
  * result set.
+ * - `options.returnLegacyJsonld`: : Include the normalized JSON-LD in the response
  * @returns A list of VCs matching the given VC shape. The list may be empty if
  * the holder does not hold any matching VC.
  * @since 0.1.0
  */
 export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
-  vcShape: Partial<VerifiableCredential>,
-  options?: Partial<{
-    fetch: typeof fallbackFetch;
-    includeExpiredVc: boolean;
-  }>,
-): Promise<VerifiableCredential[]> {
-  const internalOptions = { ...options };
-  if (internalOptions.fetch === undefined) {
-    internalOptions.fetch = fallbackFetch;
-  }
+  vcShape: Partial<VerifiableCredentialBase>,
+  options: {
+    fetch?: typeof fetch;
+    includeExpiredVc?: boolean;
+    returnLegacyJsonld: false;
+  },
+): Promise<DatasetWithId[]>;
+/**
+ * Look up VCs from a given holder according to a subset of their claims, such as
+ * the VC type, or any property associated to the subject in the VC. The holder
+ * is expected to implement the [W3C VC Holder HTTP API](https://w3c-ccg.github.io/vc-api/holder.html).
+ *
+ * @param holderEndpoint The `/derive` endpoint of the holder.
+ * @param vcShape The subset of claims you expect the matching VCs to contain.
+ * @param options Optional parameter:
+ * - `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * This can be typically used for authentication. Note that if it is omitted, and
+ * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
+ * is picked up.
+ * - `options.includeExpiredVc`: include expired VC matching the shape in the
+ * result set.
+ * - `options.returnLegacyJsonld`: : Include the normalized JSON-LD in the response
+ * @returns A list of VCs matching the given VC shape. The list may be empty if
+ * the holder does not hold any matching VC.
+ * @since 0.1.0
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function getVerifiableCredentialAllFromShape(
+  holderEndpoint: Iri,
+  vcShape: Partial<VerifiableCredentialBase>,
+  options?: {
+    fetch?: typeof fetch;
+    includeExpiredVc?: boolean;
+    returnLegacyJsonld?: true;
+    normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<VerifiableCredential[]>;
+/**
+ * Look up VCs from a given holder according to a subset of their claims, such as
+ * the VC type, or any property associated to the subject in the VC. The holder
+ * is expected to implement the [W3C VC Holder HTTP API](https://w3c-ccg.github.io/vc-api/holder.html).
+ *
+ * @param holderEndpoint The `/derive` endpoint of the holder.
+ * @param vcShape The subset of claims you expect the matching VCs to contain.
+ * @param options Optional parameter:
+ * - `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
+ * This can be typically used for authentication. Note that if it is omitted, and
+ * `@inrupt/solid-client-authn-browser` is in your dependencies, the default session
+ * is picked up.
+ * - `options.includeExpiredVc`: include expired VC matching the shape in the
+ * result set.
+ * - `options.returnLegacyJsonld`: : Include the normalized JSON-LD in the response
+ * @returns A list of VCs matching the given VC shape. The list may be empty if
+ * the holder does not hold any matching VC.
+ * @since 0.1.0
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function getVerifiableCredentialAllFromShape(
+  holderEndpoint: Iri,
+  vcShape: Partial<VerifiableCredentialBase>,
+  options?: {
+    fetch?: typeof fetch;
+    includeExpiredVc?: boolean;
+    returnLegacyJsonld?: boolean;
+    normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<DatasetWithId[]>;
+export async function getVerifiableCredentialAllFromShape(
+  holderEndpoint: Iri,
+  vcShape: Partial<VerifiableCredentialBase>,
+  options?: {
+    fetch?: typeof fetch;
+    includeExpiredVc?: boolean;
+    returnLegacyJsonld?: boolean;
+    normalize?: (vc: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<DatasetWithId[]> {
+  const fetchFn = options?.fetch ?? fetch;
   // The request payload depends on the target endpoint.
   const vpRequest = holderEndpoint.endsWith("/query")
     ? // The target endpoint is spec-compliant, and uses a standard VP request.
@@ -117,10 +192,13 @@ export async function getVerifiableCredentialAllFromShape(
         options?.includeExpiredVc ?? false,
         // The legacy proprietary format is casted as a VP request to be passed to the `query` function.
       ) as unknown as VerifiablePresentationRequest);
+
   const vp = await query(holderEndpoint, vpRequest, {
-    fetch: options?.fetch ?? fallbackFetch,
+    fetch: fetchFn,
+    returnLegacyJsonld: options?.returnLegacyJsonld,
+    normalize: options?.normalize,
   });
-  return vp.verifiableCredential ?? [];
+  return vp.verifiableCredential;
 }
 
 export default getVerifiableCredentialAllFromShape;

@@ -20,34 +20,22 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
-import type * as UniversalFetch from "@inrupt/universal-fetch";
 import { defaultContext, defaultCredentialTypes } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
 import defaultIssueVerifiableCredential, {
   issueVerifiableCredential,
 } from "./issue";
 
-jest.mock("@inrupt/universal-fetch", () => {
-  const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch",
-  ) as jest.Mocked<typeof UniversalFetch>;
-  return {
-    ...fetchModule,
-    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
-  };
-});
-
 describe("issueVerifiableCredential", () => {
   it("uses the provided fetch if any", async () => {
-    const mockedFetch = jest.fn() as (typeof UniversalFetch)["fetch"];
+    const mockedFetch = jest.fn() as typeof fetch;
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
         {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          fetch: mockedFetch,
         },
       );
       // eslint-disable-next-line no-empty
@@ -56,9 +44,9 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
-    const mockedFetchModule = jest.requireMock(
-      "@inrupt/universal-fetch",
-    ) as jest.Mocked<typeof UniversalFetch>;
+    const spiedFetch = jest
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response());
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -67,24 +55,22 @@ describe("issueVerifiableCredential", () => {
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
-    expect(mockedFetchModule.fetch).toHaveBeenCalled();
+    expect(spiedFetch).toHaveBeenCalled();
   });
 
   it("throws if the issuer returns an error", async () => {
-    const mockedFetch = jest
-      .fn<(typeof UniversalFetch)["fetch"]>()
-      .mockResolvedValueOnce(
-        new Response(undefined, {
-          status: 400,
-          statusText: "Bad request",
-        }),
-      );
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      }),
+    );
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       ),
     ).rejects.toThrow(
       /https:\/\/some\.endpoint.*could not successfully issue a VC.*400.*Bad request/,
@@ -92,47 +78,51 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("throws if the returned value does not conform to the shape we expect", async () => {
-    const mockedFetch = jest
-      .fn<(typeof UniversalFetch)["fetch"]>()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ someField: "Not a credential" }), {
-          status: 201,
-        }),
-      );
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(JSON.stringify({ someField: "Not a credential" }), {
+        status: 201,
+      }),
+    );
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       ),
-    ).rejects.toThrow("unexpected object: ");
+    ).rejects.toThrow(
+      "Parsing the Verifiable Credential [undefined] as JSON failed: Error: Cannot establish id of verifiable credential",
+    );
   });
 
   it("returns the VC issued by the target issuer", async () => {
-    const mockedFetch = jest
-      .fn<(typeof UniversalFetch)["fetch"]>()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()), { status: 201 }),
-      );
-    await expect(
-      issueVerifiableCredential(
-        "https://some.endpoint",
-        { "@context": ["https://some.context"] },
-        { "@context": ["https://some.context"] },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
-      ),
-    ).resolves.toEqual(mockDefaultCredential());
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(JSON.stringify(mockDefaultCredential()), {
+        status: 201,
+        headers: new Headers([["content-type", "application/ld+json"]]),
+      }),
+    );
+
+    const vc = await issueVerifiableCredential(
+      "https://some.endpoint",
+      { "@context": ["https://some.context"] },
+      { "@context": ["https://some.context"] },
+      { fetch: mockedFetch },
+    );
+
+    expect(vc).toMatchObject({ ...mockDefaultCredential(), size: 13 });
+
+    expect(JSON.parse(JSON.stringify(vc))).toEqual(mockDefaultCredential());
   });
 
   it("sends a request to the specified issuer", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
+    const mockedFetch = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -143,13 +133,13 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("sends a POST request with the appropriate headers", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
+    const mockedFetch = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -165,13 +155,13 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("includes the subject and subject claims in the request body", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
+    const mockedFetch = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
         undefined,
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -198,7 +188,7 @@ describe("issueVerifiableCredential", () => {
         "https://some.endpoint",
         { "@context": ["https://some-subject.context"] },
         { "@context": ["https://some-credential.context"], aClaim: "a value" },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -222,13 +212,13 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("includes the credential type in the request body", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
+    const mockedFetch = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
         { "@context": ["https://some-subject.context"] },
         { "@context": ["https://some-credential.context"], type: "some-type" },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -251,7 +241,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("supports credentials with multiple types", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
+    const mockedFetch = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -261,7 +251,7 @@ describe("issueVerifiableCredential", () => {
           type: ["some-type", "some-other-type"],
         },
         {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          fetch: mockedFetch,
         },
       );
       // eslint-disable-next-line no-empty
@@ -285,7 +275,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("handles inline contexts for the claims", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
+    const mockedFetch = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -298,7 +288,7 @@ describe("issueVerifiableCredential", () => {
         },
         { "@context": ["https://some-credential.context"] },
         {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          fetch: mockedFetch,
         },
       );
       // eslint-disable-next-line no-empty
@@ -324,7 +314,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("doesn't include the subject ID when using the deprecated signature", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
+    const mockedFetch = jest.fn<typeof fetch>();
     try {
       await issueVerifiableCredential(
         "https://some.endpoint",
@@ -332,7 +322,7 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
         undefined,
         {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+          fetch: mockedFetch,
         },
       );
       // eslint-disable-next-line no-empty
@@ -355,14 +345,14 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("doesn't include the subject ID when using the deprecated default signature", async () => {
-    const mockedFetch = jest.fn<(typeof UniversalFetch)["fetch"]>();
+    const mockedFetch = jest.fn<typeof fetch>();
     try {
       await defaultIssueVerifiableCredential(
         "https://some.endpoint",
         "https://some.subject",
         { "@context": ["https://some-subject.context"], aClaim: "a value" },
         undefined,
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
+        { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
     } catch (_e) {}
@@ -384,7 +374,7 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("normalizes the issued VC", async () => {
-    const mockedVc = mockDefaultCredential();
+    const mockedVc = mockDefaultCredential("http://example.org/my/sample/id");
     // Force unexpected VC shapes to check normalization.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -396,6 +386,7 @@ describe("issueVerifiableCredential", () => {
     const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify(mockedVc), {
         status: 201,
+        headers: new Headers([["content-type", "application/json"]]),
       }),
     );
     const resultVc = await issueVerifiableCredential(
@@ -406,7 +397,7 @@ describe("issueVerifiableCredential", () => {
         type: ["some-type", "some-other-type"],
       },
       {
-        fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+        fetch: mockedFetch,
       },
     );
     expect(resultVc.proof.proofValue).toBe(

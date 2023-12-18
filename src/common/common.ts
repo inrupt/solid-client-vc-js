@@ -26,61 +26,103 @@
 import type { UrlString } from "@inrupt/solid-client";
 import {
   getIri,
+  getJsonLdParser,
   getSolidDataset,
   getThingAll,
-  getJsonLdParser,
 } from "@inrupt/solid-client";
-import { fetch as uniFetch } from "@inrupt/universal-fetch";
+import type { DatasetCore, Quad } from "@rdfjs/types";
+import { DataFactory } from "n3";
+import type { ParseOptions } from "../parser/jsonld";
+import { jsonLdToStore } from "../parser/jsonld";
+import isRdfjsVerifiableCredential from "./isRdfjsVerifiableCredential";
+
+const { namedNode } = DataFactory;
+
+export type DatasetWithId = DatasetCore & { id: string };
 
 export type Iri = string;
 /**
  * A JSON-LD document is a JSON document including an @context entry. The other
  * fields may contain any value.
+ * @deprecated Use RDFJS API instead
  */
 export type JsonLd = {
   "@context": unknown;
   [property: string]: unknown;
 };
 
+/**
+ * @deprecated Use RDFJS API instead
+ */
 type Proof = {
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   type: string;
   /**
    * ISO-8601 formatted date
    */
   created: string;
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   verificationMethod: string;
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   proofPurpose: string;
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   proofValue: string;
 };
 
 /**
  * A Verifiable Credential JSON-LD document, as specified by the W3C VC HTTP API.
+ * @deprecated Use RDFJS API instead
  */
-export type VerifiableCredential = JsonLd & {
+export type VerifiableCredentialBase = JsonLd & {
   id: Iri;
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   type: Iri[];
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   issuer: Iri;
   /**
    * ISO-8601 formatted date
+   * @deprecated Use RDFJS API instead
    */
   issuanceDate: string;
   /**
    * Entity the credential makes claim about.
+   * @deprecated Use RDFJS API instead
    */
   credentialSubject: {
+    /**
+     * @deprecated Use RDFJS API instead
+     */
     id: Iri;
     /**
      * The claim set is open, as any RDF graph is suitable for a set of claims.
+     * @deprecated Use RDFJS API instead
      */
     [property: string]: unknown;
   };
+  /**
+   * @deprecated Use RDFJS API instead
+   */
   proof: Proof;
 };
+
+export type VerifiableCredential = VerifiableCredentialBase & DatasetCore;
 
 export type VerifiablePresentation = JsonLd & {
   id?: string;
   type: string | string[];
-  verifiableCredential?: VerifiableCredential[];
+  verifiableCredential?: VerifiableCredentialBase[];
   holder?: string;
   proof?: Proof;
 };
@@ -152,49 +194,53 @@ export function normalizeVp<T>(vpJson: T): T {
  * schema we expect.
  * @param data The JSON-LD payload
  * @returns true is the payload matches our expectation.
+ * @deprecated Use isRdfjsVerifiableCredential instead
  */
 export function isVerifiableCredential(
-  data: unknown | VerifiableCredential,
-): data is VerifiableCredential {
+  data: unknown | VerifiableCredentialBase,
+): data is VerifiableCredentialBase {
   let dataIsVc = true;
-  dataIsVc = typeof (data as VerifiableCredential).id === "string";
-  dataIsVc = dataIsVc && Array.isArray((data as VerifiableCredential).type);
+  dataIsVc = typeof (data as VerifiableCredentialBase).id === "string";
+  dataIsVc = dataIsVc && Array.isArray((data as VerifiableCredentialBase).type);
   dataIsVc =
-    dataIsVc && typeof (data as VerifiableCredential).issuer === "string";
-  dataIsVc =
-    dataIsVc && typeof (data as VerifiableCredential).issuanceDate === "string";
+    dataIsVc && typeof (data as VerifiableCredentialBase).issuer === "string";
   dataIsVc =
     dataIsVc &&
-    !Number.isNaN(Date.parse((data as VerifiableCredential).issuanceDate));
+    typeof (data as VerifiableCredentialBase).issuanceDate === "string";
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).credentialSubject === "object";
+    !Number.isNaN(Date.parse((data as VerifiableCredentialBase).issuanceDate));
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).credentialSubject.id === "string";
-  dataIsVc =
-    dataIsVc && typeof (data as VerifiableCredential).proof === "object";
+    typeof (data as VerifiableCredentialBase).credentialSubject === "object";
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).proof.created === "string";
+    typeof (data as VerifiableCredentialBase).credentialSubject.id === "string";
+  dataIsVc =
+    dataIsVc && typeof (data as VerifiableCredentialBase).proof === "object";
   dataIsVc =
     dataIsVc &&
-    !Number.isNaN(Date.parse((data as VerifiableCredential).proof.created));
+    typeof (data as VerifiableCredentialBase).proof.created === "string";
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).proof.proofPurpose === "string";
+    !Number.isNaN(Date.parse((data as VerifiableCredentialBase).proof.created));
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).proof.proofValue === "string";
-  dataIsVc =
-    dataIsVc && typeof (data as VerifiableCredential).proof.type === "string";
+    typeof (data as VerifiableCredentialBase).proof.proofPurpose === "string";
   dataIsVc =
     dataIsVc &&
-    typeof (data as VerifiableCredential).proof.verificationMethod === "string";
+    typeof (data as VerifiableCredentialBase).proof.proofValue === "string";
+  dataIsVc =
+    dataIsVc &&
+    typeof (data as VerifiableCredentialBase).proof.type === "string";
+  dataIsVc =
+    dataIsVc &&
+    typeof (data as VerifiableCredentialBase).proof.verificationMethod ===
+      "string";
   return dataIsVc;
 }
 
-function isUrl(url: string): boolean {
+export function isUrl(url: string): boolean {
   try {
     // If url is not URL-shaped, this will throw.
     // eslint-disable-next-line no-new
@@ -205,6 +251,9 @@ function isUrl(url: string): boolean {
   }
 }
 
+/**
+ * @deprecated Use isRdfjsVerifiableCredential instead
+ */
 export function isVerifiablePresentation(
   vp: unknown | VerifiablePresentation,
 ): vp is VerifiablePresentation {
@@ -239,7 +288,7 @@ export function concatenateContexts(...contexts: unknown[]): unknown {
   contexts.forEach((additionalContext) => {
     // Case when the context is an array of IRIs and/or inline contexts
     if (Array.isArray(additionalContext)) {
-      additionalContext.forEach((context) => result.add(context));
+      additionalContext.forEach((contextEntry) => result.add(contextEntry));
     } else if (additionalContext !== null && additionalContext !== undefined) {
       // Case when the context is a single remote URI or a single inline context
       result.add(additionalContext);
@@ -308,9 +357,9 @@ async function discoverLegacyEndpoints(
     });
 
     // The dataset should have a single blank node subject of all its triples.
-    const wellKnownRootBlankNode = getThingAll(vcConfigData, {
+    const [wellKnownRootBlankNode] = getThingAll(vcConfigData, {
       acceptBlankNodes: true,
-    })[0];
+    });
 
     return {
       derivationService:
@@ -396,43 +445,308 @@ export async function getVerifiableCredentialApiConfiguration(
   };
 }
 
+// eslint-disable-next-line camelcase
+export function internal_applyDataset<T extends { id?: string }>(
+  vc: T,
+  store: DatasetCore,
+  options?: ParseOptions & {
+    includeVcProperties?: boolean;
+    additionalProperties?: Record<string, unknown>;
+    requireId?: boolean;
+  },
+): DatasetCore {
+  return Object.freeze({
+    ...(options?.requireId !== false && { id: vc.id }),
+    ...(options?.includeVcProperties && vc),
+    ...options?.additionalProperties,
+    // Make this a DatasetCore without polluting the object with
+    // all of the properties present in the N3.Store
+    [Symbol.iterator]() {
+      return store[Symbol.iterator]();
+    },
+    has(quad: Quad) {
+      return store.has(quad);
+    },
+    match(...args: Parameters<DatasetCore["match"]>) {
+      return store.match(...args);
+    },
+    add() {
+      throw new Error("Cannot mutate this dataset");
+    },
+    delete() {
+      throw new Error("Cannot mutate this dataset");
+    },
+    get size() {
+      return store.size;
+    },
+    // For backwards compatibility the dataset properties
+    // SHOULD NOT be included when we JSON.stringify the object
+    toJSON() {
+      return vc;
+    },
+  });
+}
+
+/**
+ * @hidden
+ */
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
+  options?: ParseOptions & {
+    includeVcProperties: true;
+    additionalProperties?: Record<string, unknown>;
+    requireId?: true;
+  },
+): Promise<T & DatasetWithId>;
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
+  options?: ParseOptions & {
+    includeVcProperties?: boolean;
+    additionalProperties?: Record<string, unknown>;
+    requireId?: true;
+  },
+): Promise<DatasetWithId>;
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
+  options: ParseOptions & {
+    includeVcProperties: true;
+    additionalProperties?: Record<string, unknown>;
+    requireId: false;
+  },
+): Promise<T & DatasetCore>;
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
+  options?: ParseOptions & {
+    includeVcProperties?: boolean;
+    additionalProperties?: Record<string, unknown>;
+    requireId?: boolean;
+  },
+): Promise<DatasetCore>;
+export async function verifiableCredentialToDataset<T extends { id?: string }>(
+  vc: T,
+  options?: ParseOptions & {
+    includeVcProperties?: boolean;
+    additionalProperties?: Record<string, unknown>;
+    requireId?: boolean;
+  },
+): Promise<DatasetCore> {
+  let store: DatasetCore;
+  try {
+    store = await jsonLdToStore(vc, options);
+  } catch (e) {
+    throw new Error(
+      `Parsing the Verifiable Credential as JSON-LD failed: ${e}`,
+    );
+  }
+
+  if (options?.requireId !== false && typeof vc.id !== "string") {
+    throw new Error(
+      `Expected vc.id to be a string, found [${
+        vc.id
+      }] of type [${typeof vc.id}] on ${JSON.stringify(vc, null, 2)}`,
+    );
+  }
+
+  return internal_applyDataset(vc as { id: string }, store, options);
+}
+
+export function hasId(vc: unknown): vc is { id: string } {
+  return (
+    typeof vc === "object" &&
+    vc !== null &&
+    typeof (vc as { id: unknown }).id === "string"
+  );
+}
+
+/**
+ * @hidden
+ */
+// eslint-disable-next-line camelcase
+export async function internal_getVerifiableCredentialFromResponse(
+  vcUrl: UrlString | undefined,
+  response: Response,
+  options: ParseOptions & {
+    returnLegacyJsonld: false;
+    skipValidation?: boolean;
+  },
+): Promise<DatasetWithId>;
+/**
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function internal_getVerifiableCredentialFromResponse(
+  vcUrl: UrlString | undefined,
+  response: Response,
+  options?: ParseOptions & {
+    returnLegacyJsonld?: true;
+    skipValidation?: boolean;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<VerifiableCredential>;
+/**
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function internal_getVerifiableCredentialFromResponse(
+  vcUrl: UrlString | undefined,
+  response: Response,
+  options?: ParseOptions & {
+    returnLegacyJsonld?: boolean;
+    skipValidation?: boolean;
+    noVerify?: boolean;
+  },
+): Promise<DatasetWithId>;
+export async function internal_getVerifiableCredentialFromResponse(
+  vcUrlInput: UrlString | undefined,
+  response: Response,
+  options?: ParseOptions & {
+    returnLegacyJsonld?: boolean;
+    skipValidation?: boolean;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<DatasetWithId> {
+  const returnLegacy = options?.returnLegacyJsonld !== false;
+  let vc: unknown | VerifiableCredentialBase;
+  let vcUrl = vcUrlInput;
+  try {
+    vc = await response.json();
+
+    if (typeof vcUrl !== "string") {
+      if (!isUnknownObject(vc) || !("id" in vc) || typeof vc.id !== "string") {
+        throw new Error("Cannot establish id of verifiable credential");
+      }
+      vcUrl = vc.id;
+    }
+
+    // If you're wondering why this is not inside the if (returnLegacy) condition outside this try/catch statement
+    // see https://github.com/inrupt/solid-client-vc-js/pull/849#discussion_r1405853022
+    if (returnLegacy) {
+      vc = normalizeVc(vc);
+    }
+  } catch (e) {
+    throw new Error(
+      `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`,
+    );
+  }
+
+  if (returnLegacy) {
+    if (!options?.skipValidation && !isVerifiableCredential(vc)) {
+      throw new Error(
+        `The value received from [${vcUrl}] is not a Verifiable Credential`,
+      );
+    }
+    if (options?.normalize) {
+      vc = options.normalize(vc as VerifiableCredentialBase);
+    }
+    return verifiableCredentialToDataset(vc as VerifiableCredentialBase, {
+      allowContextFetching: options?.allowContextFetching,
+      baseIRI: options?.baseIRI,
+      contexts: options?.contexts,
+      includeVcProperties: true,
+    });
+  }
+
+  if (!hasId(vc)) {
+    throw new Error(
+      "Verifiable credential is not an object, or does not have an id",
+    );
+  }
+  const parsedVc = await verifiableCredentialToDataset(vc, {
+    allowContextFetching: options.allowContextFetching,
+    baseIRI: options.baseIRI,
+    contexts: options.contexts,
+    includeVcProperties: false,
+  });
+
+  if (
+    !options.skipValidation &&
+    !isRdfjsVerifiableCredential(parsedVc, namedNode(parsedVc.id))
+  ) {
+    throw new Error(
+      `The value received from [${vcUrl}] is not a Verifiable Credential`,
+    );
+  }
+  return parsedVc;
+}
+
 /**
  * Dereference a VC URL, and verify that the resulting content is valid.
  *
  * @param vcUrl The URL of the VC.
  * @param options Options to customize the function behavior.
  * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
  * @returns The dereferenced VC if valid. Throws otherwise.
  * @since 0.4.0
  */
 export async function getVerifiableCredential(
   vcUrl: UrlString,
-  options?: Partial<{
-    fetch: typeof fetch;
-  }>,
-): Promise<VerifiableCredential> {
-  const authFetch = options?.fetch ?? uniFetch;
-  return authFetch(vcUrl as string)
-    .then(async (response) => {
-      if (!response.ok) {
-        throw new Error(
-          `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`,
-        );
-      }
-      try {
-        return normalizeVc(await response.json());
-      } catch (e) {
-        throw new Error(
-          `Parsing the Verifiable Credential [${vcUrl}] as JSON failed: ${e}`,
-        );
-      }
-    })
-    .then((vc) => {
-      if (!isVerifiableCredential(vc)) {
-        throw new Error(
-          `The value received from [${vcUrl}] is not a Verifiable Credential`,
-        );
-      }
-      return vc;
-    });
+  options: ParseOptions & {
+    fetch?: typeof fetch;
+    skipValidation?: boolean;
+    returnLegacyJsonld: false;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<DatasetWithId>;
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: ParseOptions & {
+    fetch?: typeof fetch;
+    skipValidation?: boolean;
+    returnLegacyJsonld?: true;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<VerifiableCredential>;
+/**
+ * Dereference a VC URL, and verify that the resulting content is valid.
+ *
+ * @param vcUrl The URL of the VC.
+ * @param options Options to customize the function behavior.
+ * - options.fetch: Specify a WHATWG-compatible authenticated fetch.
+ * - options.returnLegacyJsonld: Include the normalized JSON-LD in the response
+ * @returns The dereferenced VC if valid. Throws otherwise.
+ * @since 0.4.0
+ * @deprecated Deprecated in favour of setting returnLegacyJsonld: false. This will be the default value in future
+ * versions of this library.
+ */
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: ParseOptions & {
+    fetch?: typeof fetch;
+    skipValidation?: boolean;
+    returnLegacyJsonld?: boolean;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<DatasetWithId>;
+export async function getVerifiableCredential(
+  vcUrl: UrlString,
+  options?: ParseOptions & {
+    fetch?: typeof fetch;
+    skipValidation?: boolean;
+    returnLegacyJsonld?: boolean;
+    normalize?: (object: VerifiableCredentialBase) => VerifiableCredentialBase;
+  },
+): Promise<DatasetWithId> {
+  const authFetch = options?.fetch ?? fetch;
+  const response = await authFetch(vcUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  return internal_getVerifiableCredentialFromResponse(vcUrl, response, options);
 }
