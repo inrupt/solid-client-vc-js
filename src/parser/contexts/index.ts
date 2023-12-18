@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -18,8 +18,26 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+import VC from "./vc";
+import Inrupt from "./inrupt";
+import vc from "./inrupt-vc";
+import integrity from "./data-integrity";
+import ed25519 from "./ed25519-2020";
+import revocation from "./revocation-list";
+import statusList from "./status-list";
 
-import "@inrupt/jest-jsdom-polyfills";
-globalThis.fetch = () => {
-    throw new Error("Fetch should not be called in tests without being mocked");
-}
+const contextDefinitions = {
+  "https://www.w3.org/2018/credentials/v1": VC,
+  "https://schema.inrupt.com/credentials/v1.jsonld": Inrupt,
+} as const;
+
+export const cachedContexts = {
+  "https://vc.inrupt.com/credentials/v1": vc,
+  "https://w3id.org/security/data-integrity/v1": integrity,
+  "https://w3id.org/vc-revocation-list-2020/v1": revocation,
+  "https://w3id.org/vc/status-list/2021/v1": statusList,
+  "https://w3id.org/security/suites/ed25519-2020/v1": ed25519,
+};
+
+export const context = Object.keys(contextDefinitions);
+export default contextDefinitions;

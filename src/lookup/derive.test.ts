@@ -19,41 +19,86 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, describe, it, expect } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
-import type * as UniversalFetch from "@inrupt/universal-fetch";
-import { mockDefaultPresentation } from "../common/common.mock";
+import { beforeAll, describe, expect, it, jest } from "@jest/globals";
+import {
+  mockAccessGrant,
+  mockDefaultPresentation,
+} from "../common/common.mock";
+import { getCredentialSubject } from "../common/getters";
 import defaultGetVerifilableCredentialAllFromShape, {
   getVerifiableCredentialAllFromShape,
 } from "./derive";
 import type * as QueryModule from "./query";
 
-jest.mock("@inrupt/universal-fetch", () => {
-  const fetchModule = jest.requireActual(
-    "@inrupt/universal-fetch",
-  ) as typeof UniversalFetch;
-  return {
-    ...fetchModule,
-    fetch: jest.fn<(typeof UniversalFetch)["fetch"]>(),
-  };
-});
+const mockDeriveEndpointDefaultResponse = (anoymous = false) =>
+  new Response(
+    JSON.stringify(anoymous ? mockAccessGrant() : mockDefaultPresentation()),
+    {
+      status: 200,
+      statusText: "OK",
+    },
+  );
 
-const mockDeriveEndpointDefaultResponse = () =>
-  new Response(JSON.stringify(mockDefaultPresentation()), {
-    status: 200,
-    statusText: "OK",
+describe.each([
+  ["named response", mockDeriveEndpointDefaultResponse],
+  ["anonymous response", () => mockDeriveEndpointDefaultResponse(true)],
+])("getVerifiableCredentialAllFromShape [%s]", (_, mockResponse) => {
+  let spiedFetch: jest.Spied<typeof fetch>;
+
+  beforeAll(() => {
+    spiedFetch = jest.spyOn(globalThis, "fetch");
+
+    spiedFetch.mockImplementation(() => {
+      throw new Error("Unexpected fetch call");
+    });
   });
 
-describe("getVerifiableCredentialAllFromShape", () => {
   describe("legacy derive endpoint", () => {
     it("exposes a default export", async () => {
       expect(defaultGetVerifilableCredentialAllFromShape).toBe(
         getVerifiableCredentialAllFromShape,
       );
     });
-    it("uses the provided fetch if any", async () => {
-      const mockedFetch = jest.fn() as typeof fetch;
-      try {
+
+    it.each([[true], [false]])(
+      "uses the provided fetch if any [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        const mockedFetch = jest.fn() as typeof fetch;
+        try {
+          await getVerifiableCredentialAllFromShape(
+            "https://some.endpoint",
+            {
+              "@context": ["https://some.context"],
+              credentialSubject: { id: "https://some.subject/" },
+            },
+            {
+              fetch: mockedFetch,
+              returnLegacyJsonld,
+            },
+          );
+          // eslint-disable-next-line no-empty
+        } catch (_e) {}
+        expect(mockedFetch).toHaveBeenCalled();
+      },
+    );
+
+    it.each([[true], [false]])(
+      "defaults to an unauthenticated fetch if no fetch is provided [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        spiedFetch.mockResolvedValue(mockResponse());
+        await getVerifiableCredentialAllFromShape("https://some.endpoint", {
+          "@context": ["https://some.context"],
+          credentialSubject: { id: "https://some.subject/" },
+          returnLegacyJsonld,
+        });
+        expect(spiedFetch).toHaveBeenCalled();
+      },
+    );
+
+    it.each([[true], [false]])(
+      "includes the expired VC options if requested [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        const mockedFetch = jest.fn<typeof fetch>(async () => mockResponse());
         await getVerifiableCredentialAllFromShape(
           "https://some.endpoint",
           {
@@ -61,157 +106,170 @@ describe("getVerifiableCredentialAllFromShape", () => {
             credentialSubject: { id: "https://some.subject/" },
           },
           {
-            fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
+            includeExpiredVc: true,
+            fetch: mockedFetch,
+            returnLegacyJsonld,
           },
         );
-        // eslint-disable-next-line no-empty
-      } catch (_e) {}
-      expect(mockedFetch).toHaveBeenCalled();
-    });
+        expect(mockedFetch).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            body: expect.stringContaining("ExpiredVerifiableCredential"),
+          }),
+        );
+      },
+    );
 
-    it("defaults to an unauthenticated fetch if no fetch is provided", async () => {
-      const mockedFetch = jest.requireMock(
-        "@inrupt/universal-fetch",
-      ) as jest.Mocked<typeof UniversalFetch>;
-      mockedFetch.fetch.mockResolvedValue(mockDeriveEndpointDefaultResponse());
-      await getVerifiableCredentialAllFromShape("https://some.endpoint", {
-        "@context": ["https://some.context"],
-        credentialSubject: { id: "https://some.subject/" },
-      });
-      expect(mockedFetch.fetch).toHaveBeenCalled();
-    });
-
-    it("includes the expired VC options if requested", async () => {
-      const mockedFetch = jest
-        .fn<(typeof UniversalFetch)["fetch"]>()
-        .mockResolvedValue(mockDeriveEndpointDefaultResponse());
-      await getVerifiableCredentialAllFromShape(
-        "https://some.endpoint",
-        {
-          "@context": ["https://some.context"],
-          credentialSubject: { id: "https://some.subject/" },
-        },
-        {
-          includeExpiredVc: true,
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        },
-      );
-      expect(mockedFetch).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          body: expect.stringContaining("ExpiredVerifiableCredential"),
-        }),
-      );
-    });
-
-    it("builds a legacy VP request from the provided VC shape", async () => {
-      const mockedFetch = jest
-        .fn<(typeof UniversalFetch)["fetch"]>()
-        .mockResolvedValue(mockDeriveEndpointDefaultResponse());
-      const queryModule = jest.requireActual("./query") as typeof QueryModule;
-      const spiedQuery = jest.spyOn(queryModule, "query");
-      await getVerifiableCredentialAllFromShape(
-        "https://some.endpoint",
-        {
-          "@context": ["https://some.context"],
-          credentialSubject: { id: "https://some.subject/" },
-        },
-        { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
-      );
-      expect(spiedQuery).toHaveBeenCalledWith(
-        "https://some.endpoint",
-        expect.objectContaining({
-          verifiableCredential: {
-            "@context": [
-              "https://www.w3.org/2018/credentials/v1",
-              "https://some.context",
-            ],
+    it.each([[true], [false]])(
+      "builds a legacy VP request from the provided VC shape",
+      async (returnLegacyJsonld) => {
+        const mockedFetch = jest
+          .fn<typeof fetch>()
+          .mockResolvedValue(mockResponse());
+        const queryModule = jest.requireActual("./query") as typeof QueryModule;
+        const spiedQuery = jest.spyOn(queryModule, "query");
+        await getVerifiableCredentialAllFromShape(
+          "https://some.endpoint",
+          {
+            "@context": ["https://some.context"],
             credentialSubject: { id: "https://some.subject/" },
           },
-        }),
-        expect.anything(),
-      );
-    });
+          {
+            fetch: mockedFetch,
+            returnLegacyJsonld,
+          },
+        );
+        expect(spiedQuery).toHaveBeenCalledWith(
+          "https://some.endpoint",
+          expect.objectContaining({
+            verifiableCredential: {
+              "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://some.context",
+              ],
+              credentialSubject: { id: "https://some.subject/" },
+            },
+          }),
+          expect.anything(),
+        );
+      },
+    );
 
     it("returns the VCs from the obtained VP on a successful response", async () => {
-      const mockedFetch = jest
-        .fn<(typeof UniversalFetch)["fetch"]>()
-        .mockResolvedValue(mockDeriveEndpointDefaultResponse());
-      await expect(
-        getVerifiableCredentialAllFromShape(
-          "https://some.endpoint",
-          {
-            "@context": ["https://some.context"],
-            credentialSubject: { id: "https://some.subject/" },
-          },
-          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
-        ),
-      ).resolves.toEqual(mockDefaultPresentation().verifiableCredential);
+      const vc = await getVerifiableCredentialAllFromShape(
+        "https://some.endpoint",
+        {
+          "@context": ["https://some.context"],
+          credentialSubject: { id: "https://some.subject/" },
+        },
+        { fetch: async () => mockResponse() },
+      );
+
+      expect(vc).toMatchObject(
+        (await mockResponse().json()).verifiableCredential,
+      );
+
+      expect(JSON.parse(JSON.stringify(vc))).toEqual(
+        (await mockResponse().json()).verifiableCredential,
+      );
     });
 
-    it("returns an empty array if the VP contains no VCs", async () => {
-      const mockedFetch = jest
-        .fn<(typeof UniversalFetch)["fetch"]>()
-        .mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              ...mockDefaultPresentation(),
-              verifiableCredential: undefined,
-            }),
+    it("returns the VCs from the obtained VP on a successful response [returnLegacyJsonld: false]", async () => {
+      const vc = await getVerifiableCredentialAllFromShape(
+        "https://some.endpoint",
+        {
+          "@context": ["https://some.context"],
+          credentialSubject: { id: "https://some.webid.provider/strelka" },
+        },
+        {
+          fetch: async () => mockResponse(),
+          returnLegacyJsonld: false,
+        },
+      );
+
+      expect(vc).toMatchObject(
+        mockDefaultPresentation().verifiableCredential!.map(() => ({
+          id: "https://example.org/ns/someCredentialInstance",
+        })),
+      );
+
+      expect<string[]>(vc.map((v) => getCredentialSubject(v).value)).toEqual(
+        mockDefaultPresentation().verifiableCredential?.map(
+          () => "https://some.webid.provider/strelka",
+        ),
+      );
+
+      expect(JSON.parse(JSON.stringify(vc))).toEqual(
+        (await mockResponse().json()).verifiableCredential,
+      );
+    });
+
+    it.each([[true], [false]])(
+      "returns an empty array if the VP contains no VCs [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        await expect(
+          getVerifiableCredentialAllFromShape(
+            "https://some.endpoint",
             {
-              status: 200,
-              statusText: "OK",
+              "@context": ["https://some.context"],
+              credentialSubject: { id: "https://some.subject/" },
+            },
+            {
+              fetch: async () =>
+                new Response(
+                  JSON.stringify({
+                    ...mockDefaultPresentation(),
+                    verifiableCredential: undefined,
+                  }),
+                  {
+                    status: 200,
+                    statusText: "OK",
+                  },
+                ),
+              returnLegacyJsonld,
             },
           ),
-        );
-      await expect(
-        getVerifiableCredentialAllFromShape(
-          "https://some.endpoint",
-          {
-            "@context": ["https://some.context"],
-            credentialSubject: { id: "https://some.subject/" },
-          },
-          { fetch: mockedFetch as (typeof UniversalFetch)["fetch"] },
-        ),
-      ).resolves.toEqual([]);
-    });
+        ).resolves.toEqual([]);
+      },
+    );
   });
 
   describe("standard query endpoint", () => {
-    it("builds a standard VP request by example from the provided VC shape", async () => {
-      const mockedFetch = jest
-        .fn<(typeof UniversalFetch)["fetch"]>()
-        .mockResolvedValue(mockDeriveEndpointDefaultResponse());
-      const queryModule = jest.requireActual("./query") as typeof QueryModule;
-      const spiedQuery = jest.spyOn(queryModule, "query");
-      const VC_SHAPE = {
-        "@context": ["https://some.context"],
-        credentialSubject: { id: "https://some.subject/" },
-      };
-      await getVerifiableCredentialAllFromShape(
-        "https://some.endpoint/query",
-        VC_SHAPE,
-        {
-          fetch: mockedFetch as (typeof UniversalFetch)["fetch"],
-        },
-      );
+    it.each([[true], [false]])(
+      "builds a standard VP request by example from the provided VC shape [returnLegacyJsonld: %s]",
+      async (returnLegacyJsonld) => {
+        const queryModule = jest.requireActual("./query") as typeof QueryModule;
+        const spiedQuery = jest.spyOn(queryModule, "query");
+        const VC_SHAPE = {
+          "@context": ["https://some.context"],
+          credentialSubject: { id: "https://some.subject/" },
+        };
+        await getVerifiableCredentialAllFromShape(
+          "https://some.endpoint/query",
+          VC_SHAPE,
+          {
+            fetch: async () => mockResponse(),
+            returnLegacyJsonld,
+          },
+        );
 
-      expect(spiedQuery).toHaveBeenCalledWith(
-        "https://some.endpoint/query",
-        expect.objectContaining({
-          query: [
-            {
-              type: "QueryByExample",
-              credentialQuery: [
-                {
-                  example: VC_SHAPE,
-                },
-              ],
-            },
-          ],
-        }),
-        expect.anything(),
-      );
-    });
+        expect(spiedQuery).toHaveBeenCalledWith(
+          "https://some.endpoint/query",
+          expect.objectContaining({
+            query: [
+              {
+                type: "QueryByExample",
+                credentialQuery: [
+                  {
+                    example: VC_SHAPE,
+                  },
+                ],
+              },
+            ],
+          }),
+          expect.anything(),
+        );
+      },
+    );
   });
 });

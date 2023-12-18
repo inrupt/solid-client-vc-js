@@ -14,8 +14,8 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest]
-        node-version: ["16.x", "18.x", "20.x"]
-        environment-name: ["ESS PodSpaces"]
+        node-version: ["18.x", "20.x"]
+        environment-name: ["ESS PodSpaces", "ESS Dev-2-1"]
         experimental: [false]
         include:
           - node-version: "20.x"

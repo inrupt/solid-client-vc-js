@@ -22,7 +22,6 @@
 /**
  * @module revoke
  */
-import { fetch as fallbackFetch } from "@inrupt/universal-fetch";
 import type { Iri } from "../common/common";
 
 /**
@@ -48,7 +47,7 @@ export async function revokeVerifiableCredential(
 ): Promise<void> {
   const internalOptions = { ...options };
   if (internalOptions.fetch === undefined) {
-    internalOptions.fetch = fallbackFetch;
+    internalOptions.fetch = fetch;
   }
   const response = await internalOptions.fetch(issuerEndpoint, {
     method: "POST",

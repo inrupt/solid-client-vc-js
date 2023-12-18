@@ -56,6 +56,7 @@ export default {
       roots: ["<rootDir>/e2e/node"],
       setupFiles: ["<rootDir>/e2e/node/jest.e2e.setup.ts"],
       slowTestThreshold: 30,
+      setupFilesAfterEnv: [],
     },
   ],
 } as Config;
