@@ -19,6 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 import createConfig from "@inrupt/base-rollup-config";
+import { join } from "path";
+// eslint-disable-next-line import/extensions
 import pkg from "./package.json" assert { type: "json" };
 
 const config = createConfig(pkg);
@@ -31,10 +33,11 @@ config[0].output.push(
     preserveModules: true,
   },
   {
-    dir: "umd",
+    dir: "dist",
+    entryFileNames: "[name].umd.js",
     format: "umd",
     name: "SolidClientVc",
   },
-)
+);
 
 export default config;
