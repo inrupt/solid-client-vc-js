@@ -13,6 +13,7 @@ The following changes have been implemented but not released yet:
 - Parsing Verifiable Credentials. This allows the Verifiable Credential to be read using the RDF/JS DatasetCore API. This is a breaking change because the `VerifiableCredential` type now is also of type `DatasetCore`. Importantly, this dataset is not preserved when converting to verifiableCredentials a string and back doing `JSON.parse(JSON.stringify(verifiableCredential))`. We reccomend that developers set `returnLegacyJsonld` to `false` in functions such as `getVerifiableCredential` in order to avoid returning deprecated object properties. Instead developers should make use of the exported `getter` functions to get these attributes.
 - Use the global `fetch` function instead of `@inrupt/universal-fetch`. This means this library now only works
   with Node 18 and higher.
+- The deprecated signature of `issueVerifiableCredential` (including a `subjectId` parameter) is no longer supported. Please remove the extraneous parameter.
 - Due to changes in the rollup config, the `umd` output is now found at `dist/index.umd.js` rather than `umd/index.js`.
 
 ## [0.7.4](https://github.com/inrupt/solid-client-vc-js/releases/tag/v0.7.4) - 2023-11-17

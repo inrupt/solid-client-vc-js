@@ -313,66 +313,6 @@ describe("issueVerifiableCredential", () => {
     );
   });
 
-  it("doesn't include the subject ID when using the deprecated signature", async () => {
-    const mockedFetch = jest.fn<typeof fetch>();
-    try {
-      await issueVerifiableCredential(
-        "https://some.endpoint",
-        "https://some.subject",
-        { "@context": ["https://some-subject.context"], aClaim: "a value" },
-        undefined,
-        {
-          fetch: mockedFetch,
-        },
-      );
-      // eslint-disable-next-line no-empty
-    } catch (_e) {}
-    expect(mockedFetch).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        body: JSON.stringify({
-          credential: {
-            "@context": [...defaultContext, "https://some-subject.context"],
-            type: defaultCredentialTypes,
-            credentialSubject: {
-              // Note that the subject ID is not present
-              aClaim: "a value",
-            },
-          },
-        }),
-      }),
-    );
-  });
-
-  it("doesn't include the subject ID when using the deprecated default signature", async () => {
-    const mockedFetch = jest.fn<typeof fetch>();
-    try {
-      await defaultIssueVerifiableCredential(
-        "https://some.endpoint",
-        "https://some.subject",
-        { "@context": ["https://some-subject.context"], aClaim: "a value" },
-        undefined,
-        { fetch: mockedFetch },
-      );
-      // eslint-disable-next-line no-empty
-    } catch (_e) {}
-    expect(mockedFetch).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        body: JSON.stringify({
-          credential: {
-            "@context": [...defaultContext, "https://some-subject.context"],
-            type: defaultCredentialTypes,
-            credentialSubject: {
-              // Note that the subject ID is not present
-              aClaim: "a value",
-            },
-          },
-        }),
-      }),
-    );
-  });
-
   it("normalizes the issued VC", async () => {
     const mockedVc = mockDefaultCredential("http://example.org/my/sample/id");
     // Force unexpected VC shapes to check normalization.
