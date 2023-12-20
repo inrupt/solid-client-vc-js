@@ -37,7 +37,6 @@ import {
   // eslint-disable-next-line camelcase
   internal_getVerifiableCredentialFromResponse,
 } from "../common/common";
-// import type { ParseOptions } from "../parser/jsonld";
 
 type OptionsType = {
   fetch?: typeof fetch;
