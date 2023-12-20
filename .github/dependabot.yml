@@ -7,6 +7,12 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "weekly"
+  - package-ecosystem: "npm"
+    # Upgrade dependencies for the browser-based test app.
+    directory: "/e2e/browser/test-app"
+    # Check the npm registry for updates every day (weekdays)
+    schedule:
+      interval: "weekly"
   # Enable version updates for the website tooling
   - package-ecosystem: "pip"
     # Look for `package.json` and `lock` files in the `root` directory
