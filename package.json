@@ -85,7 +85,7 @@
     "fsevents": "^2.3.2"
   },
   "dependencies": {
-    "@inrupt/solid-client": "^1.25.2",
+    "@inrupt/solid-client": "^2.0.0",
     "event-emitter-promisify": "^1.1.0",
     "jsonld-context-parser": "^2.4.0",
     "jsonld-streaming-parser": "^3.3.0",
