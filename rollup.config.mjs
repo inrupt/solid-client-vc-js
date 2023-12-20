@@ -19,7 +19,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 import createConfig from "@inrupt/base-rollup-config";
-import { join } from "path";
 // eslint-disable-next-line import/extensions
 import pkg from "./package.json" assert { type: "json" };
 
