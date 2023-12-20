@@ -22,9 +22,7 @@
 import { jest, describe, it, expect } from "@jest/globals";
 import { defaultContext, defaultCredentialTypes } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
-import defaultIssueVerifiableCredential, {
-  issueVerifiableCredential,
-} from "./issue";
+import { issueVerifiableCredential } from "./issue";
 
 describe("issueVerifiableCredential", () => {
   it("uses the provided fetch if any", async () => {
