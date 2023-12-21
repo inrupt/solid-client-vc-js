@@ -4,9 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 The following changes have been implemented but not released yet:
 
-## [Unreleased]
-
 ## Unreleased
+
+## [1.0.0](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.0.0) - 2023-12-21
 
 ### Breaking Changes
 
