@@ -171,7 +171,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         ),
         issueVerifiableCredential(
           issuerService,
-          "http://example.org/my/subject/id",
           validSubjectClaims(),
           validCredentialClaims,
 
@@ -181,7 +180,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         ),
         issueVerifiableCredential(
           issuerService,
-          "http://example.org/my/subject/id",
           validSubjectClaims(),
           validCredentialClaims,
 

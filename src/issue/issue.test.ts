@@ -22,9 +22,7 @@
 import { jest, describe, it, expect } from "@jest/globals";
 import { defaultContext, defaultCredentialTypes } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
-import defaultIssueVerifiableCredential, {
-  issueVerifiableCredential,
-} from "./issue";
+import { issueVerifiableCredential } from "./issue";
 
 describe("issueVerifiableCredential", () => {
   it("uses the provided fetch if any", async () => {
@@ -305,66 +303,6 @@ describe("issueVerifiableCredential", () => {
             ],
             type: defaultCredentialTypes,
             credentialSubject: {
-              aClaim: "a value",
-            },
-          },
-        }),
-      }),
-    );
-  });
-
-  it("doesn't include the subject ID when using the deprecated signature", async () => {
-    const mockedFetch = jest.fn<typeof fetch>();
-    try {
-      await issueVerifiableCredential(
-        "https://some.endpoint",
-        "https://some.subject",
-        { "@context": ["https://some-subject.context"], aClaim: "a value" },
-        undefined,
-        {
-          fetch: mockedFetch,
-        },
-      );
-      // eslint-disable-next-line no-empty
-    } catch (_e) {}
-    expect(mockedFetch).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        body: JSON.stringify({
-          credential: {
-            "@context": [...defaultContext, "https://some-subject.context"],
-            type: defaultCredentialTypes,
-            credentialSubject: {
-              // Note that the subject ID is not present
-              aClaim: "a value",
-            },
-          },
-        }),
-      }),
-    );
-  });
-
-  it("doesn't include the subject ID when using the deprecated default signature", async () => {
-    const mockedFetch = jest.fn<typeof fetch>();
-    try {
-      await defaultIssueVerifiableCredential(
-        "https://some.endpoint",
-        "https://some.subject",
-        { "@context": ["https://some-subject.context"], aClaim: "a value" },
-        undefined,
-        { fetch: mockedFetch },
-      );
-      // eslint-disable-next-line no-empty
-    } catch (_e) {}
-    expect(mockedFetch).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        body: JSON.stringify({
-          credential: {
-            "@context": [...defaultContext, "https://some-subject.context"],
-            type: defaultCredentialTypes,
-            credentialSubject: {
-              // Note that the subject ID is not present
               aClaim: "a value",
             },
           },
