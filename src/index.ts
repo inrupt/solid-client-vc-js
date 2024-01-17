@@ -21,12 +21,13 @@
 
 export { default as issueVerifiableCredential } from "./issue/issue";
 export type {
+  DatasetWithId,
   Iri,
   JsonLd,
   VerifiableCredential,
   VerifiableCredentialBase,
+  VerifiableCredentialApiConfiguration,
 } from "./common/common";
-export type { DatasetWithId } from "./common/common";
 export {
   isVerifiableCredential,
   isVerifiablePresentation,
