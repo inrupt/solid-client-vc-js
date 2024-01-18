@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+## [1.0.2](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.0.2) - 2024-01-17
+
+### Patch changes
+
+- Export type `VerifiableCredentialApiConfiguration`, which is part of the public API but was missing from the exports.
+
 ## [1.0.0](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.0.0) - 2023-12-21
 
 ### Breaking Changes
