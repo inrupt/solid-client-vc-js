@@ -10,6 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     environment:
       name: ${{ matrix.environment-name }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: true
       matrix:
