@@ -33,7 +33,6 @@ const config: PlaywrightTestConfig = {
     screenshot: "only-on-failure",
     trace: "on",
     video: "on-first-retry",
-    bypassCSP: true,
   },
   webServer: {
     command: "cd ./e2e/browser/test-app/ ; npm run dev",
@@ -42,24 +41,24 @@ const config: PlaywrightTestConfig = {
     reuseExistingServer: !process.env.CI,
   },
   projects: [
-    // {
-    //   name: "Firefox",
-    //   use: {
-    //     browserName: "firefox",
-    //     userAgent: `Browser-based solid-client-vc end-to-end tests running ${
-    //       process.env.CI === "true" ? "in CI" : "locally"
-    //     }. Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0`,
-    //   },
-    // },
-    // {
-    //   name: "Chromium",
-    //   use: {
-    //     browserName: "chromium",
-    //     userAgent: `Browser-based solid-client-vc end-to-end tests running ${
-    //       process.env.CI === "true" ? "in CI" : "locally"
-    //     }. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36`,
-    //   },
-    // },
+    {
+      name: "Firefox",
+      use: {
+        browserName: "firefox",
+        userAgent: `Browser-based solid-client-vc end-to-end tests running ${
+          process.env.CI === "true" ? "in CI" : "locally"
+        }. Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0`,
+      },
+    },
+    {
+      name: "Chromium",
+      use: {
+        browserName: "chromium",
+        userAgent: `Browser-based solid-client-vc end-to-end tests running ${
+          process.env.CI === "true" ? "in CI" : "locally"
+        }. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36`,
+      },
+    },
     {
       name: "WebKit",
       use: {
