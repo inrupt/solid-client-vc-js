@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+## [1.0.3](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.0.3) - 2024-05-15
+
 ### Patch changes
 
 - Added `types` in `exports` entries. This fixes issue #1028.
