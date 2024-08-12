@@ -7,12 +7,20 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typedoc-plugin-markdown"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "npm"
     # Upgrade dependencies for the browser-based test app.
     directory: "/e2e/browser/test-app"
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
   # Enable version updates for the website tooling
   - package-ecosystem: "pip"
     # Look for `package.json` and `lock` files in the `root` directory
