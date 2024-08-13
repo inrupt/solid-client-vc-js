@@ -20,8 +20,10 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
+import { BadRequestError } from "@inrupt/solid-client-errors";
 import { defaultContext, defaultCredentialTypes } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
+import { mockedFetchWithResponse } from "../tests.internal";
 import { issueVerifiableCredential } from "./issue";
 
 describe("issueVerifiableCredential", () => {
@@ -57,21 +59,24 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("throws if the issuer returns an error", async () => {
-    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      new Response(undefined, {
-        status: 400,
-        statusText: "Bad request",
-      }),
+    const mockedFetch = mockedFetchWithResponse(
+      400,
+      `{"status": 400, "title": "Bad request", "detail": "Example detail"}`,
+      { "Content-Type": "application/problem+json" },
     );
-    await expect(
-      issueVerifiableCredential(
-        "https://some.endpoint",
-        { "@context": ["https://some.context"] },
-        { "@context": ["https://some.context"] },
-        { fetch: mockedFetch },
-      ),
-    ).rejects.toThrow(
-      /https:\/\/some\.endpoint.*could not successfully issue a VC.*400.*Bad request/,
+    const err: BadRequestError = await issueVerifiableCredential(
+      "https://some.endpoint",
+      { "@context": ["https://some.context"] },
+      { "@context": ["https://some.context"] },
+      { fetch: mockedFetch },
+    ).catch((e) => e);
+
+    expect(err).toBeInstanceOf(BadRequestError);
+    expect(err.problemDetails.status).toBe(400);
+    expect(err.problemDetails.title).toBe("Bad request");
+    expect(err.problemDetails.detail).toBe("Example detail");
+    expect(err.message).toMatch(
+      /https:\/\/some\.endpoint.*could not successfully issue a VC/,
     );
   });
 

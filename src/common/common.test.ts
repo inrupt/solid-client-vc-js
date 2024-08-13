@@ -22,6 +22,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import type { IJsonLdContext } from "jsonld-context-parser";
 import { DataFactory, Store } from "n3";
 import { isomorphic } from "rdf-isomorphic";
+import { UnauthorizedError } from "@inrupt/solid-client-errors";
 import { jsonLdStringToStore } from "../parser/jsonld";
 import type { VerifiableCredential } from "./common";
 import {
@@ -44,6 +45,7 @@ import {
 import { cred, rdf } from "./constants";
 import isRdfjsVerifiableCredential from "./isRdfjsVerifiableCredential";
 import isRdfjsVerifiablePresentation from "./isRdfjsVerifiablePresentation";
+import { mockedFetchWithResponse } from "../tests.internal";
 
 const { namedNode, quad, blankNode } = DataFactory;
 
@@ -529,27 +531,30 @@ describe("getVerifiableCredential", () => {
     let mockedFetch: jest.MockedFunction<typeof fetch>;
 
     beforeEach(() => {
-      mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-        new Response(undefined, {
-          status: 401,
-          statusText: "Unauthenticated",
-        }),
+      mockedFetch = mockedFetchWithResponse(
+        401,
+        `{"status": 401, "title": "Unauthorized", "detail": "Example detail"}`,
+        { "Content-Type": "application/problem+json" },
       );
     });
 
     it.each([[true], [false]])(
       "returnLegacyJsonld: %s",
       async (returnLegacyJsonld) => {
-        await expect(
-          getVerifiableCredential(
-            "https://example.org/ns/someCredentialInstance",
-            {
-              fetch: mockedFetch,
-              returnLegacyJsonld,
-            },
-          ),
-        ).rejects.toThrow(
-          "Fetching the Verifiable Credential [https://example.org/ns/someCredentialInstance] failed: 401 Unauthenticated",
+        const err: UnauthorizedError = await getVerifiableCredential(
+          "https://example.org/ns/someCredentialInstance",
+          {
+            fetch: mockedFetch,
+            returnLegacyJsonld,
+          },
+        ).catch((e) => e);
+
+        expect(err).toBeInstanceOf(UnauthorizedError);
+        expect(err.problemDetails.status).toBe(401);
+        expect(err.problemDetails.title).toBe("Unauthorized");
+        expect(err.problemDetails.detail).toBe("Example detail");
+        expect(err.message).toBe(
+          "Fetching the Verifiable Credential [https://example.org/ns/someCredentialInstance] failed",
         );
       },
     );

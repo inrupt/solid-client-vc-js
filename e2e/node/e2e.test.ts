@@ -314,7 +314,9 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           fetch: session.fetch,
         },
       );
-      await expect(vcPromise).rejects.toThrow(/400/);
+      await expect(vcPromise).rejects.toThrow(
+        `The VC issuing endpoint [${issuerService}] could not successfully issue a VC`,
+      );
     });
   });
 

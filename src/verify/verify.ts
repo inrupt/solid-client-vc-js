@@ -27,6 +27,7 @@ import type { UrlString } from "@inrupt/solid-client";
 
 import type { DatasetCore } from "@rdfjs/types";
 import { DataFactory } from "n3";
+import { handleErrorResponse } from "@inrupt/solid-client-errors";
 import type {
   DatasetWithId,
   VerifiableCredentialBase,
@@ -138,8 +139,11 @@ export async function isValidVc(
   });
 
   if (!response.ok) {
-    throw new Error(
-      `The request to the verification endpoint [${verifierEndpoint}] failed: ${response.status} ${response.statusText}`,
+    const responseBody = await response.text();
+    throw handleErrorResponse(
+      response,
+      responseBody,
+      `The request to the verification endpoint [${verifierEndpoint}] failed`,
     );
   }
 
@@ -265,8 +269,11 @@ export async function isValidVerifiablePresentation(
   });
 
   if (!response.ok) {
-    throw new Error(
-      `The request to the verification endpoint [${verificationEndpoint}] failed: ${response.status} ${response.statusText}`,
+    const responseBody = await response.text();
+    throw handleErrorResponse(
+      response,
+      responseBody,
+      `The request to the verification endpoint [${verificationEndpoint}] failed`,
     );
   }
 

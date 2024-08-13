@@ -22,6 +22,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { mocked } from "jest-mock";
 import { DataFactory, Store } from "n3";
+import { BadRequestError } from "@inrupt/solid-client-errors";
 import type * as Common from "../common/common";
 import {
   getVerifiableCredential,
@@ -36,6 +37,7 @@ import {
   getHolder,
   getVpSubject,
 } from "../common/isRdfjsVerifiablePresentation";
+import { mockedFetchWithResponse } from "../tests.internal";
 
 const { quad, namedNode, literal } = DataFactory;
 
@@ -220,18 +222,22 @@ describe("isValidVc", () => {
   });
 
   it("throws if looking up the passed url fails", async () => {
-    const mockedFetch = jest
-      .fn(global.fetch)
-      .mockResolvedValueOnce(
-        new Response(undefined, { status: 400, statusText: "Failed" }),
-      );
-    await expect(
-      isValidVc("https://example.com/someVc", {
-        fetch: mockedFetch as typeof fetch,
-        verificationEndpoint: MOCK_VERIFY_ENDPOINT,
-      }),
-    ).rejects.toThrow(
-      "Fetching the Verifiable Credential [https://example.com/someVc] failed: 400 Failed",
+    const mockedFetch = mockedFetchWithResponse(
+      400,
+      `{"status": 400, "title": "Bad request", "detail": "Example detail"}`,
+      { "Content-Type": "application/problem+json" },
+    );
+    const err: BadRequestError = await isValidVc("https://example.com/someVc", {
+      fetch: mockedFetch as typeof fetch,
+      verificationEndpoint: MOCK_VERIFY_ENDPOINT,
+    }).catch((e) => e);
+
+    expect(err).toBeInstanceOf(BadRequestError);
+    expect(err.problemDetails.status).toBe(400);
+    expect(err.problemDetails.title).toBe("Bad request");
+    expect(err.problemDetails.detail).toBe("Example detail");
+    expect(err.message).toBe(
+      "Fetching the Verifiable Credential [https://example.com/someVc] failed",
     );
   });
 
@@ -333,19 +339,21 @@ describe("isValidVc", () => {
   });
 
   it("throws if the verification endpoint returns an error", async () => {
-    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      new Response(undefined, {
-        status: 400,
-        statusText: "Bad request",
-      }),
+    const mockedFetch = mockedFetchWithResponse(
+      400,
+      `{"status": 400, "title": "Bad request", "detail": "Example detail"}`,
+      { "Content-Type": "application/problem+json" },
     );
+    const err: BadRequestError = await isValidVc(MOCK_VC, {
+      fetch: mockedFetch as typeof fetch,
+      verificationEndpoint: MOCK_VERIFY_ENDPOINT,
+    }).catch((e) => e);
 
-    await expect(
-      isValidVc(MOCK_VC, {
-        fetch: mockedFetch as typeof fetch,
-        verificationEndpoint: MOCK_VERIFY_ENDPOINT,
-      }),
-    ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
+    expect(err).toBeInstanceOf(BadRequestError);
+    expect(err.problemDetails.status).toBe(400);
+    expect(err.problemDetails.title).toBe("Bad request");
+    expect(err.problemDetails.detail).toBe("Example detail");
+    expect(err.message).toMatch(/consent\.example\.com/);
   });
 
   it("throws if the verification endpoint does not return a valid JSON", async () => {
@@ -661,19 +669,26 @@ describe("isValidVerifiable Presentation", () => {
   });
 
   it("throws if the verification endpoint returns an error", async () => {
-    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      new Response(undefined, {
-        status: 400,
-        statusText: "Bad request",
-      }),
-    );
     mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+    const mockedFetch = mockedFetchWithResponse(
+      400,
+      `{"status": 400, "title": "Bad request", "detail": "Example detail"}`,
+      { "Content-Type": "application/problem+json" },
+    );
 
-    await expect(
-      isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+    const err: BadRequestError = await isValidVerifiablePresentation(
+      MOCK_VERIFY_ENDPOINT,
+      MOCK_VP,
+      {
         fetch: mockedFetch as typeof fetch,
-      }),
-    ).rejects.toThrow(/consent\.example\.com.*400 Bad request/);
+      },
+    ).catch((e) => e);
+
+    expect(err).toBeInstanceOf(BadRequestError);
+    expect(err.problemDetails.status).toBe(400);
+    expect(err.problemDetails.title).toBe("Bad request");
+    expect(err.problemDetails.detail).toBe("Example detail");
+    expect(err.message).toMatch(/consent\.example\.com/);
   });
 
   it("returns the validation result from the verification endpoint", async () => {

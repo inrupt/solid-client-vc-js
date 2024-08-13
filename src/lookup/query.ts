@@ -21,6 +21,7 @@
 
 import type { DatasetCore } from "@rdfjs/types";
 import { DataFactory } from "n3";
+import { handleErrorResponse } from "@inrupt/solid-client-errors";
 import type {
   DatasetWithId,
   Iri,
@@ -91,14 +92,14 @@ export type MinimalPresentation = {
 /**
  * Send a Verifiable Presentation Request to a query endpoint in order to retrieve
  * all Verifiable Credentials matching the query, wrapped in a single Presentation.
- * 
+ *
  * @example The following shows how to query for credentials of a certain type. Adding
  * a reason to the request is helpful when interacting with a user. The resulting
  * Verifiable Presentation will wrap zero or more Verifiable Credentials.
- * 
+ *
  * ```
  * const verifiablePresentation = await query(
-    "https://example.org/query", { 
+    "https://example.org/query", {
       query: [{
         type: "QueryByExample",
         credentialQuery: [
@@ -175,8 +176,11 @@ export async function query(
     body: JSON.stringify(vpRequest),
   });
   if (!response.ok) {
-    throw new Error(
-      `The query endpoint [${queryEndpoint}] returned an error: ${response.status} ${response.statusText}`,
+    const responseBody = await response.text();
+    throw handleErrorResponse(
+      response,
+      responseBody,
+      `The query endpoint [${queryEndpoint}] returned an error`,
     );
   }
 
@@ -292,7 +296,7 @@ export async function query(
             .map(async (_vc: VerifiableCredentialBase) => {
               let vc = _vc;
               if (typeof vc !== "object" || vc === null) {
-                throw new Error(`Verifiable Credentail is an invalid object`);
+                throw new Error(`Verifiable Credential is an invalid object`);
               }
 
               if (options.normalize) {

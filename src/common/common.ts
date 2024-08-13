@@ -32,6 +32,7 @@ import {
 } from "@inrupt/solid-client";
 import type { DatasetCore, Quad } from "@rdfjs/types";
 import { DataFactory } from "n3";
+import { handleErrorResponse } from "@inrupt/solid-client-errors";
 import type { ParseOptions } from "../parser/jsonld";
 import { jsonLdToStore } from "../parser/jsonld";
 import isRdfjsVerifiableCredential from "./isRdfjsVerifiableCredential";
@@ -743,8 +744,11 @@ export async function getVerifiableCredential(
   const response = await authFetch(vcUrl);
 
   if (!response.ok) {
-    throw new Error(
-      `Fetching the Verifiable Credential [${vcUrl}] failed: ${response.status} ${response.statusText}`,
+    const responseBody = await response.text();
+    throw handleErrorResponse(
+      response,
+      responseBody,
+      `Fetching the Verifiable Credential [${vcUrl}] failed`,
     );
   }
 
