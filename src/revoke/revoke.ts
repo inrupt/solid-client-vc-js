@@ -22,6 +22,7 @@
 /**
  * @module revoke
  */
+import { handleErrorResponse } from "@inrupt/solid-client-errors";
 import type { Iri } from "../common/common";
 
 /**
@@ -65,8 +66,11 @@ export async function revokeVerifiableCredential(
     }),
   });
   if (!response.ok) {
-    throw new Error(
-      `The issuer [${issuerEndpoint}] returned an error: ${response.status} ${response.statusText}`,
+    const responseBody = await response.text();
+    throw handleErrorResponse(
+      response,
+      responseBody,
+      `The issuer [${issuerEndpoint}] returned an error`,
     );
   }
 }

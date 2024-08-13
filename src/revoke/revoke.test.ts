@@ -20,9 +20,11 @@
 //
 
 import { jest, it, describe, expect } from "@jest/globals";
+import { BadRequestError } from "@inrupt/solid-client-errors";
 import defaultRevokeVerifiableCredential, {
   revokeVerifiableCredential,
 } from "./revoke";
+import { mockedFetchWithResponse } from "../tests.internal";
 
 const spiedFetch = jest.spyOn(globalThis, "fetch").mockImplementation(() => {
   throw new Error("Unexpected fetch call");
@@ -59,19 +61,22 @@ describe("revokeVerifiableCredential", () => {
   });
 
   it("throws if the issuer returns an error", async () => {
-    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValue(
-      new Response(undefined, {
-        status: 400,
-        statusText: "Bad request",
-      }),
+    const mockedFetch = mockedFetchWithResponse(
+      400,
+      `{"status": 400, "title": "Bad request", "detail": "Example detail"}`,
+      { "Content-Type": "application/problem+json" },
     );
-    await expect(
-      revokeVerifiableCredential(
-        "https://some.endpoint",
-        "https://some.example#credential",
-        { fetch: mockedFetch },
-      ),
-    ).rejects.toThrow(/some.endpoint.*400.*Bad request/);
+    const err: BadRequestError = await revokeVerifiableCredential(
+      "https://some.endpoint",
+      "https://some.example#credential",
+      { fetch: mockedFetch },
+    ).catch((e) => e);
+
+    expect(err).toBeInstanceOf(BadRequestError);
+    expect(err.problemDetails.status).toBe(400);
+    expect(err.problemDetails.title).toBe("Bad request");
+    expect(err.problemDetails.detail).toBe("Example detail");
+    expect(err.message).toMatch(/https:\/\/some\.endpoint.*returned an error/);
   });
 
   it("sends an appropriate revocation request to the issuer", async () => {

@@ -23,6 +23,7 @@
  * @module issue
  */
 
+import { handleErrorResponse } from "@inrupt/solid-client-errors";
 import type {
   Iri,
   JsonLd,
@@ -181,9 +182,11 @@ export async function issueVerifiableCredential(
     },
   );
   if (!response.ok) {
-    // TODO: use the error library when available.
-    throw new Error(
-      `The VC issuing endpoint [${issuerEndpoint}] could not successfully issue a VC: ${response.status} ${response.statusText}`,
+    const responseBody = await response.text();
+    throw handleErrorResponse(
+      response,
+      responseBody,
+      `The VC issuing endpoint [${issuerEndpoint}] could not successfully issue a VC`,
     );
   }
 

@@ -21,6 +21,7 @@
 
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { DataFactory } from "n3";
+import { NotFoundError } from "@inrupt/solid-client-errors";
 import {
   defaultVerifiableClaims,
   mockAccessGrant,
@@ -31,6 +32,7 @@ import {
 import { cred, rdf } from "../common/constants";
 import type { QueryByExample } from "./query";
 import { query } from "./query";
+import { mockedFetchWithResponse } from "../tests.internal";
 
 const { namedNode } = DataFactory;
 const mockRequest: QueryByExample = {
@@ -202,22 +204,27 @@ describe("query", () => {
     it.each([[true], [false]])(
       "throws if the given endpoint returns an error [returnLegacyJsonld: %s]",
       async (returnLegacyJsonld) => {
-        const mockedFetch = jest.fn<typeof fetch>(
-          async () =>
-            new Response(undefined, {
-              status: 404,
-            }),
+        const mockedFetch = mockedFetchWithResponse(
+          404,
+          `{"status": 404, "title": "Not found", "detail": "Example detail"}`,
+          { "Content-Type": "application/problem+json" },
         );
-        await expect(() =>
-          query(
-            "https://example.org/query",
-            { query: [mockRequest] },
-            {
-              fetch: mockedFetch,
-              returnLegacyJsonld,
-            },
-          ),
-        ).rejects.toThrow();
+        const err: NotFoundError = await query(
+          "https://example.org/query",
+          { query: [mockRequest] },
+          {
+            fetch: mockedFetch,
+            returnLegacyJsonld,
+          },
+        ).catch((e) => e);
+
+        expect(err).toBeInstanceOf(NotFoundError);
+        expect(err.problemDetails.status).toBe(404);
+        expect(err.problemDetails.title).toBe("Not found");
+        expect(err.problemDetails.detail).toBe("Example detail");
+        expect(err.message).toBe(
+          "The query endpoint [https://example.org/query] returned an error",
+        );
       },
     );
 
