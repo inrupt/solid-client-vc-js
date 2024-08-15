@@ -580,6 +580,33 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         }),
       );
     });
+
+    it("throws if error occurred querying for a VC", async () => {
+      const queryPromise = query(
+        derivationService,
+        {
+          // empty query body
+        } as unknown as VerifiablePresentationRequest,
+        {
+          fetch: session.fetch,
+          returnLegacyJsonld: false,
+        },
+      );
+
+      await expect(queryPromise).rejects.toThrow(
+        expect.objectContaining({
+          name: "Error",
+          message: `The query endpoint [${derivationService}] returned an error`,
+          // Check that the Error contains Problem Details
+          problemDetails: expect.objectContaining({
+            status: 400,
+            title: "Bad Request",
+            detail: expect.stringMatching(/.+/),
+            instance: expect.not.stringMatching(""),
+          }),
+        }),
+      );
+    });
   });
 
   describe("revoke VCs", () => {
