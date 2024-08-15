@@ -173,7 +173,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           issuerService,
           validSubjectClaims(),
           validCredentialClaims,
-
           {
             fetch: session.fetch,
           },
@@ -182,7 +181,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           issuerService,
           validSubjectClaims(),
           validCredentialClaims,
-
           {
             fetch: session.fetch,
             returnLegacyJsonld: false,
@@ -314,8 +312,19 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           fetch: session.fetch,
         },
       );
+
       await expect(vcPromise).rejects.toThrow(
-        `The VC issuing endpoint [${issuerService}] could not successfully issue a VC`,
+        expect.objectContaining({
+          name: "Error",
+          message: `The VC issuing endpoint [${issuerService}] could not successfully issue a VC`,
+          // Check that the Error contains Problem Details
+          problemDetails: expect.objectContaining({
+            status: 400,
+            title: "Bad Request",
+            detail: "Verifiable Credential does not match any configured shape",
+            instance: expect.not.stringMatching(""),
+          }),
+        }),
       );
     });
   });
