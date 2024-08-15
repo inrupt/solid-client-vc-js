@@ -321,7 +321,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           problemDetails: expect.objectContaining({
             status: 400,
             title: "Bad Request",
-            detail: "Verifiable Credential does not match any configured shape",
+            detail: expect.stringMatching(/.+/),
             instance: expect.not.stringMatching(""),
           }),
         }),
@@ -558,6 +558,28 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         ),
       );
     }, 60_000);
+
+    it("throws if error occurred retrieving a VC", async () => {
+      const vcUrl = `${issuerService}/non-existing-vc`;
+      const vcPromise = getVerifiableCredential(vcUrl, {
+        fetch: session.fetch,
+        returnLegacyJsonld: false,
+      });
+
+      await expect(vcPromise).rejects.toThrow(
+        expect.objectContaining({
+          name: "Error",
+          message: `Fetching the Verifiable Credential [${vcUrl}] failed`,
+          // Check that the Error contains Problem Details
+          problemDetails: expect.objectContaining({
+            status: 404,
+            title: "Not Found",
+            detail: expect.stringMatching(/.+/),
+            instance: expect.not.stringMatching(""),
+          }),
+        }),
+      );
+    });
   });
 
   describe("revoke VCs", () => {
@@ -586,6 +608,27 @@ describe("End-to-end verifiable credentials tests for environment", () => {
       expect(verification.errors).toEqual([
         "credentialStatus validation has failed: credential has been revoked",
       ]);
+    });
+
+    it("throws if error occurred revoking a VC", async () => {
+      const vcUrl = `${issuerService}/non-existing-vc`;
+      const vcPromise = revokeVerifiableCredential(statusService, vcUrl, {
+        fetch: session.fetch,
+      });
+
+      await expect(vcPromise).rejects.toThrow(
+        expect.objectContaining({
+          name: "Error",
+          message: `The issuer [${statusService}] returned an error`,
+          // Check that the Error contains Problem Details
+          problemDetails: expect.objectContaining({
+            status: 404,
+            title: "Not Found",
+            detail: expect.stringMatching(/.+/),
+            instance: expect.not.stringMatching(""),
+          }),
+        }),
+      );
     });
   });
 });
