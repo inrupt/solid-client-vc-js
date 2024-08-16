@@ -173,7 +173,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           issuerService,
           validSubjectClaims(),
           validCredentialClaims,
-
           {
             fetch: session.fetch,
           },
@@ -182,7 +181,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           issuerService,
           validSubjectClaims(),
           validCredentialClaims,
-
           {
             fetch: session.fetch,
             returnLegacyJsonld: false,
@@ -314,8 +312,19 @@ describe("End-to-end verifiable credentials tests for environment", () => {
           fetch: session.fetch,
         },
       );
+
       await expect(vcPromise).rejects.toThrow(
-        `The VC issuing endpoint [${issuerService}] could not successfully issue a VC`,
+        expect.objectContaining({
+          name: "Error",
+          message: `The VC issuing endpoint [${issuerService}] could not successfully issue a VC`,
+          // Check that the Error contains Problem Details
+          problemDetails: expect.objectContaining({
+            status: 400,
+            title: "Bad Request",
+            detail: expect.stringMatching(/.+/),
+            instance: expect.not.stringMatching(""),
+          }),
+        }),
       );
     });
   });
@@ -549,6 +558,55 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         ),
       );
     }, 60_000);
+
+    it("throws if error occurred retrieving a VC", async () => {
+      const vcUrl = `${issuerService}/non-existing-vc`;
+      const vcPromise = getVerifiableCredential(vcUrl, {
+        fetch: session.fetch,
+        returnLegacyJsonld: false,
+      });
+
+      await expect(vcPromise).rejects.toThrow(
+        expect.objectContaining({
+          name: "Error",
+          message: `Fetching the Verifiable Credential [${vcUrl}] failed`,
+          // Check that the Error contains Problem Details
+          problemDetails: expect.objectContaining({
+            status: 404,
+            title: "Not Found",
+            detail: expect.stringMatching(/.+/),
+            instance: expect.not.stringMatching(""),
+          }),
+        }),
+      );
+    });
+
+    it("throws if error occurred querying for a VC", async () => {
+      const queryPromise = query(
+        derivationService,
+        {
+          // empty query body
+        } as unknown as VerifiablePresentationRequest,
+        {
+          fetch: session.fetch,
+          returnLegacyJsonld: false,
+        },
+      );
+
+      await expect(queryPromise).rejects.toThrow(
+        expect.objectContaining({
+          name: "Error",
+          message: `The query endpoint [${derivationService}] returned an error`,
+          // Check that the Error contains Problem Details
+          problemDetails: expect.objectContaining({
+            status: 400,
+            title: "Bad Request",
+            detail: expect.stringMatching(/.+/),
+            instance: expect.not.stringMatching(""),
+          }),
+        }),
+      );
+    });
   });
 
   describe("revoke VCs", () => {
@@ -577,6 +635,27 @@ describe("End-to-end verifiable credentials tests for environment", () => {
       expect(verification.errors).toEqual([
         "credentialStatus validation has failed: credential has been revoked",
       ]);
+    });
+
+    it("throws if error occurred revoking a VC", async () => {
+      const vcUrl = `${issuerService}/non-existing-vc`;
+      const vcPromise = revokeVerifiableCredential(statusService, vcUrl, {
+        fetch: session.fetch,
+      });
+
+      await expect(vcPromise).rejects.toThrow(
+        expect.objectContaining({
+          name: "Error",
+          message: `The issuer [${statusService}] returned an error`,
+          // Check that the Error contains Problem Details
+          problemDetails: expect.objectContaining({
+            status: 404,
+            title: "Not Found",
+            detail: expect.stringMatching(/.+/),
+            instance: expect.not.stringMatching(""),
+          }),
+        }),
+      );
     });
   });
 });
