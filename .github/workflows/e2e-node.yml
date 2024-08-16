@@ -15,7 +15,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest]
-        node-version: ["18.x", "20.x"]
+        node-version: ["18.x", "20.x", "22.x"]
         # PodSpaces doesn't support error descriptions yet.
         environment-name: ["ESS Dev-2-3"]
         experimental: [false]

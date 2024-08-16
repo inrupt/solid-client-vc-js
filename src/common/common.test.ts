@@ -620,6 +620,7 @@ describe("getVerifiableCredential", () => {
 
   // FIXME: Enable this when we add content type checks in the next major version
   // see https://github.com/inrupt/solid-client-vc-js/pull/849#discussion_r1414124524
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip("throws if the dereferenced data has an unsupported content type", async () => {
     const mockedFetch = jest
       .fn<typeof fetch>()
