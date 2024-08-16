@@ -9,7 +9,7 @@ The following changes have been implemented but not released yet:
 ### New feature
 
 - Integrate @inrupt/solid-client-errors for handling HTTP errors.
-- Node 22 is now supported 
+- Node 22 is now supported.
 
 ## [1.0.3](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.0.3) - 2024-05-15
 
@@ -27,10 +27,16 @@ The following changes have been implemented but not released yet:
 
 ### Breaking Changes
 
-- Parsing Verifiable Credentials. This allows the Verifiable Credential to be read using the RDF/JS DatasetCore API. This is a breaking change because the `VerifiableCredential` type now is also of type `DatasetCore`. Importantly, this dataset is not preserved when converting to verifiableCredentials a string and back doing `JSON.parse(JSON.stringify(verifiableCredential))`. We reccomend that developers set `returnLegacyJsonld` to `false` in functions such as `getVerifiableCredential` in order to avoid returning deprecated object properties. Instead developers should make use of the exported `getter` functions to get these attributes.
+- Parsing Verifiable Credentials. This allows the Verifiable Credential to be read using the RDF/JS DatasetCore API.
+  This is a breaking change because the `VerifiableCredential` type now is also of type `DatasetCore`. Importantly, this
+  dataset is not preserved when converting to verifiableCredentials a string and back doing
+  `JSON.parse(JSON.stringify(verifiableCredential))`. We reccomend that developers set `returnLegacyJsonld` to `false`
+  in functions such as `getVerifiableCredential` in order to avoid returning deprecated object properties. Instead
+  developers should make use of the exported `getter` functions to get these attributes.
 - Use the global `fetch` function instead of `@inrupt/universal-fetch`. This means this library now only works
   with Node 18 and higher.
-- The deprecated signature of `issueVerifiableCredential` (including a `subjectId` parameter) is no longer supported. Please remove the extraneous parameter.
+- The deprecated signature of `issueVerifiableCredential` (including a `subjectId` parameter) is no longer supported.
+  Please remove the extraneous parameter.
 - Due to changes in the rollup config, the `umd` output is now found at `dist/index.umd.js` rather than `umd/index.js`.
 
 ## [0.7.4](https://github.com/inrupt/solid-client-vc-js/releases/tag/v0.7.4) - 2023-11-17
@@ -64,15 +70,23 @@ The following changes have been implemented but not released yet:
 ### New features
 
 - Node 18 is now supported
-- A new function `isValidVerifiablePresentation` has been added to the `verify` module, which verifies the validity of a VP using a verification service.
+- A new function `isValidVerifiablePresentation` has been added to the `verify` module, which verifies the validity of a
+  VP using a verification service.
 - `getVerifiableCredentialApiConfiguration` now discovers the future-compatible
   specification-compliant endpoints, as well as the legacy endpoints.
-- A `query` function is added from the top-level export and the `@inrupt/solid-client-vc/query` submodule. It implements the Verifiable Presentation Request mechanism as described in https://w3c-ccg.github.io/vp-request-spec/. An important note is that we make the assumption that an endpoint supporting Verifiable Presentation Request is available at a /query path, which is outside of the VC API specification scope. This assumption is used to distinguish new endpoints vs legacy endpoints. Currently, only Query by Example VPRs are supported, which is similar to the legacy behavior in a lot of ways. The existing `getVerifiableCredentialAllFromShape` function now supports both legacy and VPR-compliant endpoints.
+- A `query` function is added from the top-level export and the `@inrupt/solid-client-vc/query` submodule. It implements
+  the Verifiable Presentation Request mechanism as described in https://w3c-ccg.github.io/vp-request-spec/. An important
+  note is that we make the assumption that an endpoint supporting Verifiable Presentation Request is available at a
+  /query path, which is outside of the VC API specification scope. This assumption is used to distinguish new endpoints
+  vs legacy endpoints. Currently, only Query by Example VPRs are supported, which is similar to the legacy behavior in a
+  lot of ways. The existing `getVerifiableCredentialAllFromShape` function now supports both legacy and VPR-compliant
+  endpoints.
 
 ### Other changes
 
 - Upgraded documentation tooling and improved documentation output.
-- Added named exports to revoke, verify, and derive (these were previously default exports but they format poorly in the documentation)
+- Added named exports to revoke, verify, and derive (these were previously default exports but they format poorly in the
+  documentation)
 
 ## 0.5.0 - 2022-03-07
 
