@@ -39,7 +39,7 @@ describe("issueVerifiableCredential", () => {
         },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(mockedFetch).toHaveBeenCalled();
   });
 
@@ -54,7 +54,7 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some.context"] },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(spiedFetch).toHaveBeenCalled();
   });
 
@@ -128,7 +128,7 @@ describe("issueVerifiableCredential", () => {
         { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       "https://some.endpoint",
       expect.anything(),
@@ -145,7 +145,7 @@ describe("issueVerifiableCredential", () => {
         { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -167,7 +167,7 @@ describe("issueVerifiableCredential", () => {
         { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -194,7 +194,7 @@ describe("issueVerifiableCredential", () => {
         { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -224,7 +224,7 @@ describe("issueVerifiableCredential", () => {
         { fetch: mockedFetch },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -258,7 +258,7 @@ describe("issueVerifiableCredential", () => {
         },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -295,7 +295,7 @@ describe("issueVerifiableCredential", () => {
         },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({

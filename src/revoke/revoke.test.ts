@@ -45,7 +45,7 @@ describe("revokeVerifiableCredential", () => {
         },
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(mockedFetch).toHaveBeenCalled();
   });
 
@@ -56,7 +56,7 @@ describe("revokeVerifiableCredential", () => {
         "https://some.example#credential",
       );
       // eslint-disable-next-line no-empty
-    } catch (_e) {}
+    } catch {}
     expect(spiedFetch).toHaveBeenCalled();
   });
 

@@ -77,7 +77,7 @@ describe.each([
             },
           );
           // eslint-disable-next-line no-empty
-        } catch (_e) {}
+        } catch {}
         expect(mockedFetch).toHaveBeenCalled();
       },
     );

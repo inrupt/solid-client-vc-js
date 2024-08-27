@@ -247,7 +247,7 @@ export function isUrl(url: string): boolean {
     // eslint-disable-next-line no-new
     new URL(url);
     return true;
-  } catch (_e) {
+  } catch {
     return false;
   }
 }
@@ -373,7 +373,7 @@ async function discoverLegacyEndpoints(
       verifierService:
         getIri(wellKnownRootBlankNode, SOLID_VC_VERIFIER_SERVICE) ?? undefined,
     };
-  } catch (e) {
+  } catch {
     // The target provider may not implement the legacy endpoints, in which case
     // the request above would fail.
     return {};
