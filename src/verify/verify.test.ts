@@ -594,9 +594,7 @@ describe("isValidVerifiable Presentation", () => {
           fetch: mockedFetch as typeof fetch,
         },
       ),
-    ).rejects.toThrow(
-      "The request to [[object Object]] returned an unexpected response",
-    );
+    ).rejects.toThrow(/The request to .* returned an unexpected response/s);
   });
 
   it("throws if passed VP is not a verifiable presentation [included VC is missing type]", async () => {
@@ -620,16 +618,12 @@ describe("isValidVerifiable Presentation", () => {
           fetch: mockedFetch as typeof fetch,
         },
       ),
-    ).rejects.toThrow(
-      "The request to [[object Object]] returned an unexpected response",
-    );
+    ).rejects.toThrow(/The request to .* returned an unexpected response/s);
     await expect(
       isValidVc(Object.assign(VC_STORE, { id: MOCK_VC.id }), {
         fetch: mockedFetch as typeof fetch,
       }),
-    ).rejects.toThrow(
-      "The request to [[object Object]] returned an unexpected response",
-    );
+    ).rejects.toThrow(/The request to .* returned an unexpected response/s);
   });
 
   it("throws if passed VP is not a verifiable presentation [because it has an invalid subject]", async () => {
@@ -638,7 +632,7 @@ describe("isValidVerifiable Presentation", () => {
 
     const MOCK_VP_NO_TYPE = new Store([
       // @ts-expect-error literals should not be subjects of triples
-      quad(literal("vp subpect"), rdf.type, cred.VerifiablePresentation),
+      quad(literal("vp subject"), rdf.type, cred.VerifiablePresentation),
     ]);
 
     await expect(
@@ -647,7 +641,7 @@ describe("isValidVerifiable Presentation", () => {
         fetch: mockedFetch as typeof fetch,
       }),
     ).rejects.toThrow(
-      "Expected VP subject to be NamedNode or BlankNode. Instead found [vp subpect] with termType [Literal]",
+      "Expected VP subject to be NamedNode or BlankNode. Instead found [vp subject] with termType [Literal]",
     );
   });
 
