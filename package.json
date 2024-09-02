@@ -102,7 +102,7 @@
   },
   "dependencies": {
     "@inrupt/solid-client": "^2.0.0",
-    "@inrupt/solid-client-errors": "^0.0.1",
+    "@inrupt/solid-client-errors": "^0.0.2",
     "event-emitter-promisify": "^1.1.0",
     "jsonld-context-parser": "^3.0.0",
     "jsonld-streaming-parser": "^3.3.0",
