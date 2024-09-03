@@ -191,7 +191,7 @@ async function asDataset(
  * - `options.challenge`: Pass a challenge
  *
  * @returns a JSON-shaped validation report structured accoring to the [VP Verifier API](https://w3c-ccg.github.io/vc-api/verifier.html#operation/verifyPresentation).
- * @since
+ * @since 0.6.0
  */
 export async function isValidVerifiablePresentation(
   verificationEndpoint: string | null,
