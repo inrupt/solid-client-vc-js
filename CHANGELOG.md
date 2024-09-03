@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+## [1.1.0](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.1.0) - 2024-09-03
+
 ### New feature
 
 - Integrate @inrupt/solid-client-errors for handling HTTP errors.
