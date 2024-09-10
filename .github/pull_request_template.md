@@ -33,5 +33,4 @@ This PR bumps the version to <version number>.
   - the CHANGELOG update.
   - the version update.
   - `@since` annotations.
-- [ ] I will make sure **not** to squash these commits, but **rebase** instead.
-- [ ] Once this PR is merged, I will push the tag created by `npm version ...` (e.g. `git push origin vX.Y.Z`).
+- [ ] Once this PR is merged, I will push a tag matching the new version number when creating a new Github release.
