@@ -105,7 +105,7 @@
     "@inrupt/solid-client-errors": "^0.0.2",
     "event-emitter-promisify": "^1.1.0",
     "jsonld-context-parser": "^3.0.0",
-    "jsonld-streaming-parser": "^3.3.0",
+    "jsonld-streaming-parser": "^4.0.1",
     "md5": "^2.3.0",
     "n3": "^1.21.0",
     "rdf-namespaces": "^1.12.0"
