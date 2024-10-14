@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+## [1.1.1](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.1.1) - 2024-10-14
+
+### Internal change
+
+- This release has no impact on shipped code. A feature flag has been added to Problem Details end-to-end tests.
+
 ## [1.1.0](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.1.0) - 2024-09-03
 
 ### New feature
