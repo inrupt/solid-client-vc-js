@@ -18,6 +18,11 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
+// Assertions are made conditionally on problem details responses because not all
+// servers support this feature.
+/* eslint-disable jest/no-conditional-expect */
+
 import {
   getAuthenticatedSession,
   getNodeTestingEnvironment,
@@ -313,18 +318,23 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         },
       );
 
+      const expectedErrorShape: Record<string, string | object> = {
+        name: "Error",
+        message: `The VC issuing endpoint [${issuerService}] could not successfully issue a VC`,
+      };
+
+      if (env?.features?.PROBLEM_DETAILS === "true") {
+        // Check that the Error contains Problem Details
+        expectedErrorShape.problemDetails = expect.objectContaining({
+          status: 400,
+          title: "Bad Request",
+          detail: expect.stringMatching(/.+/),
+          instance: expect.not.stringMatching(""),
+        });
+      }
+
       await expect(vcPromise).rejects.toThrow(
-        expect.objectContaining({
-          name: "Error",
-          message: `The VC issuing endpoint [${issuerService}] could not successfully issue a VC`,
-          // Check that the Error contains Problem Details
-          problemDetails: expect.objectContaining({
-            status: 400,
-            title: "Bad Request",
-            detail: expect.stringMatching(/.+/),
-            instance: expect.not.stringMatching(""),
-          }),
-        }),
+        expect.objectContaining(expectedErrorShape),
       );
     });
   });
@@ -566,18 +576,23 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         returnLegacyJsonld: false,
       });
 
+      const expectedErrorShape: Record<string, string | object> = {
+        name: "Error",
+        message: `Fetching the Verifiable Credential [${vcUrl}] failed`,
+      };
+
+      if (env?.features?.PROBLEM_DETAILS === "true") {
+        // Check that the Error contains Problem Details
+        expectedErrorShape.problemDetails = expect.objectContaining({
+          status: 404,
+          title: "Not Found",
+          detail: expect.stringMatching(/.+/),
+          instance: expect.not.stringMatching(""),
+        });
+      }
+
       await expect(vcPromise).rejects.toThrow(
-        expect.objectContaining({
-          name: "Error",
-          message: `Fetching the Verifiable Credential [${vcUrl}] failed`,
-          // Check that the Error contains Problem Details
-          problemDetails: expect.objectContaining({
-            status: 404,
-            title: "Not Found",
-            detail: expect.stringMatching(/.+/),
-            instance: expect.not.stringMatching(""),
-          }),
-        }),
+        expect.objectContaining(expectedErrorShape),
       );
     });
 
@@ -593,18 +608,23 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         },
       );
 
+      const expectedErrorShape: Record<string, string | object> = {
+        name: "Error",
+        message: `The query endpoint [${derivationService}] returned an error`,
+      };
+
+      if (env?.features?.PROBLEM_DETAILS === "true") {
+        // Check that the Error contains Problem Details
+        expectedErrorShape.problemDetails = expect.objectContaining({
+          status: 400,
+          title: "Bad Request",
+          detail: expect.stringMatching(/.+/),
+          instance: expect.not.stringMatching(""),
+        });
+      }
+
       await expect(queryPromise).rejects.toThrow(
-        expect.objectContaining({
-          name: "Error",
-          message: `The query endpoint [${derivationService}] returned an error`,
-          // Check that the Error contains Problem Details
-          problemDetails: expect.objectContaining({
-            status: 400,
-            title: "Bad Request",
-            detail: expect.stringMatching(/.+/),
-            instance: expect.not.stringMatching(""),
-          }),
-        }),
+        expect.objectContaining(expectedErrorShape),
       );
     });
   });
@@ -643,18 +663,23 @@ describe("End-to-end verifiable credentials tests for environment", () => {
         fetch: session.fetch,
       });
 
+      const expectedErrorShape: Record<string, string | object> = {
+        name: "Error",
+        message: `The issuer [${statusService}] returned an error`,
+      };
+
+      if (env?.features?.PROBLEM_DETAILS === "true") {
+        // Check that the Error contains Problem Details
+        expectedErrorShape.problemDetails = expect.objectContaining({
+          status: 404,
+          title: "Not Found",
+          detail: expect.stringMatching(/.+/),
+          instance: expect.not.stringMatching(""),
+        });
+      }
+
       await expect(vcPromise).rejects.toThrow(
-        expect.objectContaining({
-          name: "Error",
-          message: `The issuer [${statusService}] returned an error`,
-          // Check that the Error contains Problem Details
-          problemDetails: expect.objectContaining({
-            status: 404,
-            title: "Not Found",
-            detail: expect.stringMatching(/.+/),
-            instance: expect.not.stringMatching(""),
-          }),
-        }),
+        expect.objectContaining(expectedErrorShape),
       );
     });
   });
