@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+### Patch changes
+
+- Added support for the `https://schema.inrupt.com/credentials/v2.jsonld` JSON-LD context.
+
 ## [1.1.1](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.1.1) - 2024-10-14
 
 ### Internal change
