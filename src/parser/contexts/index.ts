@@ -20,6 +20,7 @@
 //
 import VC from "./vc";
 import Inrupt from "./inrupt";
+import InruptV2 from "./inrupt-v2";
 import vc from "./inrupt-vc";
 import integrity from "./data-integrity";
 import ed25519 from "./ed25519-2020";
@@ -29,6 +30,7 @@ import statusList from "./status-list";
 const contextDefinitions = {
   "https://www.w3.org/2018/credentials/v1": VC,
   "https://schema.inrupt.com/credentials/v1.jsonld": Inrupt,
+  "https://schema.inrupt.com/credentials/v2.jsonld": InruptV2,
 } as const;
 
 export const cachedContexts = {
