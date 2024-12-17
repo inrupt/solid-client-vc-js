@@ -47,6 +47,7 @@ const mockVcWellKnown = (options: {
   statusPresent?: boolean;
   verifierPresent?: boolean;
   derivationPresent?: boolean;
+  queryPresent?: boolean;
 }): SolidClient.SolidDataset & SolidClient.WithServerResourceInfo => {
   const wellKnown = buildThing();
   if (options.issuerPresent) {
@@ -71,6 +72,12 @@ const mockVcWellKnown = (options: {
     wellKnown.addIri(
       "http://www.w3.org/ns/solid/vc#derivationService",
       `${MOCKED_VC_SERVICE}/derive`,
+    );
+  }
+  if (options.queryPresent) {
+    wellKnown.addIri(
+      "http://www.w3.org/ns/solid/vc#queryService",
+      `${MOCKED_VC_SERVICE}/query`,
     );
   }
   return setThing(
@@ -169,6 +176,23 @@ describe("getVerifiableCredentialApiConfiguration", () => {
       );
     });
 
+    it("returns the IRI of the query service if present", async () => {
+      const clientModule = jest.requireMock(
+        "@inrupt/solid-client",
+      ) as jest.Mocked<typeof SolidClient>;
+      clientModule.getSolidDataset.mockResolvedValueOnce(
+        mockVcWellKnown({ queryPresent: true }),
+      );
+      const result = await getVerifiableCredentialApiConfiguration(
+        "https://some.example.wellknown.iri",
+      );
+      expect(result).toEqual(
+        expect.objectContaining({
+          queryService: `${MOCKED_VC_SERVICE}/query`,
+        }),
+      );
+    });
+
     it("returns the IRI of multiple services if present", async () => {
       const clientModule = jest.requireMock(
         "@inrupt/solid-client",
@@ -200,6 +224,7 @@ describe("getVerifiableCredentialApiConfiguration", () => {
       expect(result.issuerService).toBeUndefined();
       expect(result.statusService).toBeUndefined();
       expect(result.verifierService).toBeUndefined();
+      expect(result.queryService).toBeUndefined();
     });
 
     it("makes the legacy endpoints available on the legacy object", async () => {
@@ -207,7 +232,11 @@ describe("getVerifiableCredentialApiConfiguration", () => {
         "@inrupt/solid-client",
       ) as jest.Mocked<typeof SolidClient>;
       clientModule.getSolidDataset.mockResolvedValueOnce(
-        mockVcWellKnown({ derivationPresent: true, issuerPresent: true }),
+        mockVcWellKnown({
+          derivationPresent: true,
+          issuerPresent: true,
+          queryPresent: true,
+        }),
       );
       const result = await getVerifiableCredentialApiConfiguration(
         "https://some.example.wellknown.iri",
@@ -216,6 +245,7 @@ describe("getVerifiableCredentialApiConfiguration", () => {
       expect(result.derivationService).toStrictEqual(
         result.legacy.derivationService,
       );
+      expect(result.queryService).toStrictEqual(result.legacy.queryService);
     });
   });
 
