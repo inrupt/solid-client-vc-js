@@ -305,39 +305,35 @@ export const defaultContext = ["https://www.w3.org/2018/credentials/v1"];
 
 export const defaultCredentialTypes = ["VerifiableCredential"];
 
+type LegacyEndpoints = Partial<{
+  derivationService: UrlString;
+  issuerService: UrlString;
+  statusService: UrlString;
+  verifierService: UrlString;
+  queryService: UrlString;
+}>;
+
 /**
  * A Verifiable Credential API configuration details.
  */
-export type VerifiableCredentialApiConfiguration =
-  // Legacy endpoints
-  Partial<{
+export type VerifiableCredentialApiConfiguration = LegacyEndpoints & {
+  // Spec-compliant endpoints, available in the `specCompliant` object
+  specCompliant: Partial<{
     derivationService: UrlString;
     issuerService: UrlString;
+    issuerCredentialAll: UrlString;
+    holderPresentationAll: UrlString;
     statusService: UrlString;
-    verifierService: UrlString;
-  }> & {
-    // Spec-compliant endpoints, available in the `specCompliant` object
-    specCompliant: Partial<{
-      derivationService: UrlString;
-      issuerService: UrlString;
-      issuerCredentialAll: UrlString;
-      holderPresentationAll: UrlString;
-      statusService: UrlString;
-      credentialVerifierService: UrlString;
-      presentationVerifierService: UrlString;
-      queryService: UrlString;
-      exchangeService: UrlString;
-      proveService: UrlString;
-    }>;
-  } & {
-    // Legacy endpoints, available in the `legacy` object too to ease transition
-    legacy: Partial<{
-      derivationService: UrlString;
-      issuerService: UrlString;
-      statusService: UrlString;
-      verifierService: UrlString;
-    }>;
-  };
+    credentialVerifierService: UrlString;
+    presentationVerifierService: UrlString;
+    queryService: UrlString;
+    exchangeService: UrlString;
+    proveService: UrlString;
+  }>;
+} & {
+  // Legacy endpoints, available in the `legacy` object too to ease transition
+  legacy: LegacyEndpoints;
+};
 
 // Solid VC URIs
 const SOLID_VC_NS = "http://www.w3.org/ns/solid/vc#";
@@ -345,6 +341,7 @@ const SOLID_VC_DERIVATION_SERVICE = SOLID_VC_NS.concat("derivationService");
 const SOLID_VC_ISSUER_SERVICE = SOLID_VC_NS.concat("issuerService");
 const SOLID_VC_STATUS_SERVICE = SOLID_VC_NS.concat("statusService");
 const SOLID_VC_VERIFIER_SERVICE = SOLID_VC_NS.concat("verifierService");
+const SOLID_VC_QUERY_SERVICE = SOLID_VC_NS.concat("queryService");
 
 async function discoverLegacyEndpoints(
   vcServiceUrl: UrlString,
@@ -368,6 +365,8 @@ async function discoverLegacyEndpoints(
         undefined,
       issuerService:
         getIri(wellKnownRootBlankNode, SOLID_VC_ISSUER_SERVICE) ?? undefined,
+      queryService:
+        getIri(wellKnownRootBlankNode, SOLID_VC_QUERY_SERVICE) ?? undefined,
       statusService:
         getIri(wellKnownRootBlankNode, SOLID_VC_STATUS_SERVICE) ?? undefined,
       verifierService:
