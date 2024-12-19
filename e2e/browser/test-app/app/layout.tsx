@@ -1,7 +1,7 @@
 export default function TestAppLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
@@ -9,5 +9,5 @@ export default function TestAppLayout({
         <main>{children}</main>
       </body>
     </html>
-  )
+  );
 }
