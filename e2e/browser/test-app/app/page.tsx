@@ -19,6 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+"use client";
+
 import {
   login,
   logout,
@@ -33,11 +35,10 @@ import {
   TESTID_SESSION_STATUS,
 } from "@inrupt/internal-playwright-testids";
 import { useState, useEffect } from "react";
-import VerifiableCredential from "../verifiableCredentials";
+import VerifiableCredential from "../components/verifiableCredentials";
 
 // This is the content of the file uploaded manually at SHARED_FILE_IRI.
 const DEFAULT_ISSUER = "https://login.inrupt.com/";
-const REDIRECT_URL = window.location.href;
 const APP_NAME = "Verifiable Credentials browser-based tests app";
 const VerifiableCredentialContainer = ({
   sessionInfo,
@@ -70,7 +71,7 @@ export default function Home() {
       // Login will redirect the user away so that they can log in the OIDC issuer,
       // and back to the provided redirect URL (which should be controlled by your app).
       await login({
-        redirectUrl: REDIRECT_URL,
+        redirectUrl: "http://localhost:3000",
         oidcIssuer: issuer,
         clientName: APP_NAME,
       });
