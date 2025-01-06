@@ -75,7 +75,6 @@ test("Try issuing an invalid credential, get an error", async ({
     page.waitForRequest((request) => request.method() === "POST"),
     page.waitForResponse((response) => response.status() === 400),
     page.click("button[data-testid=issue-invalid-vc]"),
-    page.click("button[data-nextjs-errors-dialog-left-right-close-button]"),
   ]);
   // Validate we get nothing in response
   await expect(
