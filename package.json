@@ -17,7 +17,7 @@
     "test": "jest --selectProjects browser",
     "test:e2e:node": "jest --selectProjects e2e-node --testTimeout 15000 --collectCoverage false",
     "test:e2e:browser": "playwright test",
-    "test:e2e:browser:setup": "cd e2e/browser/test-app && npm ci",
+    "test:e2e:browser:setup": "cd e2e/browser/test-app && npm ci --omit=optional",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
