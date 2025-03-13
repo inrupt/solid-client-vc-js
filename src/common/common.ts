@@ -36,6 +36,7 @@ import { handleErrorResponse } from "@inrupt/solid-client-errors";
 import type { ParseOptions } from "../parser/jsonld";
 import { jsonLdToStore } from "../parser/jsonld";
 import isRdfjsVerifiableCredential from "./isRdfjsVerifiableCredential";
+import { checkResponseSize } from "./config";
 
 const { namedNode } = DataFactory;
 
@@ -304,13 +305,6 @@ export function concatenateContexts(...contexts: unknown[]): unknown {
 export const defaultContext = ["https://www.w3.org/2018/credentials/v1"];
 
 export const defaultCredentialTypes = ["VerifiableCredential"];
-
-/**
- * This custom config allows developers to change common settings.
- */
-export const custom = {
-  maxJsonSize: 10 * 1024 * 1024,
-};
 
 type LegacyEndpoints = Partial<{
   derivationService: UrlString;
@@ -615,15 +609,9 @@ export async function internal_getVerifiableCredentialFromResponse(
   const returnLegacy = options?.returnLegacyJsonld !== false;
   let vc: unknown | VerifiableCredentialBase;
   let vcUrl = vcUrlInput;
-  const contentLength = response.headers.get("Content-Length");
-  if (contentLength && parseInt(contentLength, 10) > custom.maxJsonSize) {
-    throw new Error(
-      `The response containing the Verifiable Credential [${vcUrl}] is too large to parse as JSON: ${
-        contentLength
-      } bytes`,
-    );
-  }
+
   try {
+    checkResponseSize(response);
     vc = await response.json();
 
     if (typeof vcUrl !== "string") {

@@ -38,9 +38,9 @@ import {
   getVerifiableCredentialApiConfiguration,
   hasId,
   verifiableCredentialToDataset,
-  custom,
 } from "../common/common";
 import { getId, getIssuer } from "../common/getters";
+import { checkResponseSize } from "../common/config";
 import isRdfjsVerifiableCredential from "../common/isRdfjsVerifiableCredential";
 import isRdfjsVerifiablePresentation, {
   getHolder,
@@ -148,16 +148,8 @@ export async function isValidVc(
     );
   }
 
-  const contentLength = response.headers.get("Content-Length");
-  if (contentLength && parseInt(contentLength, 10) > custom.maxJsonSize) {
-    throw new Error(
-      `The response of the verification service hosted at [${verifierEndpoint}] is too large to parse as JSON: ${
-        contentLength
-      } bytes`,
-    );
-  }
-
   try {
+    checkResponseSize(response);
     return await response.json();
   } catch (e) {
     throw new Error(
@@ -287,16 +279,8 @@ export async function isValidVerifiablePresentation(
     );
   }
 
-  const contentLength = response.headers.get("Content-Length");
-  if (contentLength && parseInt(contentLength, 10) > custom.maxJsonSize) {
-    throw new Error(
-      `The response of the verification service hosted at [${verifierEndpoint}] is too large to parse as JSON: ${
-        contentLength
-      } bytes`,
-    );
-  }
-
   try {
+    checkResponseSize(response);
     return await response.json();
   } catch (e) {
     throw new Error(

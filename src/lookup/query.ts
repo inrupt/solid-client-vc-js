@@ -33,8 +33,8 @@ import {
   isVerifiablePresentation,
   normalizeVp,
   verifiableCredentialToDataset,
-  custom,
 } from "../common/common";
+import { checkResponseSize } from "../common/config";
 import isRdfjsVerifiableCredential from "../common/isRdfjsVerifiableCredential";
 import isRdfjsVerifiablePresentation, {
   getVpSubject,
@@ -185,13 +185,6 @@ export async function query(
     );
   }
 
-  const contentLength = response.headers.get("Content-Length");
-  if (contentLength && parseInt(contentLength, 10) > custom.maxJsonSize) {
-    throw new Error(
-      `The response from holder [${queryEndpoint}] is too large to parse as JSON: ${contentLength} bytes`,
-    );
-  }
-
   // Return to this approach once https://github.com/rubensworks/jsonld-streaming-parser.js/issues/122 is resolved
   // if (options?.returnLegacyJsonld === false) {
   //   try {
@@ -253,6 +246,7 @@ export async function query(
   let data: VerifiablePresentation & DatasetCore;
   let rawData: VerifiablePresentation;
   try {
+    checkResponseSize(response);
     rawData = await response.json();
 
     if (options.returnLegacyJsonld !== false) {

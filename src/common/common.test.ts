@@ -32,8 +32,8 @@ import {
   isVerifiablePresentation,
   normalizeVc,
   verifiableCredentialToDataset,
-  custom,
 } from "./common";
+import { setMaxJsonSize, getMaxJsonSize } from "./config";
 import {
   defaultCredentialClaims,
   defaultVerifiableClaims,
@@ -46,7 +46,7 @@ import {
 import { cred, rdf } from "./constants";
 import isRdfjsVerifiableCredential from "./isRdfjsVerifiableCredential";
 import isRdfjsVerifiablePresentation from "./isRdfjsVerifiablePresentation";
-import { mockedFetchWithResponse } from "../tests.internal";
+import { createResponse, mockedFetchWithResponse } from "../tests.internal";
 
 const { namedNode, quad, blankNode } = DataFactory;
 
@@ -462,11 +462,11 @@ describe("getVerifiableCredential", () => {
     let mockedFetch: jest.Spied<typeof fetch>;
 
     beforeEach(() => {
-      mockedFetch = jest.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-      );
+      mockedFetch = jest
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValueOnce(
+          createResponse(JSON.stringify(mockDefaultCredential())),
+        );
 
       const redirectUrl = new URL("https://redirect.url");
       redirectUrl.searchParams.append(
@@ -504,11 +504,11 @@ describe("getVerifiableCredential", () => {
     let mockedFetch: jest.MockedFunction<typeof fetch>;
 
     beforeEach(() => {
-      mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential()), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-      );
+      mockedFetch = jest
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(
+          createResponse(JSON.stringify(mockDefaultCredential())),
+        );
     });
 
     it.each([[true], [false]])(
@@ -567,7 +567,7 @@ describe("getVerifiableCredential", () => {
     beforeEach(() => {
       mockedFetch = jest
         .fn<typeof fetch>()
-        .mockResolvedValueOnce(new Response("Not JSON"));
+        .mockResolvedValueOnce(createResponse("Not JSON"));
     });
 
     it.each([[true], [false]])(
@@ -590,23 +590,22 @@ describe("getVerifiableCredential", () => {
 
   it("throws if the data is too large to process as JSON", async () => {
     const mockVc = JSON.stringify(mockDefaultCredential());
-    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      new Response(mockVc, {
-        headers: new Headers([["content-length", String(mockVc.length)]]),
-      }),
-    );
+    const mockedFetch = jest
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(createResponse(mockVc));
 
-    const defaultMaxJsonSize = custom.maxJsonSize;
-    custom.maxJsonSize = 10;
+    const defaultMaxJsonSize = getMaxJsonSize();
+    setMaxJsonSize(10);
     await expect(
       getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
         fetch: mockedFetch,
         returnLegacyJsonld: false,
       }),
     ).rejects.toThrow(
-      `The response containing the Verifiable Credential [https://example.org/ns/someCredentialInstance] is too large to parse as JSON: ${mockVc.length} bytes`,
+      `Parsing the Verifiable Credential [https://example.org/ns/someCredentialInstance] as JSON failed: ` +
+        `Error: The response body is not safe to parse as JSON. Max size=[10], actual=[${mockVc.length}]`,
     );
-    custom.maxJsonSize = defaultMaxJsonSize;
+    setMaxJsonSize(defaultMaxJsonSize);
   });
 
   describe("throws if the dereferenced data is not a VC", () => {
@@ -616,7 +615,7 @@ describe("getVerifiableCredential", () => {
       mockedFetch = jest
         .fn<typeof fetch>()
         .mockResolvedValueOnce(
-          new Response(JSON.stringify({ something: "but not a VC" })),
+          createResponse(JSON.stringify({ something: "but not a VC" })),
         );
     });
 
@@ -647,7 +646,7 @@ describe("getVerifiableCredential", () => {
     const mockedFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultCredential())),
+        createResponse(JSON.stringify(mockDefaultCredential())),
       );
 
     await expect(
@@ -660,11 +659,8 @@ describe("getVerifiableCredential", () => {
   it.each([[true], [false]])(
     "throws if the dereferenced data is emptyreturnLegacyJsonld: [returnLegacyJsonld: %s]",
     async (returnLegacyJsonld) => {
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(JSON.stringify({}), {
-            headers: new Headers([["content-type", "application/json"]]),
-          }),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(JSON.stringify({})),
       );
 
       await expect(
@@ -686,17 +682,12 @@ describe("getVerifiableCredential", () => {
   it.each([[true], [false]])(
     "throws if the vc is a blank node: [returnLegacyJsonld: %s]",
     async (returnLegacyJsonld) => {
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(
-            JSON.stringify({
-              "@type":
-                "https://www.w3.org/2018/credentials#VerifiableCredential",
-            }),
-            {
-              headers: new Headers([["content-type", "application/json"]]),
-            },
-          ),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(
+          JSON.stringify({
+            "@type": "https://www.w3.org/2018/credentials#VerifiableCredential",
+          }),
+        ),
       );
 
       await expect(
@@ -715,24 +706,20 @@ describe("getVerifiableCredential", () => {
   it.each([[true], [false]])(
     "throws if the vc has a type that is a literal: [returnLegacyJsonld: %s]",
     async (returnLegacyJsonld) => {
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(
-            JSON.stringify({
-              "@context": "https://www.w3.org/2018/credentials/v1",
-              "@id": "http://example.org/my/vc",
-              "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": [
-                {
-                  "@id":
-                    "https://www.w3.org/2018/credentials#VerifiableCredential",
-                },
-                "str",
-              ],
-            }),
-            {
-              headers: new Headers([["content-type", "application/json"]]),
-            },
-          ),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(
+          JSON.stringify({
+            "@context": "https://www.w3.org/2018/credentials/v1",
+            "@id": "http://example.org/my/vc",
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": [
+              {
+                "@id":
+                  "https://www.w3.org/2018/credentials#VerifiableCredential",
+              },
+              "str",
+            ],
+          }),
+        ),
       );
 
       await expect(
@@ -751,17 +738,13 @@ describe("getVerifiableCredential", () => {
   it.each([[true], [false]])(
     "throws if the dereferenced data has 2 vcs: [returnLegacyJsonld: %s]",
     async (returnLegacyJsonld) => {
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(
-            JSON.stringify([
-              mockDefaultCredential(),
-              mockDefaultCredential("http://example.org/mockVC2"),
-            ]),
-            {
-              headers: new Headers([["content-type", "application/json"]]),
-            },
-          ),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(
+          JSON.stringify([
+            mockDefaultCredential(),
+            mockDefaultCredential("http://example.org/mockVC2"),
+          ]),
+        ),
       );
 
       await expect(
@@ -780,11 +763,8 @@ describe("getVerifiableCredential", () => {
   it.each([[true], [false]])(
     "throws if the dereferenced data has 2 proofs: [returnLegacyJsonld: %s]",
     async (returnLegacyJsonld) => {
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(JSON.stringify(mockDefaultCredential2Proofs()), {
-            headers: new Headers([["content-type", "application/json"]]),
-          }),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(JSON.stringify(mockDefaultCredential2Proofs())),
       );
 
       await expect(
@@ -804,11 +784,8 @@ describe("getVerifiableCredential", () => {
       const mocked = mockDefaultCredential();
       mocked.issuanceDate = "http://example.org/not/a/date";
 
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(JSON.stringify(mocked), {
-            headers: new Headers([["content-type", "application/json"]]),
-          }),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(JSON.stringify(mocked)),
       );
 
       await expect(
@@ -834,11 +811,8 @@ describe("getVerifiableCredential", () => {
       mocked["https://www.w3.org/2018/credentials#issuanceDate"] =
         "http://example.org/not/a/date";
 
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(JSON.stringify(mocked), {
-            headers: new Headers([["content-type", "application/json"]]),
-          }),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(JSON.stringify(mocked)),
       );
 
       await expect(
@@ -865,11 +839,8 @@ describe("getVerifiableCredential", () => {
         "@id": "http://example.org/not/a/date",
       };
 
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(JSON.stringify(mocked), {
-            headers: new Headers([["content-type", "application/json"]]),
-          }),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(JSON.stringify(mocked)),
       );
 
       await expect(
@@ -893,11 +864,8 @@ describe("getVerifiableCredential", () => {
       // @ts-expect-error issuer is of type string on the VC type
       mocked.issuer = { "@value": "my string" };
 
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(JSON.stringify(mocked), {
-            headers: new Headers([["content-type", "application/json"]]),
-          }),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(JSON.stringify(mocked)),
       );
 
       await expect(
@@ -927,11 +895,8 @@ describe("getVerifiableCredential", () => {
       },
     };
 
-    const mockedFetch = jest.fn<typeof fetch>(
-      async () =>
-        new Response(JSON.stringify(mocked), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
+    const mockedFetch = jest.fn<typeof fetch>(async () =>
+      createResponse(JSON.stringify(mocked)),
     );
 
     const vc = await getVerifiableCredential(
@@ -978,11 +943,8 @@ describe("getVerifiableCredential", () => {
       },
     };
 
-    const mockedFetch = jest.fn<typeof fetch>(
-      async () =>
-        new Response(JSON.stringify(mocked), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
+    const mockedFetch = jest.fn<typeof fetch>(async () =>
+      createResponse(JSON.stringify(mocked)),
     );
 
     const vc = await getVerifiableCredential(
@@ -1018,11 +980,8 @@ describe("getVerifiableCredential", () => {
       // @ts-expect-error proofValue is a string not string[] in VC type
       mocked.proof.proofValue = [mocked.proof.proofValue, "abc"];
 
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(JSON.stringify(mocked), {
-            headers: new Headers([["content-type", "application/json"]]),
-          }),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(JSON.stringify(mocked)),
       );
 
       await expect(
@@ -1040,11 +999,8 @@ describe("getVerifiableCredential", () => {
   );
 
   it("returns the fetched VC and the redirect URL", async () => {
-    const mockedFetch = jest.fn<typeof fetch>(
-      async () =>
-        new Response(JSON.stringify(mockDefaultCredential()), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
+    const mockedFetch = jest.fn<typeof fetch>(async () =>
+      createResponse(JSON.stringify(mockDefaultCredential())),
     );
 
     const vc = await getVerifiableCredential("https://some.vc", {
@@ -1099,11 +1055,9 @@ describe("getVerifiableCredential", () => {
     let mockedFetch: jest.Mock<typeof fetch>;
 
     beforeEach(() => {
-      mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-        new Response(JSON.stringify(mockCredential), {
-          headers: new Headers([["content-type", "application/json"]]),
-        }),
-      );
+      mockedFetch = jest
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(createResponse(JSON.stringify(mockCredential)));
     });
 
     it.each([[true], [false]])(
@@ -1127,13 +1081,11 @@ describe("getVerifiableCredential", () => {
       "resolves if allowContextFetching is enabled and the context can be fetched: [returnLegacyJsonld: %s]",
       async (returnLegacyJsonld) => {
         (fetch as jest.Mock<typeof fetch>).mockResolvedValueOnce(
-          new Response(
+          createResponse(
             JSON.stringify({
               "@context": {},
             }),
-            {
-              headers: new Headers([["content-type", "application/ld+json"]]),
-            },
+            "application/ld+json",
           ),
         );
 
@@ -1158,13 +1110,11 @@ describe("getVerifiableCredential", () => {
 
     it("can apply normalization of the response before parsing and returning it", async () => {
       (fetch as jest.Mock<typeof fetch>).mockResolvedValueOnce(
-        new Response(
+        createResponse(
           JSON.stringify({
             "@context": {},
           }),
-          {
-            headers: new Headers([["content-type", "application/ld+json"]]),
-          },
+          "application/ld+json",
         ),
       );
 
@@ -1201,24 +1151,20 @@ describe("getVerifiableCredential", () => {
 
     it("resolves if allowContextFetching is enabled and the context can be fetched [returnLegacyJsonld: false]", async () => {
       spiedFetch.mockResolvedValue(
-        new Response(
+        createResponse(
           JSON.stringify({
             "@context": {},
           }),
-          {
-            headers: new Headers([["content-type", "application/ld+json"]]),
-          },
+          "application/ld+json",
         ),
       );
 
       mockedFetch.mockResolvedValueOnce(
-        new Response(
+        createResponse(
           JSON.stringify({
             "@context": {},
           }),
-          {
-            headers: new Headers([["content-type", "application/ld+json"]]),
-          },
+          "application/ld+json",
         ),
       );
 

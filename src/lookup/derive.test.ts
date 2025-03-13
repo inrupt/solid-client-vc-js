@@ -29,14 +29,11 @@ import defaultGetVerifilableCredentialAllFromShape, {
   getVerifiableCredentialAllFromShape,
 } from "./derive";
 import type * as QueryModule from "./query";
+import { createResponse } from "../tests.internal";
 
 const mockDeriveEndpointDefaultResponse = (anoymous = false) =>
-  new Response(
+  createResponse(
     JSON.stringify(anoymous ? mockAccessGrant() : mockDefaultPresentation()),
-    {
-      status: 200,
-      statusText: "OK",
-    },
   );
 
 describe.each([
@@ -216,15 +213,11 @@ describe.each([
             },
             {
               fetch: async () =>
-                new Response(
+                createResponse(
                   JSON.stringify({
                     ...mockDefaultPresentation(),
                     verifiableCredential: undefined,
                   }),
-                  {
-                    status: 200,
-                    statusText: "OK",
-                  },
                 ),
               returnLegacyJsonld,
             },
