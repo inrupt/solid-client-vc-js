@@ -33,6 +33,7 @@ import {
   isVerifiablePresentation,
   normalizeVp,
   verifiableCredentialToDataset,
+  custom,
 } from "../common/common";
 import isRdfjsVerifiableCredential from "../common/isRdfjsVerifiableCredential";
 import isRdfjsVerifiablePresentation, {
@@ -181,6 +182,13 @@ export async function query(
       response,
       responseBody,
       `The query endpoint [${queryEndpoint}] returned an error`,
+    );
+  }
+
+  const contentLength = response.headers.get("Content-Length");
+  if (contentLength && parseInt(contentLength, 10) > custom.maxJsonSize) {
+    throw new Error(
+      `The response from holder [${queryEndpoint}] is too large to parse as JSON: ${contentLength} bytes`,
     );
   }
 

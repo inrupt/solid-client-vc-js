@@ -33,6 +33,7 @@ export {
   isVerifiablePresentation,
   getVerifiableCredential,
   getVerifiableCredentialApiConfiguration,
+  custom,
   /**
    * @hidden @deprecated
    */
