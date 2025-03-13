@@ -29,6 +29,7 @@ import {
   getVerifiableCredentialApiConfiguration,
   isVerifiableCredential,
   isVerifiablePresentation,
+  custom,
 } from "../common/common";
 import { isValidVc, isValidVerifiablePresentation } from "./verify";
 import { jsonLdStringToStore } from "../parser/jsonld";
@@ -272,6 +273,29 @@ describe("isValidVc", () => {
     ).rejects.toThrow(
       "Parsing the Verifiable Credential [https://example.com/someVc] as JSON failed:",
     );
+  });
+
+  it("throws if response is too large to process as JSON", async () => {
+    const mockVc = JSON.stringify(MOCK_VC);
+    const mockedFetch = jest.fn(global.fetch).mockResolvedValueOnce(
+      new Response(mockVc, {
+        status: 200,
+        headers: new Headers([["content-length", String(mockVc.length)]]),
+      }),
+    );
+
+    console.log("custom", custom);
+    const defaultMaxJsonSize = custom.maxJsonSize;
+    custom.maxJsonSize = 10;
+    await expect(
+      isValidVc("https://example.com/someVc", {
+        fetch: mockedFetch as typeof fetch,
+        verificationEndpoint: MOCK_VERIFY_ENDPOINT,
+      }),
+    ).rejects.toThrow(
+      `The response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] is too large to parse as JSON: ${mockVc.length} bytes`,
+    );
+    custom.maxJsonSize = defaultMaxJsonSize;
   });
 
   it("throws if the passed url returns a non-vc", async () => {
@@ -660,6 +684,28 @@ describe("isValidVerifiable Presentation", () => {
     ).rejects.toThrow(
       `Parsing the response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] as JSON failed:`,
     );
+  });
+
+  it("throws if response is too large to process as JSON", async () => {
+    const mockVp = JSON.stringify(MOCK_VP);
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(mockVp, {
+        status: 200,
+        headers: new Headers([["content-length", String(mockVp.length)]]),
+      }),
+    );
+    mocked(isVerifiablePresentation).mockReturnValueOnce(true);
+
+    const defaultMaxJsonSize = custom.maxJsonSize;
+    custom.maxJsonSize = 10;
+    await expect(
+      isValidVerifiablePresentation(MOCK_VERIFY_ENDPOINT, MOCK_VP, {
+        fetch: mockedFetch as typeof fetch,
+      }),
+    ).rejects.toThrow(
+      `The response of the verification service hosted at [${MOCK_VERIFY_ENDPOINT}] is too large to parse as JSON: ${mockVp.length} bytes`,
+    );
+    custom.maxJsonSize = defaultMaxJsonSize;
   });
 
   it("throws if the verification endpoint returns an error", async () => {

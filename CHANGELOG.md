@@ -6,6 +6,12 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+# New feature
+
+- Protect against uncontrolled memory consumption by setting a max size for parsing JSON
+  in a response body. The default value is 10MB but this can be overridden using
+  `custom.maxJsonSize`.
+
 ## [1.2.0](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.2.0) - 2024-12-17
 
 # New feature

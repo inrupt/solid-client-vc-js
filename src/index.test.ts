@@ -50,6 +50,7 @@ describe("exports", () => {
       "isVerifiablePresentation",
       "getVerifiableCredential",
       "getVerifiableCredentialApiConfiguration",
+      "custom",
       "verifiableCredentialToDataset",
       "getVerifiableCredentialAllFromShape",
       "query",

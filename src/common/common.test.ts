@@ -32,6 +32,7 @@ import {
   isVerifiablePresentation,
   normalizeVc,
   verifiableCredentialToDataset,
+  custom,
 } from "./common";
 import {
   defaultCredentialClaims,
@@ -344,7 +345,7 @@ describe("isVerifiablePresentation", () => {
         ),
       ).toBe(true);
 
-      // Should return false when we artifically add a blank node to the dataset
+      // Should return false when we artificially add a blank node to the dataset
       expect(
         isRdfjsVerifiablePresentation(
           new Store([
@@ -585,6 +586,27 @@ describe("getVerifiableCredential", () => {
         );
       },
     );
+  });
+
+  it("throws if the data is too large to process as JSON", async () => {
+    const mockVc = JSON.stringify(mockDefaultCredential());
+    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(mockVc, {
+        headers: new Headers([["content-length", String(mockVc.length)]]),
+      }),
+    );
+
+    const defaultMaxJsonSize = custom.maxJsonSize;
+    custom.maxJsonSize = 10;
+    await expect(
+      getVerifiableCredential("https://example.org/ns/someCredentialInstance", {
+        fetch: mockedFetch,
+        returnLegacyJsonld: false,
+      }),
+    ).rejects.toThrow(
+      `The response containing the Verifiable Credential [https://example.org/ns/someCredentialInstance] is too large to parse as JSON: ${mockVc.length} bytes`,
+    );
+    custom.maxJsonSize = defaultMaxJsonSize;
   });
 
   describe("throws if the dereferenced data is not a VC", () => {

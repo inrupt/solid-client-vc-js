@@ -33,6 +33,7 @@ import { cred, rdf } from "../common/constants";
 import type { QueryByExample } from "./query";
 import { query } from "./query";
 import { mockedFetchWithResponse } from "../tests.internal";
+import { custom } from "../common/common";
 
 const { namedNode } = DataFactory;
 const mockRequest: QueryByExample = {
@@ -179,6 +180,31 @@ describe("query", () => {
         );
       },
     );
+
+    it("throws if the data is too large to process as JSON", async () => {
+      const mockVp = JSON.stringify(mockDefaultPresentation());
+      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
+        new Response(mockVp, {
+          headers: new Headers([["content-length", String(mockVp.length)]]),
+        }),
+      );
+
+      const defaultMaxJsonSize = custom.maxJsonSize;
+      custom.maxJsonSize = 10;
+      await expect(
+        query(
+          "https://some.endpoint/query",
+          { query: [mockRequest] },
+          {
+            fetch: mockedFetch,
+            returnLegacyJsonld: false,
+          },
+        ),
+      ).rejects.toThrow(
+        `The response from holder [https://some.endpoint/query] is too large to parse as JSON: ${mockVp.length} bytes`,
+      );
+      custom.maxJsonSize = defaultMaxJsonSize;
+    });
 
     it.each([
       [{ returnLegacyJsonld: true }],

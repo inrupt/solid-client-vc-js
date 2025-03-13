@@ -309,7 +309,7 @@ export const defaultCredentialTypes = ["VerifiableCredential"];
  * This custom config allows developers to change common settings.
  */
 export const custom = {
-  maxJsonSize: 1500,
+  maxJsonSize: 10 * 1024 * 1024,
 };
 
 type LegacyEndpoints = Partial<{
@@ -615,16 +615,15 @@ export async function internal_getVerifiableCredentialFromResponse(
   const returnLegacy = options?.returnLegacyJsonld !== false;
   let vc: unknown | VerifiableCredentialBase;
   let vcUrl = vcUrlInput;
+  const contentLength = response.headers.get("Content-Length");
+  if (contentLength && parseInt(contentLength, 10) > custom.maxJsonSize) {
+    throw new Error(
+      `The response containing the Verifiable Credential [${vcUrl}] is too large to parse as JSON: ${
+        contentLength
+      } bytes`,
+    );
+  }
   try {
-    const contentLength = response.headers.get("Content-Length");
-    if (contentLength && parseInt(contentLength, 10) > custom.maxJsonSize) {
-      throw new Error(
-        `The response containing the Verifiable Credential [${vcUrl}] is too large to parse as JSON: ${
-          contentLength
-        } bytes`,
-      );
-    }
-
     vc = await response.json();
 
     if (typeof vcUrl !== "string") {
