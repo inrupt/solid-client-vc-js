@@ -79,9 +79,7 @@ describe("exports", () => {
     expect(packageExports.getVerifiableCredentialApiConfiguration).toBe(
       getVerifiableCredentialApiConfiguration,
     );
-    expect(packageExports.setMaxJsonSize).toBe(
-      setMaxJsonSize,
-    );
+    expect(packageExports.setMaxJsonSize).toBe(setMaxJsonSize);
     expect(packageExports.getVerifiableCredentialAllFromShape).toBe(
       getVerifiableCredentialAllFromShape,
     );

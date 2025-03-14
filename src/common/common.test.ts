@@ -1242,7 +1242,6 @@ describe("setMaxJsonSize", () => {
 
   it("throws if max size is exceeded", () => {
     const defaultMaxJsonSize = getMaxJsonSize();
-    console.log("MAX" + defaultMaxJsonSize);
     setMaxJsonSize(1);
     expect(() => checkResponseSize(createResponse("1"))).not.toThrow();
     expect(() => checkResponseSize(createResponse("22"))).toThrow();
