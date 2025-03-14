@@ -22,26 +22,26 @@
 /**
  * This global config object allows developers to change common settings.
  */
-const globalConfig = {
+const globalConfig: { maxJsonSize: number | null | undefined } = {
   maxJsonSize: 10 * 1024 * 1024,
 };
 
-export function setMaxJsonSize(size: number): void {
-  if (!Number.isInteger(size) || size <= 0) {
+export function setMaxJsonSize(size: number | null | undefined): void {
+  if (size != null && (!Number.isInteger(size) || size <= 0)) {
     throw new Error("setMaxJsonSize: size must be a positive integer.");
   }
   globalConfig.maxJsonSize = size;
 }
 
-export function getMaxJsonSize(): number {
+export function getMaxJsonSize(): number | null | undefined {
   return globalConfig.maxJsonSize;
 }
 
 export function checkResponseSize(response: Response) {
   const contentLength = response.headers.get("Content-Length");
   if (
-    !contentLength ||
-    parseInt(contentLength, 10) > globalConfig.maxJsonSize
+    globalConfig.maxJsonSize != null &&
+    (!contentLength || parseInt(contentLength, 10) > globalConfig.maxJsonSize)
   ) {
     throw new Error(
       `The response body is not safe to parse as JSON. Max size=[${globalConfig.maxJsonSize}], actual=[${contentLength}]`,

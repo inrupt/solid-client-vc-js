@@ -28,6 +28,7 @@ import {
   getVerifiableCredentialApiConfiguration,
   verifiableCredentialToDataset,
 } from "./common/common";
+import { setMaxJsonSize } from "./common/config";
 import {
   getId,
   getCredentialSubject,
@@ -77,6 +78,9 @@ describe("exports", () => {
     );
     expect(packageExports.getVerifiableCredentialApiConfiguration).toBe(
       getVerifiableCredentialApiConfiguration,
+    );
+    expect(packageExports.setMaxJsonSize).toBe(
+      setMaxJsonSize,
     );
     expect(packageExports.getVerifiableCredentialAllFromShape).toBe(
       getVerifiableCredentialAllFromShape,

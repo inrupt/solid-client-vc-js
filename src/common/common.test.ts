@@ -33,7 +33,7 @@ import {
   normalizeVc,
   verifiableCredentialToDataset,
 } from "./common";
-import { setMaxJsonSize, getMaxJsonSize } from "./config";
+import { setMaxJsonSize, getMaxJsonSize, checkResponseSize } from "./config";
 import {
   defaultCredentialClaims,
   defaultVerifiableClaims,
@@ -1221,5 +1221,31 @@ describe("getVerifiableCredential", () => {
         );
       },
     );
+  });
+});
+
+describe("setMaxJsonSize", () => {
+  it("throws an error for bad input", () => {
+    expect(() => setMaxJsonSize(-1)).toThrow();
+    expect(() => setMaxJsonSize(0)).toThrow();
+  });
+
+  it("accepts null or undefined", () => {
+    const defaultMaxJsonSize = getMaxJsonSize();
+    setMaxJsonSize(undefined);
+    expect(getMaxJsonSize()).toBeUndefined();
+    setMaxJsonSize(null);
+    expect(getMaxJsonSize()).toBeNull();
+    expect(() => checkResponseSize(createResponse(""))).not.toThrow();
+    setMaxJsonSize(defaultMaxJsonSize);
+  });
+
+  it("throws if max size is exceeded", () => {
+    const defaultMaxJsonSize = getMaxJsonSize();
+    console.log("MAX" + defaultMaxJsonSize);
+    setMaxJsonSize(1);
+    expect(() => checkResponseSize(createResponse("1"))).not.toThrow();
+    expect(() => checkResponseSize(createResponse("22"))).toThrow();
+    setMaxJsonSize(defaultMaxJsonSize);
   });
 });
