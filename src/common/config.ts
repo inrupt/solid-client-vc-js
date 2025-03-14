@@ -27,7 +27,7 @@ const globalConfig: { maxJsonSize: number | undefined } = {
 };
 
 export function setMaxJsonSize(size: number | undefined): void {
-  if (size != null && (!Number.isInteger(size) || size <= 0)) {
+  if (size !== undefined && (!Number.isInteger(size) || size <= 0)) {
     throw new Error("setMaxJsonSize: size must be a positive integer.");
   }
   globalConfig.maxJsonSize = size;
@@ -46,7 +46,7 @@ export function getMaxJsonSize(): number | undefined {
 export function checkResponseSize(response: Response) {
   const contentLength = response.headers.get("Content-Length");
   if (
-    globalConfig.maxJsonSize != null &&
+    globalConfig.maxJsonSize !== undefined &&
     (!contentLength || parseInt(contentLength, 10) > globalConfig.maxJsonSize)
   ) {
     throw new Error(
