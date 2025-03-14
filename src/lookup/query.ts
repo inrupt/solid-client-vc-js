@@ -34,6 +34,7 @@ import {
   normalizeVp,
   verifiableCredentialToDataset,
 } from "../common/common";
+import { checkResponseSize } from "../common/config";
 import isRdfjsVerifiableCredential from "../common/isRdfjsVerifiableCredential";
 import isRdfjsVerifiablePresentation, {
   getVpSubject,
@@ -245,6 +246,7 @@ export async function query(
   let data: VerifiablePresentation & DatasetCore;
   let rawData: VerifiablePresentation;
   try {
+    checkResponseSize(response);
     rawData = await response.json();
 
     if (options.returnLegacyJsonld !== false) {

@@ -36,6 +36,7 @@ import { handleErrorResponse } from "@inrupt/solid-client-errors";
 import type { ParseOptions } from "../parser/jsonld";
 import { jsonLdToStore } from "../parser/jsonld";
 import isRdfjsVerifiableCredential from "./isRdfjsVerifiableCredential";
+import { checkResponseSize } from "./config";
 
 const { namedNode } = DataFactory;
 
@@ -608,7 +609,9 @@ export async function internal_getVerifiableCredentialFromResponse(
   const returnLegacy = options?.returnLegacyJsonld !== false;
   let vc: unknown | VerifiableCredentialBase;
   let vcUrl = vcUrlInput;
+
   try {
+    checkResponseSize(response);
     vc = await response.json();
 
     if (typeof vcUrl !== "string") {

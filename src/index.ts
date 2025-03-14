@@ -38,6 +38,7 @@ export {
    */
   verifiableCredentialToDataset,
 } from "./common/common";
+export { setMaxJsonSize } from "./common/config";
 export { default as getVerifiableCredentialAllFromShape } from "./lookup/derive";
 export { query } from "./lookup/query";
 export type {

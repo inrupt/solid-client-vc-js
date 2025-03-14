@@ -19,30 +19,38 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest } from "@jest/globals";
-
-export const mockedFetch = () => {
-  return jest.fn<typeof fetch>();
+/**
+ * This global config object allows developers to change common settings.
+ */
+const globalConfig: { maxJsonSize: number | undefined } = {
+  maxJsonSize: 10 * 1024 * 1024,
 };
 
-export const mockedFetchWithResponse = (
-  statusCode: number,
-  body: string,
-  headers: HeadersInit,
-) => {
-  return mockedFetch().mockResolvedValueOnce(
-    new Response(body, { status: statusCode, headers }),
-  );
-};
+export function setMaxJsonSize(size: number | undefined): void {
+  if (size !== undefined && (!Number.isInteger(size) || size <= 0)) {
+    throw new Error("setMaxJsonSize: size must be a positive integer.");
+  }
+  globalConfig.maxJsonSize = size;
+}
 
-export const createResponse = (
-  body: string,
-  contentType: string = "application/json",
-): Response => {
-  return new Response(body, {
-    headers: new Headers([
-      ["content-type", contentType],
-      ["content-length", String(body.length)],
-    ]),
-  });
-};
+/**
+ * @hidden
+ */
+export function getMaxJsonSize(): number | undefined {
+  return globalConfig.maxJsonSize;
+}
+
+/**
+ * @hidden
+ */
+export function checkResponseSize(response: Response) {
+  const contentLength = response.headers.get("Content-Length");
+  if (
+    globalConfig.maxJsonSize !== undefined &&
+    (!contentLength || parseInt(contentLength, 10) > globalConfig.maxJsonSize)
+  ) {
+    throw new Error(
+      `The response body is not safe to parse as JSON. Max size=[${globalConfig.maxJsonSize}], actual=[${contentLength}]`,
+    );
+  }
+}

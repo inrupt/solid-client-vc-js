@@ -40,6 +40,7 @@ import {
   verifiableCredentialToDataset,
 } from "../common/common";
 import { getId, getIssuer } from "../common/getters";
+import { checkResponseSize } from "../common/config";
 import isRdfjsVerifiableCredential from "../common/isRdfjsVerifiableCredential";
 import isRdfjsVerifiablePresentation, {
   getHolder,
@@ -148,6 +149,7 @@ export async function isValidVc(
   }
 
   try {
+    checkResponseSize(response);
     return await response.json();
   } catch (e) {
     throw new Error(
@@ -278,6 +280,7 @@ export async function isValidVerifiablePresentation(
   }
 
   try {
+    checkResponseSize(response);
     return await response.json();
   } catch (e) {
     throw new Error(

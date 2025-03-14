@@ -23,7 +23,7 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { BadRequestError } from "@inrupt/solid-client-errors";
 import { defaultContext, defaultCredentialTypes } from "../common/common";
 import { mockDefaultCredential } from "../common/common.mock";
-import { mockedFetchWithResponse } from "../tests.internal";
+import { createResponse, mockedFetchWithResponse } from "../tests.internal";
 import { issueVerifiableCredential } from "./issue";
 
 describe("issueVerifiableCredential", () => {
@@ -81,11 +81,11 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("throws if the returned value does not conform to the shape we expect", async () => {
-    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      new Response(JSON.stringify({ someField: "Not a credential" }), {
-        status: 201,
-      }),
-    );
+    const mockedFetch = jest
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        createResponse(JSON.stringify({ someField: "Not a credential" })),
+      );
     await expect(
       issueVerifiableCredential(
         "https://some.endpoint",
@@ -99,12 +99,14 @@ describe("issueVerifiableCredential", () => {
   });
 
   it("returns the VC issued by the target issuer", async () => {
-    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      new Response(JSON.stringify(mockDefaultCredential()), {
-        status: 201,
-        headers: new Headers([["content-type", "application/ld+json"]]),
-      }),
-    );
+    const mockedFetch = jest
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        createResponse(
+          JSON.stringify(mockDefaultCredential()),
+          "application/ld+json",
+        ),
+      );
 
     const vc = await issueVerifiableCredential(
       "https://some.endpoint",
@@ -326,12 +328,9 @@ describe("issueVerifiableCredential", () => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     delete mockedVc.proof.proofValue;
-    const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-      new Response(JSON.stringify(mockedVc), {
-        status: 201,
-        headers: new Headers([["content-type", "application/json"]]),
-      }),
-    );
+    const mockedFetch = jest
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(createResponse(JSON.stringify(mockedVc)));
     const resultVc = await issueVerifiableCredential(
       "https://some.endpoint",
       { "@context": ["https://some-subject.context"] },

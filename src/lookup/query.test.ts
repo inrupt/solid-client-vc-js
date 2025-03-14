@@ -32,7 +32,8 @@ import {
 import { cred, rdf } from "../common/constants";
 import type { QueryByExample } from "./query";
 import { query } from "./query";
-import { mockedFetchWithResponse } from "../tests.internal";
+import { createResponse, mockedFetchWithResponse } from "../tests.internal";
+import { getMaxJsonSize, setMaxJsonSize } from "../common/config";
 
 const { namedNode } = DataFactory;
 const mockRequest: QueryByExample = {
@@ -63,11 +64,8 @@ describe("query", () => {
       let mockedFetch: jest.MockedFunction<typeof fetch>;
 
       beforeEach(() => {
-        mockedFetch = jest.fn<typeof fetch>(
-          async () =>
-            new Response(JSON.stringify(mockDefaultPresentation()), {
-              status: 200,
-            }),
+        mockedFetch = jest.fn<typeof fetch>(async () =>
+          createResponse(JSON.stringify(mockDefaultPresentation())),
         ) as jest.MockedFunction<typeof fetch>;
       });
 
@@ -96,16 +94,12 @@ describe("query", () => {
       let mockedFetch: jest.MockedFunction<typeof fetch>;
 
       beforeEach(() => {
-        mockedFetch = jest.fn<typeof fetch>(
-          async () =>
-            new Response(
-              JSON.stringify(
-                mockPartialPresentation(undefined, defaultVerifiableClaims),
-              ),
-              {
-                status: 200,
-              },
+        mockedFetch = jest.fn<typeof fetch>(async () =>
+          createResponse(
+            JSON.stringify(
+              mockPartialPresentation(undefined, defaultVerifiableClaims),
             ),
+          ),
         ) as jest.MockedFunction<typeof fetch>;
       });
 
@@ -154,12 +148,9 @@ describe("query", () => {
     ])(
       "errors if the presentation contains invalid verifiable credentials [%s]",
       (_, elems) => {
-        const mockedFetch = jest.fn<typeof fetch>(
-          async () =>
-            // @ts-expect-error we are intentionall passing invalid VC types here to test for errors
-            new Response(JSON.stringify(mockDefaultPresentation(elems)), {
-              status: 200,
-            }),
+        const mockedFetch = jest.fn<typeof fetch>(async () =>
+          // @ts-expect-error we are intentionall passing invalid VC types here to test for errors
+          createResponse(JSON.stringify(mockDefaultPresentation(elems))),
         ) as jest.MockedFunction<typeof fetch>;
 
         it.each([[true], [false]])(
@@ -180,6 +171,30 @@ describe("query", () => {
       },
     );
 
+    it("throws if the data is too large to process as JSON", async () => {
+      const mockVp = JSON.stringify(mockDefaultPresentation());
+      const mockedFetch = jest
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(createResponse(mockVp));
+
+      const defaultMaxJsonSize = getMaxJsonSize();
+      setMaxJsonSize(10);
+      await expect(
+        query(
+          "https://some.endpoint/query",
+          { query: [mockRequest] },
+          {
+            fetch: mockedFetch,
+            returnLegacyJsonld: false,
+          },
+        ),
+      ).rejects.toThrow(
+        `The holder [https://some.endpoint/query] did not return a valid JSON response: parsing failed with error ` +
+          `Error: The response body is not safe to parse as JSON. Max size=[10], actual=[${mockVp.length}]`,
+      );
+      setMaxJsonSize(defaultMaxJsonSize);
+    });
+
     it.each([
       [{ returnLegacyJsonld: true }],
       [{ returnLegacyJsonld: false }],
@@ -188,9 +203,7 @@ describe("query", () => {
       "defaults to an unauthenticated fetch if no fetch is provided [args: %s]",
       async (arg?: { returnLegacyJsonld?: boolean }) => {
         spiedFetch.mockResolvedValueOnce(
-          new Response(JSON.stringify(mockDefaultPresentation()), {
-            status: 200,
-          }),
+          createResponse(JSON.stringify(mockDefaultPresentation())),
         );
         await query(
           "https://some.endpoint/query",
@@ -231,11 +244,8 @@ describe("query", () => {
     it.each([[true], [false]])(
       "throws if the endpoint responds with a non-JSON payload [returnLegacyJsonld: %s]",
       async (returnLegacyJsonld) => {
-        const mockedFetch = jest.fn<typeof fetch>(
-          async () =>
-            new Response("Not JSON", {
-              status: 200,
-            }),
+        const mockedFetch = jest.fn<typeof fetch>(async () =>
+          createResponse("Not JSON"),
         );
         await expect(() =>
           query(
@@ -259,9 +269,7 @@ describe("query", () => {
             { query: [mockRequest] },
             {
               fetch: async () =>
-                new Response(JSON.stringify({ json: "but not a VP" }), {
-                  status: 200,
-                }),
+                createResponse(JSON.stringify({ json: "but not a VP" })),
               returnLegacyJsonld,
             },
           ),
@@ -272,11 +280,11 @@ describe("query", () => {
     it.each([[true], [false]])(
       "posts a request with the appropriate media type [returnLegacyJsonld: %s]",
       async (returnLegacyJsonld) => {
-        const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-          new Response(JSON.stringify(mockDefaultPresentation()), {
-            status: 200,
-          }),
-        );
+        const mockedFetch = jest
+          .fn<typeof fetch>()
+          .mockResolvedValueOnce(
+            createResponse(JSON.stringify(mockDefaultPresentation())),
+          );
         await query(
           "https://some.endpoint/query",
           { query: [mockRequest] },
@@ -300,11 +308,9 @@ describe("query", () => {
     it.each([[true], [false]])(
       "errors if no presentations exist [returnLegacyJsonld: %s]",
       async (returnLegacyJsonld) => {
-        const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-          new Response(JSON.stringify([]), {
-            status: 200,
-          }),
-        );
+        const mockedFetch = jest
+          .fn<typeof fetch>()
+          .mockResolvedValueOnce(createResponse(JSON.stringify([])));
         await expect(
           query(
             "https://some.endpoint/query",
@@ -328,11 +334,8 @@ describe("query", () => {
     );
 
     it("returns the VP sent by the endpoint", async () => {
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(JSON.stringify(mockDefaultPresentation()), {
-            status: 200,
-          }),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(JSON.stringify(mockDefaultPresentation())),
       );
 
       const vp = await query(
@@ -356,11 +359,8 @@ describe("query", () => {
     });
 
     it("returns the VP sent by the endpoint [using mock access grant]", async () => {
-      const mockedFetch = jest.fn<typeof fetch>(
-        async () =>
-          new Response(JSON.stringify(mockAccessGrant()), {
-            status: 200,
-          }),
+      const mockedFetch = jest.fn<typeof fetch>(async () =>
+        createResponse(JSON.stringify(mockAccessGrant())),
       );
 
       const vp = await query(
@@ -411,11 +411,11 @@ describe("query", () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       delete mockedVc.proof.proofValue;
-      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
-          status: 200,
-        }),
-      );
+      const mockedFetch = jest
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(
+          createResponse(JSON.stringify(mockDefaultPresentation([mockedVc]))),
+        );
       const resultVp = await query(
         "https://example.org/query",
         { query: [mockRequest] },
@@ -445,11 +445,11 @@ describe("query", () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       delete mockedVc.proof.proofValue;
-      const mockedFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDefaultPresentation([mockedVc])), {
-          status: 200,
-        }),
-      );
+      const mockedFetch = jest
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(
+          createResponse(JSON.stringify(mockDefaultPresentation([mockedVc]))),
+        );
       const resultVp = await query(
         "https://example.org/query",
         { query: [mockRequest] },
