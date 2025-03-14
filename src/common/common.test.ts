@@ -1234,8 +1234,6 @@ describe("setMaxJsonSize", () => {
     const defaultMaxJsonSize = getMaxJsonSize();
     setMaxJsonSize(undefined);
     expect(getMaxJsonSize()).toBeUndefined();
-    setMaxJsonSize(null);
-    expect(getMaxJsonSize()).toBeNull();
     expect(() => checkResponseSize(createResponse(""))).not.toThrow();
     setMaxJsonSize(defaultMaxJsonSize);
   });

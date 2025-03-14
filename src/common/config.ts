@@ -22,21 +22,27 @@
 /**
  * This global config object allows developers to change common settings.
  */
-const globalConfig: { maxJsonSize: number | null | undefined } = {
+const globalConfig: { maxJsonSize: number | undefined } = {
   maxJsonSize: 10 * 1024 * 1024,
 };
 
-export function setMaxJsonSize(size: number | null | undefined): void {
+export function setMaxJsonSize(size: number | undefined): void {
   if (size != null && (!Number.isInteger(size) || size <= 0)) {
     throw new Error("setMaxJsonSize: size must be a positive integer.");
   }
   globalConfig.maxJsonSize = size;
 }
 
-export function getMaxJsonSize(): number | null | undefined {
+/**
+ * @hidden
+ */
+export function getMaxJsonSize(): number | undefined {
   return globalConfig.maxJsonSize;
 }
 
+/**
+ * @hidden
+ */
 export function checkResponseSize(response: Response) {
   const contentLength = response.headers.get("Content-Length");
   if (
