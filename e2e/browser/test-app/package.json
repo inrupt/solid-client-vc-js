@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@inrupt/eslint-config-lib": "^3.0.2",
-    "@inrupt/solid-client-authn-browser": "^2.3.0",
+    "@inrupt/solid-client-authn-browser": "^2.4.1",
     "@types/node": "^20.10.5",
     "@types/react": "^19.1.1",
     "@types/react-dom": "^19.1.2",
