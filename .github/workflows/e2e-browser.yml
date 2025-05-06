@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        environment-name: ["ESS PodSpaces", "ESS Dev-2-3"]
+        environment-name: ["ESS PodSpaces", "ESS Release-2-3", "ESS Dev-2-4"]
         experimental: [false]
     steps:
       - uses: actions/checkout@v4
