@@ -39,3 +39,16 @@ jobs:
           E2E_TEST_VC_PROVIDER: ${{ secrets.E2E_TEST_VC_PROVIDER }}
           E2E_TEST_OWNER_CLIENT_ID: ${{ secrets.E2E_TEST_OWNER_CLIENT_ID }}
           E2E_TEST_OWNER_CLIENT_SECRET: ${{ secrets.E2E_TEST_OWNER_CLIENT_SECRET }}
+
+  check:
+    if: always()
+    needs:
+      - e2e-node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # release/v1
+        with:
+          # Dependabot will skip e2e tests
+          allowed-skips: e2e-node
+          jobs: ${{ toJSON(needs) }}
