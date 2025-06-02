@@ -18,7 +18,7 @@
     "@inrupt/eslint-config-lib": "^3.0.2",
     "@inrupt/solid-client-authn-browser": "^2.5.0",
     "@types/node": "^20.10.5",
-    "@types/react": "^19.1.5",
+    "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "eslint": "^8.56.0",
     "eslint-config-next": "^15.3.3",
