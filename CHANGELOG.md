@@ -6,7 +6,11 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
-# New feature
+### Breaking Changes
+
+- Support for Node.js v18.x has been dropped as that version has reached end-of-life.
+
+### New feature
 
 - Protect against uncontrolled memory consumption by checking response bodies are safe for
   parsing as JSON. The default maximum size is 10MB but this can be overridden using
