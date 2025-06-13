@@ -18,7 +18,7 @@ The following changes have been implemented but not released yet:
 
 ## [1.2.0](https://github.com/inrupt/solid-client-vc-js/releases/tag/v1.2.0) - 2024-12-17
 
-# New feature
+### New feature
 
 - Query endpoint discovery: the `getVerifiableCredentialApiConfiguration` function now
   has a `queryService` entry if the target service supports the Inrupt Access Grant query

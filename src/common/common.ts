@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -245,7 +244,7 @@ export function isVerifiableCredential(
 export function isUrl(url: string): boolean {
   try {
     // If url is not URL-shaped, this will throw.
-    // eslint-disable-next-line no-new
+
     new URL(url);
     return true;
   } catch {
@@ -270,7 +269,6 @@ export function isVerifiablePresentation(
       Array.isArray((vp as VerifiablePresentation).verifiableCredential);
     inputIsVp =
       inputIsVp &&
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       (vp as VerifiablePresentation).verifiableCredential!.every(
         isVerifiableCredential,
       );
@@ -278,7 +276,7 @@ export function isVerifiablePresentation(
   if ((vp as VerifiablePresentation).holder !== undefined) {
     inputIsVp =
       inputIsVp && typeof (vp as VerifiablePresentation).holder === "string";
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     inputIsVp = inputIsVp && isUrl((vp as VerifiablePresentation).holder!);
   }
   // TODO: No type checking is currently implemented for the proof.
@@ -446,7 +444,6 @@ export async function getVerifiableCredentialApiConfiguration(
   };
 }
 
-// eslint-disable-next-line camelcase
 export function internal_applyDataset<T extends { id?: string }>(
   vc: T,
   store: DatasetCore,
@@ -562,7 +559,7 @@ export function hasId(vc: unknown): vc is { id: string } {
 /**
  * @hidden
  */
-// eslint-disable-next-line camelcase
+
 export async function internal_getVerifiableCredentialFromResponse(
   vcUrl: UrlString | undefined,
   response: Response,

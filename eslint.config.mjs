@@ -18,7 +18,34 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import "@inrupt/jest-jsdom-polyfills";
-globalThis.fetch = () => {
-  throw new Error("Fetch should not be called in tests without being mocked");
-};
+import inruptCfg, { ignoreTypedLinting } from "@inrupt/eslint-config-base";
+import next from "@next/eslint-plugin-next";
+
+import { defineConfig } from "eslint/config";
+
+ignoreTypedLinting([
+  "jest.e2e.setup.ts",
+  "jest.config.ts",
+  "playwright.config.ts",
+  "**/jest.e2e.setup.ts",
+]);
+
+export default defineConfig([
+  inruptCfg,
+  {
+    plugins: {
+      "@next/next": next,
+    },
+    rules: {
+      ...next.configs.recommended.rules,
+      ...next.configs["core-web-vitals"].rules,
+    },
+    files: ["e2e/browser/test-app/"],
+  },
+  {
+    rules: {
+      "import/no-unresolved": "off",
+    },
+    files: ["**/e2e/browser/test-app/**"],
+  },
+]);

@@ -1,5 +1,4 @@
-//
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -42,13 +41,11 @@ const DEFAULT_ISSUER = "https://login.inrupt.com/";
 const APP_NAME = "Verifiable Credentials browser-based tests app";
 const VerifiableCredentialContainer = ({
   sessionInfo,
-  setErrorMessage,
 }: {
   sessionInfo?: ISessionInfo;
-  setErrorMessage: (msg: string) => void;
 }) => {
   if (sessionInfo?.isLoggedIn) {
-    return <VerifiableCredential setErrorMessage={setErrorMessage} />;
+    return <VerifiableCredential />;
   }
   return <></>;
 };
@@ -76,7 +73,6 @@ export default function Home() {
         clientName: APP_NAME,
       });
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.log(err);
     }
   };

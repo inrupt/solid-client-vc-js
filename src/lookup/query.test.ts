@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -421,12 +420,11 @@ describe("query", () => {
         { query: [mockRequest] },
         { fetch: mockedFetch },
       );
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       expect(resultVp.verifiableCredential![0].proof.proofValue).toBe(
         mockDefaultCredential().proof.proofValue,
       );
       expect(
-        /* eslint-disable @typescript-eslint/no-non-null-assertion */
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         resultVp.verifiableCredential![0].proof[
@@ -463,7 +461,7 @@ describe("query", () => {
           },
         },
       );
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       expect(resultVp.verifiableCredential![0].type).toContain(
         "http://example.org/my/extra/type",
       );

@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,6 +17,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import type { IJsonLdContext } from "jsonld-context-parser";
 import { DataFactory, Store } from "n3";
@@ -86,27 +86,23 @@ describe("isVerifiableCredential", () => {
       ["proofValue"],
     ])("is missing field %s", async (entry) => {
       if (entry !== "id") {
-        // eslint-disable-next-line jest/no-conditional-expect
         expect(
           isRdfjsVerifiableCredential(
             await verifiableCredentialToDataset(
               mockPartialCredential({
                 ...defaultCredentialClaims,
                 [`${entry}`]: undefined,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
               }) as any,
             ),
             namedNode(mockDefaultCredential().id),
           ),
         ).toBe(false);
       } else {
-        // eslint-disable-next-line jest/no-conditional-expect
         await expect(
           verifiableCredentialToDataset(
             mockPartialCredential({
               ...defaultCredentialClaims,
               [`${entry}`]: undefined,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }) as any,
           ),
         ).rejects.toThrow(
@@ -157,7 +153,6 @@ describe("isVerifiableCredential", () => {
             mockPartialCredential({
               ...defaultCredentialClaims,
               issuanceDate: "Not a date",
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }) as any,
           ),
           namedNode(mockDefaultCredential().id),
@@ -180,7 +175,6 @@ describe("isVerifiableCredential", () => {
             mockPartialCredential({
               ...defaultCredentialClaims,
               proofCreated: "Not a date",
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }) as any,
           ),
           namedNode(mockDefaultCredential().id),
@@ -641,7 +635,7 @@ describe("getVerifiableCredential", () => {
 
   // FIXME: Enable this when we add content type checks in the next major version
   // see https://github.com/inrupt/solid-client-vc-js/pull/849#discussion_r1414124524
-  // eslint-disable-next-line jest/no-disabled-tests
+
   it.skip("throws if the dereferenced data has an unsupported content type", async () => {
     const mockedFetch = jest
       .fn<typeof fetch>()

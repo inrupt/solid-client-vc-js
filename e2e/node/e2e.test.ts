@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,7 +20,6 @@
 
 // Assertions are made conditionally on problem details responses because not all
 // servers support this feature.
-/* eslint-disable jest/no-conditional-expect */
 
 import {
   getAuthenticatedSession,

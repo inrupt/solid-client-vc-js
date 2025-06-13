@@ -1,5 +1,4 @@
-//
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -24,24 +23,13 @@ import {
   issueVerifiableCredential,
   revokeVerifiableCredential,
 } from "@inrupt/solid-client-vc";
-import {
-  getPodUrlAll,
-  saveFileInContainer,
-  getSourceUrl,
-  deleteFile,
-} from "@inrupt/solid-client";
 
 import React, { useState } from "react";
 
 const session = getDefaultSession();
 const DEFAULT_VC_PROVIDER = "https://vc.inrupt.com/";
-const SHARED_FILE_CONTENT = "Some content.\n";
 
-export default function VerifiableCredential({
-  setErrorMessage,
-}: {
-  setErrorMessage: (msg: string) => void;
-}) {
+export default function VerifiableCredential() {
   const [vcProvider, setVcProvider] = useState<string>(DEFAULT_VC_PROVIDER);
 
   const [verifiableCredential, setVerifiableCredential] = useState<string>();

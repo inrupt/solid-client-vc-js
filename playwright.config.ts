@@ -1,5 +1,4 @@
-//
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -59,7 +58,7 @@ const config: PlaywrightTestConfig = {
         }. Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36`,
       },
     },
-    // WebKit is very flaky on playwright. This is disabled for the time being, and 
+    // WebKit is very flaky on playwright. This is disabled for the time being, and
     // an alternative approach using Browserstack is experimented.
     // {
     //   name: "WebKit",

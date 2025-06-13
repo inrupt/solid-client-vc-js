@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +34,6 @@ import {
   concatenateContexts,
   defaultContext,
   defaultCredentialTypes,
-  // eslint-disable-next-line camelcase
   internal_getVerifiableCredentialFromResponse,
 } from "../common/common";
 
