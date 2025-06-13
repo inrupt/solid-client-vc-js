@@ -42,4 +42,10 @@ export default defineConfig([
     },
     files: ["e2e/browser/test-app/"],
   },
+  {
+    rules: {
+      "import/no-unresolved": "off",
+    },
+    files: ["e2e/browser/test-app/"],
+  },
 ]);
