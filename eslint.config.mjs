@@ -18,10 +18,17 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import inruptCfg from "@inrupt/eslint-config-base";
+import inruptCfg, { ignoreTypedLinting } from "@inrupt/eslint-config-base";
 import next from "@next/eslint-plugin-next";
 
 import { defineConfig } from "eslint/config";
+
+ignoreTypedLinting([
+  "jest.e2e.setup.ts",
+  "jest.config.ts",
+  "playwright.config.ts",
+  "**/jest.e2e.setup.ts",
+]);
 
 export default defineConfig([
   inruptCfg,

@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,7 +37,6 @@ describe("issueVerifiableCredential", () => {
           fetch: mockedFetch,
         },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(mockedFetch).toHaveBeenCalled();
   });
@@ -53,7 +51,6 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some.context"] },
         { "@context": ["https://some.context"] },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(spiedFetch).toHaveBeenCalled();
   });
@@ -129,7 +126,6 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some.context"] },
         { fetch: mockedFetch },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       "https://some.endpoint",
@@ -146,7 +142,6 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some.context"] },
         { fetch: mockedFetch },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
@@ -168,7 +163,6 @@ describe("issueVerifiableCredential", () => {
         undefined,
         { fetch: mockedFetch },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
@@ -195,7 +189,6 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some-credential.context"], aClaim: "a value" },
         { fetch: mockedFetch },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
@@ -225,7 +218,6 @@ describe("issueVerifiableCredential", () => {
         { "@context": ["https://some-credential.context"], type: "some-type" },
         { fetch: mockedFetch },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
@@ -259,7 +251,6 @@ describe("issueVerifiableCredential", () => {
           fetch: mockedFetch,
         },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),
@@ -296,7 +287,6 @@ describe("issueVerifiableCredential", () => {
           fetch: mockedFetch,
         },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(mockedFetch).toHaveBeenCalledWith(
       expect.anything(),

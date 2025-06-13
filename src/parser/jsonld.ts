@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,7 +18,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-/* eslint-disable max-classes-per-file */
 import { promisifyEventEmitter } from "event-emitter-promisify";
 import type {
   IJsonLdContext,
@@ -123,7 +121,6 @@ export class CachingContextParser extends ContextParser {
       hash = md5(hash + this.cmap(options.parentContext));
     }
 
-    // eslint-disable-next-line no-return-assign
     return (this.cachedParsing[md5(hash + hashContext(context, this.cmap))] ??=
       super.parse(context, options));
   }

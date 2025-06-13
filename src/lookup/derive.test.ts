@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -73,7 +72,6 @@ describe.each([
               returnLegacyJsonld,
             },
           );
-          // eslint-disable-next-line no-empty
         } catch {}
         expect(mockedFetch).toHaveBeenCalled();
       },

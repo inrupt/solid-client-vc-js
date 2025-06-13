@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,7 +30,6 @@ test("Issue credential to a resource, then revoking it", async ({
   auth,
 }) => {
   await auth.login({ allow: true });
-  // eslint-disable-next-line playwright/no-conditional-in-test
   await page.fill("input[data-testid=vcProvider]", vcProvider || "");
 
   // Issue VC

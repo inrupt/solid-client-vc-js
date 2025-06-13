@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -291,7 +290,7 @@ export async function query(
       newVerifiableCredential.push(
         // Limit concurrency to avoid memory overflows. For details see
         // https://github.com/inrupt/solid-client-vc-js/pull/849#discussion_r1377400688
-        // eslint-disable-next-line no-await-in-loop
+
         ...(await Promise.all(
           rawData.verifiableCredential
             .slice(i, i + 100)

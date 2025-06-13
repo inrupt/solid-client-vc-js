@@ -1,5 +1,4 @@
-//
-// Copyright 2022 Inrupt Inc.
+// Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal in
@@ -21,5 +20,5 @@
 
 import "@inrupt/jest-jsdom-polyfills";
 globalThis.fetch = () => {
-    throw new Error("Fetch should not be called in tests without being mocked");
-}
+  throw new Error("Fetch should not be called in tests without being mocked");
+};

@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,7 +43,6 @@ describe("revokeVerifiableCredential", () => {
           fetch: mockedFetch,
         },
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(mockedFetch).toHaveBeenCalled();
   });
@@ -55,7 +53,6 @@ describe("revokeVerifiableCredential", () => {
         "https://some.endpoint",
         "https://some.example#credential",
       );
-      // eslint-disable-next-line no-empty
     } catch {}
     expect(spiedFetch).toHaveBeenCalled();
   });
