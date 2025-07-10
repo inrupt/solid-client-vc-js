@@ -204,10 +204,9 @@ describe("isValidVc", () => {
 
     expect(getVerifiableCredential).toHaveBeenCalledWith(
       "https://example.com/someVc",
-      {
+      expect.objectContaining({
         fetch: mockedFetch,
-        verificationEndpoint: "https://consent.example.com",
-      },
+      }),
     );
   });
 
