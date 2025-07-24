@@ -105,7 +105,7 @@ export class CachingContextParser extends ContextParser {
       }
       this.contextMap.set(context, this.contextHashMap.get(hash) as number);
     }
-    return this.contextMap.get(context);
+    return this.contextMap.get(context) as number;
   };
 
   async parse(
