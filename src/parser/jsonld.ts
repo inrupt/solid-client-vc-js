@@ -103,9 +103,9 @@ export class CachingContextParser extends ContextParser {
       if (!this.contextHashMap.has(hash)) {
         this.contextHashMap.set(hash, (this.mapIndex += 1));
       }
-      this.contextMap.set(context, this.contextHashMap.get(hash)!);
+      this.contextMap.set(context, this.contextHashMap.get(hash) as number);
     }
-    return this.contextMap.get(context)!;
+    return this.contextMap.get(context);
   };
 
   async parse(

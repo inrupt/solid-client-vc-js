@@ -263,21 +263,17 @@ export function isVerifiablePresentation(
     inputIsVp &&
     (Array.isArray((vp as VerifiablePresentation).type) ||
       typeof (vp as VerifiablePresentation).type === "string");
-  if ((vp as VerifiablePresentation).verifiableCredential !== undefined) {
-    inputIsVp =
-      inputIsVp &&
-      Array.isArray((vp as VerifiablePresentation).verifiableCredential);
-    inputIsVp =
-      inputIsVp &&
-      (vp as VerifiablePresentation).verifiableCredential!.every(
-        isVerifiableCredential,
-      );
+  const vcs = (vp as VerifiablePresentation).verifiableCredential;
+  if (vcs !== undefined) {
+    inputIsVp = inputIsVp && Array.isArray(vcs);
+    inputIsVp = inputIsVp && vcs.every(isVerifiableCredential);
   }
-  if ((vp as VerifiablePresentation).holder !== undefined) {
+  const holder = (vp as VerifiablePresentation).holder;
+  if (holder !== undefined) {
     inputIsVp =
       inputIsVp && typeof (vp as VerifiablePresentation).holder === "string";
 
-    inputIsVp = inputIsVp && isUrl((vp as VerifiablePresentation).holder!);
+    inputIsVp = inputIsVp && isUrl(holder);
   }
   // TODO: No type checking is currently implemented for the proof.
   return inputIsVp;
