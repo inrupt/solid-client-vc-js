@@ -48,4 +48,10 @@ export default defineConfig([
     },
     files: ["**/e2e/browser/test-app/**"],
   },
+  {
+    rules: {
+      "@typescript-eslint/no-non-null-assertion": "off",
+    },
+    files: ["**/*.test.ts"],
+  },
 ]);
