@@ -17,7 +17,7 @@
   "devDependencies": {
     "@inrupt/solid-client-authn-browser": "^3.1.0",
     "@types/node": "^20.10.5",
-    "@types/react": "^19.1.10",
+    "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",
     "typescript": "^5.3.3"
   }
