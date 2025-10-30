@@ -25,7 +25,7 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://docs.inrupt.com/developer-tools/javascript/client-libraries/",
+  "homepage": "https://docs.inrupt.com/sdk/javascript-sdk",
   "bugs": "https://github.com/inrupt/solid-client-vc-js/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
