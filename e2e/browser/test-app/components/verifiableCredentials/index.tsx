@@ -35,85 +35,18 @@ export default function VerifiableCredential() {
   const [verifiableCredential, setVerifiableCredential] = useState<string>();
 
   const validCredentialClaims = {
-    "@context": {
-      gc: "https://w3id.org/GConsent#",
-      consent: "http://www.w3.org/ns/solid/consent#",
-      ldp: "http://www.w3.org/ns/ldp#",
-      acl: "http://www.w3.org/ns/auth/acl#",
-      inbox: {
-        "@id": "ldp:inbox",
-        "@type": "@id",
-      },
-      Read: "acl:Read",
-      mode: {
-        "@id": "acl:mode",
-        "@type": "@id",
-      },
-      forPersonalData: {
-        "@id": "gc:forPersonalData",
-        "@type": "@id",
-      },
-      forPurpose: {
-        "@id": "gc:forPurpose",
-        "@type": "@id",
-      },
-      hasConsent: {
-        "@id": "gc:hasConsent",
-        "@type": "@id",
-      },
-      isConsentForDataSubject: {
-        "@id": "gc:isConsentForDataSubject",
-        "@type": "@id",
-      },
-      hasStatus: {
-        "@id": "gc:hasStatus",
-        "@type": "@id",
-      },
-    },
     hasConsent: {
       forPurpose: "https://example.org/ns/somePurpose",
       forPersonalData: "https://example.org/ns/someData",
-      hasStatus: "gc:ConsentStatusRequested",
-      mode: "acl:Read",
+      hasStatus: "https://w3id.org/GConsent#ConsentStatusRequested",
+      mode: ["http://www.w3.org/ns/auth/acl#Read"],
       isConsentForDataSubject: "https://some.webid/resource-owner",
     },
   };
 
   const invalidCredentialClaims = {
-    "@context": {
-      gc: "https://w3id.org/GConsent#",
-      consent: "http://www.w3.org/ns/solid/consent#",
-      ldp: "http://www.w3.org/ns/ldp#",
-      acl: "http://www.w3.org/ns/auth/acl#",
-      inbox: {
-        "@id": "ldp:inbox",
-        "@type": "@id",
-      },
-      Read: "acl:Read",
-      mode: {
-        "@id": "acl:mode",
-        "@type": "@id",
-      },
-      forPersonalData: {
-        "@id": "gc:forPersonalData",
-        "@type": "@id",
-      },
-      forPurpose: {
-        "@id": "gc:forPurpose",
-        "@type": "@id",
-      },
-      hasConsent: {
-        "@id": "gc:hasConsent",
-        "@type": "@id",
-      },
-      isConsentForDataSubject: {
-        "@id": "gc:isConsentForDataSubject",
-        "@type": "@id",
-      },
-      hasStatus: {
-        "@id": "gc:hasStatus",
-        "@type": "@id",
-      },
+    hasConsent: {
+      hasStatus: "https://w3id.org/GConsent#ConsentStatusRequested",
     },
   };
   const handleIssue = async (e, provider: string, issueInvalid = true) => {
@@ -125,7 +58,7 @@ export default function VerifiableCredential() {
       {
         "@context": [
           "https://www.w3.org/2018/credentials/v1",
-          "https://schema.inrupt.com/credentials/v1.jsonld",
+          "https://schema.inrupt.com/credentials/v2.jsonld",
         ],
         type: ["SolidAccessRequest"],
         expirationDate: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
