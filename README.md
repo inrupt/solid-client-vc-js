@@ -35,7 +35,7 @@ and `String.prototype.endsWith`.
 ### Node.js Support
 
 See [Inrupt Solid Javascript Client
-Libraries](https://docs.inrupt.com/developer-tools/javascript/client-libraries/#node-js-support).
+Libraries](https://docs.inrupt.com/sdk/javascript-sdk#node.js-support).
 
 ## Changelog
 
