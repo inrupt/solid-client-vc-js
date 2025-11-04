@@ -6,6 +6,8 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+## [2.0.0](https://github.com/inrupt/solid-client-vc-js/releases/tag/v2.0.0) - 2025-11-03
+
 ### Breaking Changes
 
 - Support for Node.js v18.x has been dropped as that version has reached end-of-life.
