@@ -31,6 +31,7 @@ export default {
     gc: "https://w3id.org/GConsent#",
     vc: "http://www.w3.org/ns/solid/vc#",
     xsd: "http://www.w3.org/2001/XMLSchema#",
+    hydra: "http://www.w3.org/ns/hydra/core#",
     issuerService: {
       "@id": "vc:issuerService",
       "@type": "@id",
@@ -75,6 +76,8 @@ export default {
     SolidAccessGrant: "vc:SolidAccessGrant",
     SolidAccessRequest: "vc:SolidAccessRequest",
     ExpiredVerifiableCredential: "vc:ExpiredVerifiableCredential",
+    template: "hydra:template",
+
     inbox: {
       "@id": "ldp:inbox",
       "@type": "@id",
@@ -147,6 +150,10 @@ export default {
     },
     request: {
       "@id": "vc:request",
+      "@type": "@id",
+    },
+    verifiedRequest: {
+      "@id": "vc:verifiedRequest",
       "@type": "@id",
     },
     inherit: {
