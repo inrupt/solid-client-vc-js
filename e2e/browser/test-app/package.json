@@ -12,7 +12,7 @@
     "@inrupt/solid-client-vc": "file:../../../",
     "next": "^16.0.7",
     "react": "^19.2.1",
-    "react-dom": "^19.2.1"
+    "react-dom": "^19.2.3"
   },
   "devDependencies": {
     "@inrupt/solid-client-authn-browser": "^3.1.1",
