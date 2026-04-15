@@ -80,8 +80,7 @@ export type VerifiablePresentationRequest = {
  * @hidden
  */
 export interface ParsedVerifiablePresentation
-  extends VerifiablePresentation,
-    DatasetCore {
+  extends VerifiablePresentation, DatasetCore {
   verifiableCredential: VerifiableCredential[];
 }
 
