@@ -15,7 +15,7 @@
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
-    "@inrupt/solid-client-authn-browser": "^4.0.0",
+    "@inrupt/solid-client-authn-browser": "^5.0.0",
     "@types/node": "^20.10.5",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
