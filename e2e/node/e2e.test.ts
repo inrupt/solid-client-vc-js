@@ -25,7 +25,6 @@ import {
   getAuthenticatedSession,
   getNodeTestingEnvironment,
 } from "@inrupt/internal-test-env";
-import type { Session } from "@inrupt/solid-client-authn-node";
 import {
   describe,
   it,
@@ -101,7 +100,7 @@ const env = getNodeTestingEnvironment({
 });
 describe("End-to-end verifiable credentials tests for environment", () => {
   let vcSubject: string;
-  let session: Session;
+  let session: Awaited<ReturnType<typeof getAuthenticatedSession>>;
   let issuerService: string;
   let derivationService: string;
   let statusService: string;
