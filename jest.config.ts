@@ -19,6 +19,11 @@
 //
 
 import type { Config } from "jest";
+import { createRequire } from "node:module";
+
+// Jest 30 loads .ts config files as ESM via Node's native TypeScript support,
+// so `require` is not available. Use createRequire for require.resolve calls.
+const esmRequire = createRequire(import.meta.url);
 
 import { createRequire } from "node:module";
 
