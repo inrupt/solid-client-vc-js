@@ -20,6 +20,12 @@
 
 import type { Config } from "jest";
 
+import { createRequire } from "node:module";
+
+// Jest 30 loads .ts config files as ESM via Node's native TypeScript support,
+// so `require` is not available. Use createRequire for require.resolve calls.
+const esmRequire = createRequire(import.meta.url);
+
 type ArrayElement<MyArray> = MyArray extends Array<infer T> ? T : never;
 
 const baseConfig: ArrayElement<NonNullable<Config["projects"]>> = {
@@ -29,8 +35,11 @@ const baseConfig: ArrayElement<NonNullable<Config["projects"]>> = {
   // JS files are transformed to CJS, and that the transform also applies to the
   // dependencies in the node_modules, so that ESM-only dependencies are supported.
   preset: "ts-jest",
-  // deliberately set to an empty array to allow including node_modules when transforming code:
-  transformIgnorePatterns: [],
+  transformIgnorePatterns: ["node_modules[\\\\/](?!jose|uuid)"],
+  moduleNameMapper: {
+    "^jose": esmRequire.resolve("jose"),
+    "^uuid": esmRequire.resolve("uuid"),
+  },
   modulePathIgnorePatterns: ["dist/"],
   coveragePathIgnorePatterns: [
     ".*.spec.ts",
