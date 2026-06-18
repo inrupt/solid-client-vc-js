@@ -19,7 +19,6 @@
 //
 
 import type { Config } from "jest";
-
 import { createRequire } from "node:module";
 
 // Jest 30 loads .ts config files as ESM via Node's native TypeScript support,
