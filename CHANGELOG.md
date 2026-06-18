@@ -4,10 +4,6 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 The following changes have been implemented but not released yet:
 
-### Breaking Changes
-
-- Support for Node.js v20.x has been dropped as that version has reached end-of-life.
-
 ## Unreleased
 
 ### Breaking Changes
