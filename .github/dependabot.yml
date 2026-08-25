@@ -7,6 +7,8 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "weekly"
+    # The following is required for workspaces to be updated: see https://github.com/dependabot/dependabot-core/issues/5226.
+    versioning-strategy: increase
     ignore:
       - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
@@ -19,20 +21,6 @@ updates:
           - "@inrupt/base-*"
           - "@inrupt/jest-*"
           - "@inrupt/eslint-*"
-      external-types:
-        patterns:
-          - "@types/*"
-
-  - package-ecosystem: "npm"
-    # Upgrade dependencies for the browser-based test app.
-    directory: "/e2e/browser/test-app"
-    # Check the npm registry for updates every day (weekdays)
-    schedule:
-      interval: "weekly"
-    ignore:
-      - dependency-name: "eslint"
-        update-types: ["version-update:semver-major"]
-    groups:
       external-types:
         patterns:
           - "@types/*"

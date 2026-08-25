@@ -34,6 +34,13 @@ const baseConfig: ArrayElement<NonNullable<Config["projects"]>> = {
   // JS files are transformed to CJS, and that the transform also applies to the
   // dependencies in the node_modules, so that ESM-only dependencies are supported.
   preset: "ts-jest",
+  // The `ts-jest` preset only registers a transform for TS files, so JS files
+  // from ESM-only dependencies must be mapped to the transformer explicitly.
+  // This requires `allowJs` to be set in the tsconfig.
+  transform: {
+    "^.+\\.tsx?$": "ts-jest",
+    "^.+\\.jsx?$": "ts-jest",
+  },
   transformIgnorePatterns: ["node_modules[\\\\/](?!jose|uuid)"],
   moduleNameMapper: {
     "^jose": esmRequire.resolve("jose"),

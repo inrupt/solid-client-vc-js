@@ -3,6 +3,9 @@
   "description": "A library to act as a client to a server implementing the W3C VC HTTP APIs.",
   "version": "2.0.1",
   "license": "MIT",
+  "workspaces": [
+    "e2e/browser/test-app"
+  ],
   "scripts": {
     "build": "rollup --config rollup.config.mjs",
     "docs:clean": "cd docs/api; make clean-all",
@@ -16,7 +19,6 @@
     "test": "jest --selectProjects browser",
     "test:e2e:node": "jest --selectProjects e2e-node --testTimeout 15000 --collectCoverage false",
     "test:e2e:browser": "playwright test",
-    "test:e2e:browser:setup": "cd e2e/browser/test-app && npm ci --omit=optional",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
