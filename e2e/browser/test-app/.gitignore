@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# next 16.3+ generates these on `next dev`
+/AGENTS.md
+/CLAUDE.md

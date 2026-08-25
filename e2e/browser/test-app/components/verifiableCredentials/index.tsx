@@ -35,6 +35,10 @@ export default function VerifiableCredential() {
   const [verifiableCredential, setVerifiableCredential] = useState<string>();
 
   const validCredentialClaims = {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://schema.inrupt.com/credentials/v2.jsonld",
+    ],
     hasConsent: {
       forPurpose: "https://example.org/ns/somePurpose",
       forPersonalData: "https://example.org/ns/someData",
@@ -45,11 +49,19 @@ export default function VerifiableCredential() {
   };
 
   const invalidCredentialClaims = {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://schema.inrupt.com/credentials/v2.jsonld",
+    ],
     hasConsent: {
       hasStatus: "https://w3id.org/GConsent#ConsentStatusRequested",
     },
   };
-  const handleIssue = async (e, provider: string, issueInvalid = true) => {
+  const handleIssue = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    provider: string,
+    issueInvalid = true,
+  ) => {
     // This prevents the default behaviour of the button, i.e. to resubmit, which reloads the page.
     e.preventDefault();
     const credential = await issueVerifiableCredential(
@@ -70,7 +82,10 @@ export default function VerifiableCredential() {
     setVerifiableCredential(JSON.stringify(credential, null, "  "));
   };
 
-  const handleRevoke = async (e, provider: string) => {
+  const handleRevoke = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    provider: string,
+  ) => {
     // This prevents the default behaviour of the button, i.e. to resubmit, which reloads the page.
     e.preventDefault();
     if (typeof verifiableCredential !== "string") {

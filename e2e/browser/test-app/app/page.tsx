@@ -73,6 +73,7 @@ export default function Home() {
         clientName: APP_NAME,
       });
     } catch (err) {
+      setErrorMessage(String(err));
       console.log(err);
     }
   };
@@ -124,10 +125,7 @@ export default function Home() {
       <p data-testid={TESTID_ERROR_MESSAGE}>
         <strong>{errorMessage}</strong>
       </p>
-      <VerifiableCredentialContainer
-        sessionInfo={sessionInfo}
-        setErrorMessage={setErrorMessage}
-      />
+      <VerifiableCredentialContainer sessionInfo={sessionInfo} />
     </div>
   );
 }
