@@ -197,9 +197,7 @@ async function asDataset(
 export async function isValidVerifiablePresentation(
   verificationEndpoint: string | null,
   verifiablePresentation:
-    | VerifiablePresentation
-    | MinimalPresentation
-    | ParsedVerifiablePresentation,
+    VerifiablePresentation | MinimalPresentation | ParsedVerifiablePresentation,
   options: Partial<{
     fetch: typeof fetch;
     domain: string;
