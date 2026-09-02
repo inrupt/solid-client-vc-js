@@ -90,7 +90,7 @@
     "@types/readable-stream": "^4.0.24",
     "eslint": "^9.28.0",
     "jest": "^30.5.0",
-    "jest-environment-jsdom": "^30.0.2",
+    "jest-environment-jsdom": "^30.5.0",
     "jose": "^6.2.10",
     "rdf-isomorphic": "^2.0.0",
     "rollup": "^4.9.1",
