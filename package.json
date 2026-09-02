@@ -89,7 +89,7 @@
     "@types/node": "^26.2.0",
     "@types/readable-stream": "^4.0.24",
     "eslint": "^9.28.0",
-    "jest": "^30.0.4",
+    "jest": "^30.5.0",
     "jest-environment-jsdom": "^30.0.2",
     "jose": "^6.2.10",
     "rdf-isomorphic": "^2.0.0",
