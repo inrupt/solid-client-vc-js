@@ -6,6 +6,10 @@ The following changes have been implemented but not released yet:
 
 ## Unreleased
 
+### Deprecation notice
+
+- The `query` function is deprecated, and will be removed in future versions.
+
 ### Breaking Changes
 
 - Support for Node.js v20.x has been dropped as that version has reached end-of-life.
