@@ -8,7 +8,7 @@ The following changes have been implemented but not released yet:
 
 ### Deprecation notice
 
-- The `query` function is deprecated, and will be removed in future versions.
+- The `query` and `getVerifiableCredentialAllFromShape` functions are deprecated, and will be removed in future versions.
 
 ### Breaking Changes
 
