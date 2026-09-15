@@ -18,8 +18,7 @@
     "lint:eslint": "eslint --config eslint.config.mjs .",
     "test": "jest --selectProjects browser",
     "test:e2e:node": "jest --selectProjects e2e-node --testTimeout 15000 --collectCoverage false",
-    "test:e2e:browser": "playwright test",
-    "prepublishOnly": "npm run build"
+    "test:e2e:browser": "playwright test"
   },
   "keywords": [
     "rdf",
