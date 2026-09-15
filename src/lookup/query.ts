@@ -119,6 +119,7 @@ export type MinimalPresentation = {
  * @param vpRequest VP Request object, compliant with https://w3c-ccg.github.io/vp-request-spec
  * @param options Options object, including an authenticated `fetch`.
  * @returns The resulting Verifiable Presentation wrapping all the Credentials matching the query.
+ * @deprecated This function will be removed in future versions. No replacement is planned.
  */
 export async function query(
   queryEndpoint: Iri,
