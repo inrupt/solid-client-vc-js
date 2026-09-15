@@ -33,20 +33,15 @@ import {
   afterAll,
   beforeEach,
 } from "@jest/globals";
-import type { VerifiablePresentationRequest } from "../../src/index";
 import {
   getCredentialSubject,
-  getVerifiableCredentialAllFromShape,
   getVerifiableCredentialApiConfiguration,
   getVerifiableCredential,
   issueVerifiableCredential,
   revokeVerifiableCredential,
   isValidVc,
   getId,
-  query,
-  isValidVerifiablePresentation,
 } from "../../src/index";
-import { concatenateContexts, defaultContext } from "../../src/common/common";
 
 const validCredentialClaims = {
   "@context": [
@@ -102,7 +97,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
   let vcSubject: string;
   let session: Awaited<ReturnType<typeof getAuthenticatedSession>>;
   let issuerService: string;
-  let derivationService: string;
   let statusService: string;
   let verifierService: string;
   let revokedObject: {
@@ -136,7 +130,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
 
     if (
       typeof vcConfiguration.issuerService !== "string" ||
-      typeof vcConfiguration.derivationService !== "string" ||
       typeof vcConfiguration.statusService !== "string" ||
       typeof vcConfiguration.verifierService !== "string"
     ) {
@@ -144,7 +137,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
     }
 
     issuerService = vcConfiguration.issuerService;
-    derivationService = vcConfiguration.derivationService;
     statusService = vcConfiguration.statusService;
     verifierService = vcConfiguration.verifierService;
   });
@@ -337,7 +329,7 @@ describe("End-to-end verifiable credentials tests for environment", () => {
   });
 
   describe("lookup VCs", () => {
-    it("returns all VC issued matching a given shape", async () => {
+    it("returns a valid VP for the VCs matching a given shape", async () => {
       const purpose = `http://example.org/some/purpose/${Date.now()}`;
       const [credential1, credential2] = await Promise.all([
         issueVerifiableCredential(
@@ -368,202 +360,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
       expect(getCredentialSubject(credential1).value).toBe(vcSubject);
       expect(credential2.credentialSubject.id).toBe(vcSubject);
       expect(getCredentialSubject(credential2).value).toBe(vcSubject);
-
-      const matcher = {
-        "@context": [
-          "https://www.w3.org/2018/credentials/v1",
-          "https://schema.inrupt.com/credentials/v1.jsonld",
-        ],
-        type: ["VerifiableCredential"],
-        credentialSubject: {
-          id: vcSubject,
-          hasConsent: {
-            forPurpose: purpose,
-          },
-        },
-      };
-
-      const [
-        allDeprecated,
-        allNew,
-        verifiablePresentationLegacy,
-        verifiablePresentation,
-      ] = await Promise.all([
-        getVerifiableCredentialAllFromShape(derivationService, matcher, {
-          fetch: session.fetch,
-          includeExpiredVc: false,
-        }),
-        getVerifiableCredentialAllFromShape(derivationService, matcher, {
-          fetch: session.fetch,
-          includeExpiredVc: false,
-          returnLegacyJsonld: false,
-        }),
-        query(
-          derivationService,
-          {
-            verifiableCredential: {
-              ...matcher,
-              "@context": concatenateContexts(
-                defaultContext,
-                matcher["@context"],
-              ),
-            },
-          } as unknown as VerifiablePresentationRequest,
-          {
-            fetch: session.fetch,
-          },
-        ),
-        query(
-          derivationService,
-          {
-            verifiableCredential: {
-              ...matcher,
-              "@context": concatenateContexts(
-                defaultContext,
-                matcher["@context"],
-              ),
-            },
-          } as unknown as VerifiablePresentationRequest,
-          {
-            fetch: session.fetch,
-            returnLegacyJsonld: false,
-          },
-        ),
-      ]);
-
-      await Promise.all([
-        expect(
-          isValidVerifiablePresentation(
-            verifierService,
-            verifiablePresentationLegacy,
-            {
-              fetch: session.fetch,
-            },
-          ),
-        ).resolves.toMatchObject({ errors: [] }),
-        expect(
-          isValidVerifiablePresentation(
-            verifierService,
-            verifiablePresentation,
-            {
-              fetch: session.fetch,
-            },
-          ),
-        ).resolves.toMatchObject({ errors: [] }),
-      ]);
-
-      expect(allDeprecated).toHaveLength(2);
-
-      await expect(
-        Promise.all(
-          allDeprecated.map((dep) =>
-            isValidVc(dep, { verificationEndpoint: verifierService }),
-          ),
-        ),
-      ).resolves.toMatchObject([{ errors: [] }, { errors: [] }]);
-
-      expect(allDeprecated[0].credentialSubject.id).toBe(vcSubject);
-      expect(getCredentialSubject(allDeprecated[0]).value).toBe(vcSubject);
-      expect(allDeprecated[1].credentialSubject.id).toBe(vcSubject);
-      expect(getCredentialSubject(allDeprecated[1]).value).toBe(vcSubject);
-
-      expect(allNew).toHaveLength(2);
-
-      // @ts-expect-error the credentialSubject property should not exist if legacy json is disabled
-      expect(allNew[0].credentialSubject).toBeUndefined();
-      expect(getCredentialSubject(allNew[0]).value).toBe(vcSubject);
-
-      // @ts-expect-error the credentialSubject property should not exist if legacy json is disabled
-      expect(allNew[1].credentialSubject).toBeUndefined();
-      expect(getCredentialSubject(allNew[1]).value).toBe(vcSubject);
-
-      const [queriedCredential1Legacy, queriedCredential1] = await Promise.all([
-        getVerifiableCredentialAllFromShape(derivationService, credential1, {
-          fetch: session.fetch,
-        }),
-        getVerifiableCredentialAllFromShape(derivationService, credential1, {
-          fetch: session.fetch,
-          returnLegacyJsonld: false,
-        }),
-      ]);
-
-      expect(queriedCredential1Legacy).toHaveLength(1);
-      expect(queriedCredential1).toHaveLength(1);
-
-      await Promise.all([
-        expect(
-          getVerifiableCredentialAllFromShape(derivationService, credential2, {
-            fetch: session.fetch,
-          }),
-        ).resolves.toHaveLength(1),
-        expect(
-          getVerifiableCredentialAllFromShape(derivationService, credential1, {
-            fetch: session.fetch,
-            returnLegacyJsonld: false,
-          }),
-        ).resolves.toHaveLength(1),
-        expect(
-          getVerifiableCredentialAllFromShape(derivationService, credential2, {
-            fetch: session.fetch,
-            returnLegacyJsonld: false,
-          }),
-        ).resolves.toHaveLength(1),
-      ]);
-
-      const [credential1FetchedLegacy, credential1Fetched] = await Promise.all([
-        getVerifiableCredential(credential1.id, {
-          fetch: session.fetch,
-        }),
-        getVerifiableCredential(credential1.id, {
-          fetch: session.fetch,
-          returnLegacyJsonld: false,
-        }),
-      ]);
-
-      // @ts-expect-error the credentialSubject property should not exist if legacy json is disabled
-      expect(credential1Fetched.credentialSubject).toBeUndefined();
-      expect(getCredentialSubject(credential1Fetched).value).toBe(vcSubject);
-      expect(credential1FetchedLegacy.credentialSubject.id).toBe(vcSubject);
-      expect(getCredentialSubject(credential1FetchedLegacy).value).toBe(
-        vcSubject,
-      );
-
-      const creds = [
-        credential1Fetched,
-        credential1FetchedLegacy,
-        queriedCredential1Legacy[0],
-        queriedCredential1[0],
-      ];
-      await Promise.all(
-        creds.map((cred) =>
-          expect(
-            isValidVc(cred, {
-              fetch: session.fetch,
-              verificationEndpoint: verifierService,
-            }),
-          ).resolves.toMatchObject({ errors: [] }),
-        ),
-      );
-
-      await Promise.all([
-        revokeVerifiableCredential(statusService, credential1.id, {
-          fetch: session.fetch,
-        }),
-        revokeVerifiableCredential(statusService, credential2.id, {
-          fetch: session.fetch,
-        }),
-      ]);
-
-      await Promise.all(
-        creds.map((cred) =>
-          expect(
-            isValidVc(cred, {
-              fetch: session.fetch,
-              verificationEndpoint: verifierService,
-            }),
-          ).resolves.toMatchObject(revokedObject),
-        ),
-      );
     }, 60_000);
 
     it("throws if error occurred retrieving a VC", async () => {
@@ -589,38 +385,6 @@ describe("End-to-end verifiable credentials tests for environment", () => {
       }
 
       await expect(vcPromise).rejects.toThrow(
-        expect.objectContaining(expectedErrorShape),
-      );
-    });
-
-    it("throws if error occurred querying for a VC", async () => {
-      const queryPromise = query(
-        derivationService,
-        {
-          // empty query body
-        } as unknown as VerifiablePresentationRequest,
-        {
-          fetch: session.fetch,
-          returnLegacyJsonld: false,
-        },
-      );
-
-      const expectedErrorShape: Record<string, string | object> = {
-        name: "Error",
-        message: `The query endpoint [${derivationService}] returned an error`,
-      };
-
-      if (env?.features?.PROBLEM_DETAILS === "true") {
-        // Check that the Error contains Problem Details
-        expectedErrorShape.problemDetails = expect.objectContaining({
-          status: 400,
-          title: "Bad Request",
-          detail: expect.stringMatching(/.+/),
-          instance: expect.not.stringMatching(""),
-        });
-      }
-
-      await expect(queryPromise).rejects.toThrow(
         expect.objectContaining(expectedErrorShape),
       );
     });

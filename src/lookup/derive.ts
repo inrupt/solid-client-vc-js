@@ -96,6 +96,7 @@ function buildQueryByExample(
  * @returns A list of VCs matching the given VC shape. The list may be empty if
  * the holder does not hold any matching VC.
  * @since 0.1.0
+ * @deprecated This function will be removed in future versions. No replacement is planned.
  */
 export async function getVerifiableCredentialAllFromShape(
   holderEndpoint: Iri,
