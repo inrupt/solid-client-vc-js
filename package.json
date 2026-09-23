@@ -85,7 +85,7 @@
     "@types/jest": "^30.0.0",
     "@types/md5": "^2.3.5",
     "@types/n3": "^1.26.4",
-    "@types/node": "^26.5.1",
+    "@types/node": "^26.6.2",
     "@types/readable-stream": "^4.0.24",
     "eslint": "^9.28.0",
     "jest": "^30.5.2",
