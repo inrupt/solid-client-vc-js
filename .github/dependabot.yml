@@ -12,8 +12,6 @@ updates:
     ignore:
       - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "typedoc-plugin-markdown"
-        update-types: ["version-update:semver-major"]
     groups:
       internal-tooling:
         patterns:
@@ -24,14 +22,6 @@ updates:
       external-types:
         patterns:
           - "@types/*"
-
-  # Enable version updates for the website tooling
-  - package-ecosystem: "pip"
-    # Look for `package.json` and `lock` files in the `root` directory
-    directory: "/docs"
-    # Check the npm registry for updates every day (weekdays)
-    schedule:
-      interval: "weekly"
 
   # Enable version updates for our CI tooling
   - package-ecosystem: "github-actions"
