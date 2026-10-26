@@ -8,10 +8,8 @@
   ],
   "scripts": {
     "build": "rollup --config rollup.config.mjs",
-    "docs:clean": "cd docs/api; make clean-all",
-    "docs:install": "cd docs/api; pip install -r requirements.txt",
-    "docs:build": "typedoc && cd docs/api && make html dist",
-    "docs:preview": "python3 -m http.server --bind 127.0.0.1 --directory docs/dist",
+    "docs:build": "typedoc",
+    "docs:preview": "python3 -m http.server --bind 127.0.0.1 --directory docs/api",
     "lint": "npm run lint:check",
     "lint:fix": "npm run lint:eslint -- --fix",
     "lint:check": "npm run lint:eslint",
@@ -26,7 +24,7 @@
     "linked data",
     "turtle"
   ],
-  "homepage": "https://docs.inrupt.com/sdk/javascript-sdk",
+  "homepage": "https://inrupt.github.io/solid-client-vc-js/",
   "bugs": "https://github.com/inrupt/solid-client-vc-js/issues",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -96,7 +94,6 @@
     "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.1",
-    "typedoc-plugin-markdown": "^3.17.1",
     "typescript": "^6.0.3"
   },
   "optionalDependencies": {

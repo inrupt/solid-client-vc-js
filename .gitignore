@@ -5,9 +5,7 @@ umd
 .eslintcache
 LICENSE_DEPENDENCIES
 LICENSE_DEPENDENCIES_ALL
-docs/api/build/
-docs/api/source/api/
-docs/api/docs-assets/
+docs/api/
 docs/dist/
 **/.DS_Store
 **/.env*.local
