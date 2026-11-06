@@ -14,6 +14,10 @@ The following changes have been implemented but not released yet:
 
 - Support for Node.js v20.x has been dropped as that version has reached end-of-life.
 
+### Patch changes
+
+- NodeJS 26 is now officially supported.
+
 ## [2.0.1](https://github.com/inrupt/solid-client-vc-js/releases/tag/v2.0.1) - 2025-12-10
 
 - The cached context for https://schema.inrupt.com/credentials/v2.jsonld now includes the
